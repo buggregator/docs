@@ -8,25 +8,32 @@ export default defineConfig({
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         nav: [
-            {text: 'Home', link: '/'},
-            {text: 'Docs', link: '/intro'}
+            {text: 'Docs', link: '/'},
         ],
 
         sidebar: [
             {
-                text: 'Introduction',
+                text: 'What is Buggregator?',
+                link: '/',
+            },
+            {
+                text: 'Getting Started',
+                link: '/getting-started',
+            },
+            {
+                text: 'Contributing',
                 items: [
                     {
-                        text: 'What is Buggregator?',
-                        link: '/intro',
+                        text: 'Architecture',
+                        link: '/contributing/architecture',
                     },
                     {
-                        text: 'Getting Started',
-                        link: '/getting-started',
+                        text: 'Server',
+                        link: '/contributing/server',
                     },
                     {
-                        text: 'Contributing',
-                        link: '/contributing',
+                        text: 'Frontend',
+                        link: '/contributing/frontend',
                     },
                 ]
             },
@@ -34,12 +41,14 @@ export default defineConfig({
             {
                 text: 'Configuration',
                 items: [
-                    {text: 'Sentry', link: '/config/sentry'},
-                    {text: 'VarDumper', link: '/config/var-dumper'},
                     {text: 'XHProf', link: '/config/xhprof'},
-                    {text: 'Monolog', link: '/config/monolog'},
+                    {text: 'VarDumper', link: '/config/var-dumper'},
                     {text: 'Ray', link: '/config/ray'},
+                    {text: 'Sentry', link: '/config/sentry'},
+                    {text: 'SMTP server', link: '/config/smtp'},
+                    {text: 'Monolog', link: '/config/monolog'},
                     {text: 'Inspector', link: '/config/inspector'},
+                    {text: 'Http Dumps', link: '/config/http-dumps'},
                 ]
             }
         ],

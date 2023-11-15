@@ -1,4 +1,4 @@
-# Introduction — Contributing to Buggregator
+# Contributing to Buggregator
 
 We're excited to invite you to contribute to the project! Your involvement is crucial, whether it's reporting bugs,
 suggesting new features, or any other form of contribution. To get started,
@@ -12,7 +12,7 @@ label. This makes it easier for you to find ways to participate.
 Additionally, we use labels such as `c:easy`, `c:medium`, and `c:difficult` to indicate the complexity level of issues,
 helping you choose tasks that match your skill level.
 
-### The Benefits of Contributing to Open Source for Developers
+## The Benefits of Contributing to Open Source for Developers
 
 Contributing to open source projects offers a wealth of benefits, particularly for junior developers.
 
@@ -36,29 +36,8 @@ journey. So, dive in and start making your mark!**
 
 **We appreciate any contributions to help make Buggregator better!**
 
-## Backend part
+Buggregator consist of two repositories
 
-### Server requirements
+1. Server part. This is the places where an application will send events which will be handled by server and sent to the client browser. Server also is REST API endpoint where a client requests received events
 
-1. PHP 8.1
-
-### Installation
-
-1. Clone repository `git clone https://github.com/buggregator/server.git`
-2. Install backend dependencies `composer install`
-3. Download RoadRunner binary `vendor/bin/rr get-binary`
-4. Install Centrifugo server `cd bin && ./get-binaries.sh`
-5. Run RoadRunner server `./rr serve`
-
-## Frontend part
-
-1. Clone repository `git clone https://github.com/buggregator/fronend.git`
-2. Install dependencies `yarn install`
-3. Run NodeJS server `yarn dev`
-4. Open http://localhost:3000
-
-You can also run Storybook `yarn sb` to see all components in isolation with mocked data.
-
----
-
-### Now you can start developing your own features and share them with the community!
+2. Frontend part. This is the place where a client can observe incomming events such as var dumps and 
