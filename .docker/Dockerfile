@@ -15,4 +15,5 @@ RUN npm i
 RUN npm run docs:build
 
 FROM nginx:alpine as server
-COPY --from=node /app/docs/.vitepress/dist /app
+
+COPY --from=node /app/docs/.vitepress/dist /usr/share/nginx/html
