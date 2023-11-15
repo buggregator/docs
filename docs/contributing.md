@@ -1,34 +1,40 @@
 # Introduction — Contributing to Buggregator
 
-We enthusiastically invite you to contribute to Buggregator Server! Whether you've uncovered a bug, have innovative
-feature suggestions, or wish to contribute in any other capacity, we warmly welcome your participation. Simply open an
-issue or submit a pull request on our GitHub repository to get started.
+We're excited to invite you to contribute to the project! Your involvement is crucial, whether it's reporting bugs,
+suggesting new features, or any other form of contribution. To get started,
+simply [create an issue](https://github.com/buggregator/server/issues) or submit a pull request on our GitHub
+repository.
 
-We use the [help wanted](https://github.com/buggregator/server/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%2)
-label to categorize all issues that would benefit from your help in the repository.
+In our repository, we categorize issues that are open for community contribution using
+the [`for contributors`](https://github.com/buggregator/server/issues?q=is%3Aissue+is%3Aopen+label%3A%22for+contributors%22)
+label. This makes it easier for you to find ways to participate.
 
-### Why Should Developers Contribute to Open Source?
+Additionally, we use labels such as `c:easy`, `c:medium`, and `c:difficult` to indicate the complexity level of issues,
+helping you choose tasks that match your skill level.
 
-Open source contributions, such as to Buggregator Server, present a unique and rewarding opportunity, especially for
-junior developers.
+### The Benefits of Contributing to Open Source for Developers
 
-Here are a few reasons why you should consider contributing:
+Contributing to open source projects offers a wealth of benefits, particularly for junior developers.
 
-1. **Experiment with New Technologies:** Open source projects can expose you to technologies and frameworks you might
-   not encounter in your daily job. It's an excellent opportunity to learn and try out new things.
-2. **Expand Your Network:** Collaborating on open source projects connects you with a global community of developers.
-   You can learn from their experiences, and they can learn from yours.
-3. **Improve Your Résumé:** Potential employers often value open source contributions. They demonstrate initiative,
-   technical competency, and the ability to work collaboratively
-4. **Learn Best Practices:** Code reviews and feedback in open source projects are valuable learning tools. They expose
-   you to different perspectives and ways to improve your code.
-5. **Create Impact:** Your contributions can help others and make a meaningful impact on the project. The feeling of
-   seeing your code being used by others is immensely satisfying.
+**Here's why you should consider getting involved:**
 
-**Remember, every great developer was once a beginner. Contributing to open source projects is a step in your journey to
-becoming a better developer. So, don't hesitate to jump in and start contributing!**
+1. **Learning Through Practical Experience:** Open source projects provide a platform to work with new technologies and
+   frameworks that you might not encounter in your regular job. It's a fantastic way to broaden your technical horizons.
+2. **Building a Professional Network:** By participating in open source, you connect with a global community of
+   developers. This network is invaluable for exchanging knowledge, learning from others' experiences, and sharing your
+   own insights.
+3. **Enhancing Your Résumé:** Contributions to open source are often highly regarded by employers. They showcase your
+   proactive nature, technical skills, and ability to collaborate effectively in a team.
+4. **Gaining Insight into Best Practices:** Engaging with open source projects exposes you to code reviews and feedback
+   from various developers. This experience is crucial for understanding diverse coding styles and improving your own
+   coding practices.
+5. **Making a Real-World Impact:** Your contributions can significantly influence the project and its users. The
+   satisfaction of seeing your code being used and appreciated by others is incredibly rewarding.
 
-**We appreciate any contributions to help make Buggregator better!***
+**Remember, every expert was once a beginner. Contributing to open source is a valuable step in your development
+journey. So, dive in and start making your mark!**
+
+**We appreciate any contributions to help make Buggregator better!**
 
 ## Backend part
 
