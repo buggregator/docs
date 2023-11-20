@@ -75,6 +75,31 @@ LOG_CHANNEL=socket
 LOG_SOCKET_URL=127.0.0.1:9913
 ```
 
+## Symfony
+
+Here is an example of how to configure Monolog to send logs to Buggregator in Symfony.
+
+```yaml
+# config/packages/dev/monolog.yaml
+monolog:
+  handlers:
+    socket:
+      level: debug
+      type: socket
+      formatter: monolog.formatter.json
+      connection_string: '%env(MONOLOG_SOCKET_HOST)%'
+```
+
+### Configuration
+
+```dotenv
+MONOLOG_SOCKET_HOST=127.0.0.1:9913
+```
+
+> **Note:**
+> Setting formatter `monolog.formatter.json` is critical. Otherwise, the Monolog server will not be able to parse the
+> log.
+
 ## Other PHP frameworks
 
 Install monolog
