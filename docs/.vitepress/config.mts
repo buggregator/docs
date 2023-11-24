@@ -55,7 +55,7 @@ export default defineConfig({
 
         socialLinks: [
             {icon: 'github', link: 'https://github.com/buggregator/server'},
-            {icon: 'discord', link: 'https://discord.gg/FTpBM7xU'},
+            {icon: 'discord', link: 'https://discord.gg/vDsCD3EKUB'},
             {icon: 'twitter', link: 'https://twitter.com/buggregator'},
         ]
     }
