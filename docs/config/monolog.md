@@ -8,7 +8,7 @@ By using Buggregator's Monolog server, you can gain valuable insights into your 
 overall efficiency. So, whether you're a seasoned developer or just starting, the Monolog server in Buggregator is a
 must-have tool for anyone serious about PHP development.
 
-![monolog](https://user-images.githubusercontent.com/773481/208729325-b135870e-3a98-4841-90cb-6e507108a235.png)
+![monolog](https://github.com/buggregator/server/assets/773481/21919110-fd4d-490d-a78e-41242d329885)
 
 ## Spiral Framework
 
