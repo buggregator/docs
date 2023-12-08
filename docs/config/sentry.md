@@ -4,7 +4,7 @@ Buggregator offers seamless integration with Sentry reports, making it a reliabl
 it, you can easily configure your Sentry DSN to send data directly to the server, providing you with a lightweight
 alternative for debugging your application.
 
-![sentry](https://user-images.githubusercontent.com/773481/208728578-1b33174b-8d1f-411a-a6fe-180a89abf06f.png)
+![sentry](https://github.com/buggregator/server/assets/773481/e979fda5-54c8-42cc-8224-a1c5d828569a)
 
 By using Buggregator to receive Sentry reports, you can identify and fix issues with your application before deploying
 it to production. This ensures that your application is robust and efficient, providing a smooth experience for your

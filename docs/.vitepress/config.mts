@@ -4,7 +4,7 @@ import {defineConfig} from 'vitepress'
 export default defineConfig({
     ignoreDeadLinks: true,
     title: "Buggregator docs",
-    description: "A VitePress Site",
+    description: "Buggregator docs",
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         nav: [

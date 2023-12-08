@@ -22,7 +22,12 @@ Buggregator offers different versions for different needs:
 This is the most recent officially released version, recommended for most users.
 
 ```bash
-docker run --pull always -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 ghcr.io/buggregator/server:latest
+docker run --pull always \
+  -p 127.0.0.1:8000:8000 \
+  -p 127.0.0.1:1025:1025 \
+  -p 127.0.0.1:9912:9912 \
+  -p 127.0.0.1:9913:9913 \
+  ghcr.io/buggregator/server:latest
 ```
 
 ### Latest Dev Release
@@ -30,7 +35,12 @@ docker run --pull always -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 ghc
 This version includes the latest features and updates but might be less stable.
 
 ```bash
-docker run --pull always -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 ghcr.io/buggregator/server:dev
+docker run --pull always \
+  -p 127.0.0.1:8000:8000 \
+  -p 127.0.0.1:1025:1025 \
+  -p 127.0.0.1:9912:9912 \
+  -p 127.0.0.1:9913:9913 \
+  ghcr.io/buggregator/server:dev
 ```
 
 ### Specific Version
@@ -38,7 +48,12 @@ docker run --pull always -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 ghc
 If you need a particular version of Buggregator, you can choose to install that specific one.
 
 ```bash
-docker run -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 ghcr.io/buggregator/server:v1.00
+docker run \
+  -p 127.0.0.1:8000:8000 \
+  -p 127.0.0.1:1025:1025 \
+  -p 127.0.0.1:9912:9912 \
+  -p 127.0.0.1:9913:9913 \
+  ghcr.io/buggregator/server:v1.0
 ```
 
 > **Note:**
@@ -50,17 +65,18 @@ docker run -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 ghcr.io/buggregat
 1. Create a `docker-compose.yml` file in your project directory.
 2. Add the following service definition to your file:
 
+We recommend publishing ports only on a local server, as shown in the example below:
+
 ```yaml
 services:
   # ...
-
   buggregator:
     image: ghcr.io/buggregator/server:dev
     ports:
-      - 8000:8000
-      - 1025:1025
-      - 9912:9912
-      - 9913:9913
+      - 127.0.0.1:8000:8000
+      - 127.0.0.1:1025:1025
+      - 127.0.0.1:9912:9912
+      - 127.0.0.1:9913:9913
 ```
 
 3. Run `docker-compose up` in your CLI.
@@ -73,3 +89,47 @@ interface, ready to collect and display debugging information from your applicat
 And that's it! You've successfully installed it on your local machine using Docker. You can now start using it
 to streamline your debugging process. If you encounter any issues or have questions, don't hesitate to refer to the
 official documentation or seek help from the community.
+
+## Port Configuration Advice:
+
+Here are descriptions of the ports used by Buggregator:
+
+- **8000**: This port is used for the following
+  modules: [HTTP Dumps](./config/http-dumps.md), [Sentry](./config/sentry.md), [Ray](./config/ray.md), [Inspector](./config/inspector.md), [XHProf](./config/xhprof.md).
+- **1025**: This port is designated for [SMTP](./config/smtp.md).
+- **9912**: This port is used for [Symfony Var-Dumper](./config/var-dumper.md).
+- **9913**: This port is allocated for [Monolog](./config/monolog.md).
+
+### Stay Secure
+
+By default, the ports are set to listen only on the localhost (`127.0.0.1`), enhancing security by preventing external
+access.
+
+> **Warning**
+> Publishing container ports is insecure by default, meaning when you publish a container's ports, they become available
+> not only to the Docker host but also to the outside world. If you include the localhost IP address (127.0.0.1) with,
+> only the Docker host can access the published container port.
+
+If you require external access to these ports, you can remove `127.0.0.1:` from the respective port forwarding rules.
+However, be cautious as this will make the ports accessible from outside your local network.
+
+Like this:
+
+```bashn --pull always \
+  -p 8000:8000 \
+  -p ...
+  ghcr.io/buggregator/server:latest
+```
+
+### Reduce the Number of Open Ports
+
+If you're not utilizing all the features and wish to reduce the number of open ports, you can omit the unused ports from
+the command. This step can help minimize the attack surface and maintain a cleaner setup.
+
+For example, if you use only var-dumper, you can omit the other ports, like this:
+
+```bash
+docker run --pull always \
+  -p 127.0.0.1:9912:9912 \
+  ghcr.io/buggregator/server:latest
+```

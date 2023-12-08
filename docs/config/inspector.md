@@ -4,7 +4,7 @@ Buggregator is also compatible with Inspector reports, providing you with a ligh
 development. With it, you can easily configure your Inspector client URL to send data directly to the server, making it
 easier to identify and fix issues during the development phase.
 
-![inspector](https://user-images.githubusercontent.com/773481/208734651-e8dca2bf-6674-4aed-b6fc-601bc877f7ce.png)
+![inspector](https://github.com/buggregator/server/assets/773481/ab002ecf-e1dc-4433-90d4-0e42ff8c0ab3)
 
 ## Laravel
 

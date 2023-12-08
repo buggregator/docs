@@ -8,7 +8,7 @@ it effortless to test email functionality during the development phase, ensuring
 before deployment. So, if you're looking for a reliable and easy-to-use email testing tool, Buggregator's fake SMTP
 server is the way to go.
 
-![smtp](https://user-images.githubusercontent.com/773481/208727862-229fda5f-3504-4377-921e-03f0ff602cb9.png)
+![smtp](https://github.com/buggregator/server/assets/773481/8dd60ddf-c8d8-4a26-a8c0-b05052414a5f)
 
 ## Spiral Framework
 

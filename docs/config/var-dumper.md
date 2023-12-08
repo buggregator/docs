@@ -4,7 +4,7 @@ Buggregator is fully compatible with
 the [Symfony VarDumper](https://symfony.com/doc/current/components/var_dumper.html#the-dump-server) component. This is a
 big deal for PHP developers because it makes debugging a lot smoother and more intuitive.
 
-![var-dumper](https://user-images.githubusercontent.com/773481/208727353-b8201775-c360-410b-b5c8-d83843d388ff.png)
+![var-dumper](https://github.com/buggregator/server/assets/773481/b77fa867-0a8e-431a-9126-f69959dc18f4)
 
 ## What is Symfony VarDumper?
 

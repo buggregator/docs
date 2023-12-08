@@ -5,11 +5,11 @@ for PHP applications. It uses instrumentation to keep track of call counts and i
 callgraph of your program during the data collection phase. In the reporting and post-processing phase, the profiler
 computes exclusive metrics such as wall (elapsed) time, CPU time, and memory usage.
 
+![xhprof](https://github.com/buggregator/server/assets/773481/d69e1158-599d-4546-96a9-40a42cb060f4)
+
 With the Xhprof profiler, you can easily identify performance bottlenecks and optimize your application's code for
 better efficiency. So, if you're looking to fine-tune your PHP application's performance, the Xhprof profiler is the
 perfect tool for the job.
-
-![xhprof](https://user-images.githubusercontent.com/773481/208724383-3790a3e1-9ebe-4616-8d4d-d1869f8f2b7c.png)
 
 ## Installation extension
 

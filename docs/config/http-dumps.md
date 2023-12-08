@@ -13,4 +13,4 @@ For instance, let's say you have a POST request: `http://http-dump@127.0.0.1:800
 server will intercept the request and capture all the relevant information. It will then display the
 dumped data, allowing you to examine the request details, including the URI segments (`user/3/update` in this example).
 
-![HTTP Requests dump server](https://github.com/spiral/docs/assets/773481/209f9c8c-00d2-4086-9f54-ce2cf8121394)
+![http dumps](https://github.com/buggregator/server/assets/773481/fc823390-b490-4bbb-a787-44471eca9fb6)
