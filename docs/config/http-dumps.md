@@ -14,3 +14,24 @@ server will intercept the request and capture all the relevant information. It w
 dumped data, allowing you to examine the request details, including the URI segments (`user/3/update` in this example).
 
 ![http dumps](https://github.com/buggregator/server/assets/773481/fc823390-b490-4bbb-a787-44471eca9fb6)
+
+## Client configuration
+
+There are several ways to say Buggregator that your request is a dump request:
+
+### Using http auth
+
+Add `http-dump` to the host name, e.g. `http://http-dump@...`
+
+```curl
+curl --location 'http://http-dump@127.0.0.1:8000?foo=bar'
+```
+
+### Using header
+
+Add a header `X-Buggregator-Event` with value `http-dump`
+
+```curl
+curl --location 'http://127.0.0.1:8000?foo=bar' \
+    --header 'X-Buggregator-Event: http-dump'
+```

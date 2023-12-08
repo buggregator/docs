@@ -51,5 +51,23 @@ configure the profiler.
 
 ```dotenv
 PROFILER_ENDPOINT=http://profiler@127.0.0.1:8000
-PROFILER_APP_NAME=My super app
+PROFILER_APP_NAME="My super app"
 ```
+
+## Client configuration
+
+When integrating with Buggregator, especially if you're developing a custom client, it's essential to understand how to
+correctly configure the data transmission. This guide outlines various methods to designate your requests as xhprof
+requests
+
+### Using HTTP auth
+
+Add `profiler` to the host name, e.g. `http://profiler@...`
+
+### Using header
+
+Add a header `X-Buggregator-Event` with value `profiler` or just add `X-Profiler-Dump` with any value.
+
+### Special endpoint
+
+You can use special endpoint `/profiler/store` to send data to Buggregator.
