@@ -20,7 +20,7 @@ specific areas you're interested in or questions about the architecture, feel fr
 
 ## Installation
 
-1. Clone repository `git clone https://github.com/buggregator/fronend.git`
+1. Clone repository `git clone https://github.com/buggregator/frontend.git`
 2. Install dependencies `yarn install`
 3. Run NodeJS server `yarn dev`
 4. Open http://localhost:3000
