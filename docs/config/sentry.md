@@ -40,7 +40,7 @@ on [official site](https://spiral.dev/docs/extension-sentry/3.3/en)
 
 ### Configuration
 
-All you need to do is set the `SENTRY_LARAVEL_DSN` environment variable in your `.env` file:
+All you need to do is set the `SENTRY_DSN` environment variable in your `.env` file:
 
 ```dotenv
 SENTRY_DSN=http://sentry@127.0.0.1:8000/1
