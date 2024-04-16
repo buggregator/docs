@@ -1,4 +1,4 @@
-# Configuration — HTTP dumps
+# Integration — HTTP dumps
 
 It's an indispensable tool that simplifies the process of capturing, analyzing, and debugging HTTP requests in their
 applications. With the HTTP Requests Dump Server, developers can effortlessly capture all the relevant request data and

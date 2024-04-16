@@ -1,4 +1,4 @@
-# Configuration — Symfony VarDumper server
+# Integration — Symfony VarDumper server
 
 Buggregator is fully compatible with
 the [Symfony VarDumper](https://symfony.com/doc/current/components/var_dumper.html#the-dump-server) component. This is a

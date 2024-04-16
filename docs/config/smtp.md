@@ -1,4 +1,4 @@
-# Configuration — Fake SMTP server
+# Integration — Fake SMTP server
 
 Buggregator is more than just a PHP debugging tool. It also includes a powerful email testing feature that allows you to
 install and configure a local email server with ease.

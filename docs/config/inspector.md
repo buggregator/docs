@@ -1,4 +1,4 @@
-# Configuration — Inspector
+# Integration — Inspector
 
 Buggregator is also compatible with Inspector reports, providing you with a lightweight alternative for local
 development. With it, you can easily configure your Inspector client URL to send data directly to the server, making it
