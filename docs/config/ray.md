@@ -1,4 +1,4 @@
-# Configuration — Spatie Ray
+# Integration — Spatie Ray
 
 Buggregator is compatible with `spatie/ray` package. The Ray debug tool supports PHP, Ruby, JavaScript, TypeScript,
 NodeJS, Go and Bash applications. After installing one of the libraries, you can use the ray function to quickly dump

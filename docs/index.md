@@ -1,8 +1,11 @@
 # What is Buggregator?
 
-Buggregator is a free, multi-purpose server tool designed primarily for debugging PHP applications, but it's also
-compatible with other programming languages. Think of it as a Swiss Army knife for developers. What makes it special is
-that it offers a range of features that you would usually find in various paid tools, but it's available for free.
+[Buggregator](https://github.com/buggregator/server) is a free, multi-purpose server tool designed primarily for
+debugging PHP applications, but it's also compatible with other programming languages. Think of it as a Swiss Army knife
+for developers. What makes it special is that it offers a range of features that you would usually find in various paid
+tools, but it's available for free.
+
+**Project repository:** https://github.com/buggregator/server
 
 ![Cover image](https://github.com/buggregator/server/assets/773481/47491a3c-57a3-4b40-b82e-37976afdf708)
 
@@ -13,9 +16,13 @@ The key feature of Buggregator is its ability to bring together debugging inform
 means you can see all your debugging data in one place, which makes fixing bugs a whole lot easier and faster. It's a
 great tool for any developer looking to streamline their debugging process without spending a lot of money.
 
-## Centralized Debugging with Buggregator
+If you don't have Docker or you need debug your local PHP application, you can
+use [Buggregator Trap](./trap/what-is-trap.md). It's a lightweight alternative to the full Buggregator server, designed
+for local debugging.
 
-1. **Unified Debugging Dashboard**: Buggregator allows you to aggregate logs, dumps, and other debug information from
+## What makes it special?
+
+1. **Unified Debugging Dashboard**: It allows you to aggregate logs, dumps, and other debug information from
    all your services into a single, unified interface. This centralization of data is invaluable for developers who
    manage multiple services or microservices, as it simplifies tracking and analysis.
 
@@ -27,6 +34,20 @@ great tool for any developer looking to streamline their debugging process witho
 
 4. **Ease of Access and Use**: By integrating Buggregator into your Docker development infrastructure, you set up a
    system where all debug information is automatically sent to Buggregator's server.
+
+5. **Kubernetes Compatibility**: Deploy Buggregator in your Kubernetes cluster to enhance debugging and operational
+   efficiency.
+
+6. **SSO support**: Securely manage user access and authentication through Single Sign-On (SSO) with providers like
+   [Auth0](https://auth0.com/).
+
+7. **External database support**: Configure Buggregator to use external databases like MongoDB or PostgreSQL for event
+   storage. This flexibility allows you to scale storage according to your project needs.
+
+8. **Full source code available**: Buggregator is open-source, so you can customize it to suit your requirements or
+   contribute to its development.
+
+9. **Free to use**: Buggregator is free to use, making it an accessible and cost-effective solution for developers.
 
 ## Tech stack
 
@@ -106,3 +127,10 @@ Buggregator is designed with simplicity and efficiency in mind, requiring no add
 makes it an accessible tool for developers at all levels, from beginners to seasoned professionals. Its Docker
 compatibility ensures it can be easily integrated into your existing development setup, enhancing your workflow without
 adding complexity.
+
+## Contribute to Our Success
+
+Become a part of our community and help enhance Buggregator by contributing your skills. Whether you're fixing bugs,
+adding features, or improving documentation, every contribution matters.
+
+Here you can find our [contribution guidelines](./contributing.md)

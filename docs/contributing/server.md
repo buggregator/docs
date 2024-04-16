@@ -19,7 +19,7 @@ Centrifugo.
 
 ## Server requirements
 
-1. PHP 8.1
+1. Minimum PHP version: 8.2
 
 ## Installation
 

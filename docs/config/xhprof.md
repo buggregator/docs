@@ -1,4 +1,4 @@
-# Configuration — Xhprof profiler
+# Integration — Xhprof profiler
 
 The Xhprof profiler is an essential feature of Buggregator that offers a lightweight and hierarchical profiling solution
 for PHP applications. It uses instrumentation to keep track of call counts and inclusive metrics for arcs in the dynamic

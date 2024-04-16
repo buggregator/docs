@@ -1,4 +1,4 @@
-# Configuration — Sentry exceptions
+# Integration — Sentry exceptions
 
 Buggregator offers seamless integration with Sentry reports, making it a reliable tool for local development. With
 it, you can easily configure your Sentry DSN to send data directly to the server, providing you with a lightweight
