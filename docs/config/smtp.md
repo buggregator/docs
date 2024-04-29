@@ -23,3 +23,19 @@ MAIL_MAILER=smtp
 MAIL_HOST=127.0.0.1
 MAIL_PORT=1025
 ```
+
+## Magento 2
+
+```dotenv
+CONFIG__DEFAULT__SYSTEM__SMTP__TRANSPORT="smtp"
+CONFIG__DEFAULT__SYSTEM__SMTP__HOST="127.0.0.1"
+CONFIG__DEFAULT__SYSTEM__SMTP__PORT="1025"
+```
+
+or
+
+```bash
+bin/magento config:set system/smtp/transport smtp
+bin/magento config:set system/smtp/host 127.0.0.1
+bin/magento config:set system/smtp/port 1025
+```
