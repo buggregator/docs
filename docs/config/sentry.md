@@ -46,6 +46,32 @@ All you need to do is set the `SENTRY_DSN` environment variable in your `.env` f
 SENTRY_DSN=http://sentry@127.0.0.1:8000/1
 ```
 
+## Magento 2
+
+### Installation
+
+Magento 2 is supported via the following package, you can read more about it [here](https://github.com/justbetter/magento2-sentry)
+
+### Configuration
+
+Refer to the [Configuration section](https://github.com/justbetter/magento2-sentry#configuration).
+
+Either set
+
+```dotenv
+CONFIG__SENTRY__ENVIRONMENT__DSN=http://sentry@127.0.0.1:8000/1
+```
+
+or
+
+```php
+'sentry' => [
+    'dsn' => 'http://sentry@127.0.0.1:8000/1',
+    ...
+]
+```
+in the `app/etc/env.php`
+
 ## Other platforms
 
 To report to Buggregator you’ll need to use a language-specific SDK. The Sentry team builds and maintains these for most
