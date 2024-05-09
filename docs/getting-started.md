@@ -78,7 +78,27 @@ services:
       - 127.0.0.1:9912:9912
       - 127.0.0.1:9913:9913
 ```
+**To add the Buggregator service to an existing service in your docker-compose.yml file, you can follow these :**
+```yaml
+services:
+  # Existing services...
+  
+  buggregator:
+    image: ghcr.io/buggregator/server:dev
+    ports:
+      - 127.0.0.1::8000
+    networks:
+      - your_existing_network
+```
 
+Here's an example of how you can set the environment variables for Ray, Var Dump Server in your .env file:
+```code
+
+RAY_HOST=ray@buggregator
+RAY_PORT=8000
+VAR_DUMPER_FORMAT=server
+VAR_DUMPER_SERVER=buggregator:9912
+```
 3. Run `docker-compose up` in your CLI.
 
 ## Step 3: Open Buggregator in Your Browser
