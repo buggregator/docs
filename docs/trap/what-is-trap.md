@@ -31,7 +31,7 @@ Here's a sneak peek into the console output you can expect with Trap:
 
 ### Symfony/var-dumper (proto)
 
-![var-dumper](https://github.com/buggregator/trap/assets/4152481/f4c855f5-87c4-4534-b72d-5b19d1aae0b0)\
+![var-dumper](https://github.com/buggregator/trap/assets/4152481/f4c855f5-87c4-4534-b72d-5b19d1aae0b0)
 
 ### Binary Data
 
