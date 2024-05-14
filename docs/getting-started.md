@@ -135,7 +135,7 @@ However, be cautious as this will make the ports accessible from outside your lo
 
 Like this:
 
-```bashn --pull always \
+```bash --pull always \
   -p 8000:8000 \
   -p ...
   ghcr.io/buggregator/server:latest
