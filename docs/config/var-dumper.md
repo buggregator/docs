@@ -1,19 +1,16 @@
 # Integration — Symfony VarDumper server
 
-Buggregator is fully compatible with
-the [Symfony VarDumper](https://symfony.com/doc/current/components/var_dumper.html#the-dump-server) component. This is a
-big deal for PHP developers because it makes debugging a lot smoother and more intuitive.
+The Symfony VarDumper tool is essential for debugging PHP applications. It helps inspect and understand PHP variables
+clearly. Normally, `dump()` and `dd()` functions show their output in the browser or console.
+
+A great feature of VarDumper is redirecting debug outputs to a remote server. Using Buggregator as the remote server,
+you can receive all debug outputs from your application, making debugging smoother and more intuitive for PHP
+developers.
+
+For more details, check
+the [official documentation](https://symfony.com/doc/current/components/var_dumper.html#the-dump-server).
 
 ![var-dumper](https://github.com/buggregator/server/assets/773481/b77fa867-0a8e-431a-9126-f69959dc18f4)
-
-## What is Symfony VarDumper?
-
-1. **Essential Debugging Tool:** Symfony VarDumper is a powerful tool for debugging PHP applications. It helps you
-   inspect and understand PHP variables in a more readable format.
-
-2. **Default Behavior:** By default, the `dump()` and `dd()` functions output their contents in the same browser window
-   or console terminal as your own application. This can be confusing at times, as it mixes the real output with the
-   debug output.
 
 ## Installation
 
@@ -44,3 +41,30 @@ or via PHP if there is no `.env` file in your project:
 $_SERVER['VAR_DUMPER_FORMAT'] = 'server';
 $_SERVER['VAR_DUMPER_SERVER'] = '127.0.0.1:9912';
 ```
+
+That's it! Now you can use the `dump()` and `dd()` functions as usual. The output will be sent to the remote server.
+
+## Browser performance
+
+VarDumper send data to the server in HTML format. So if you dump an object with a lot of properties and nested objects,
+it can significantly slow down the browser. To partially solve this issue, you can use `VAR_DUMPER_PREVIEW_MAX_DEPTH`
+env variable to limit the depth of the preview on the events list page.
+
+All you need to do is add environment variable to a command that starts Buggerator server:
+
+```bash
+docker run --pull always \
+  -p ... \
+  -e VAR_DUMPER_PREVIEW_MAX_DEPTH=3 \
+  ghcr.io/buggregator/server:latest
+```
+
+> **Note:** Read more about server configuration [here](../getting-started.md).
+
+And the server will show only 3 levels of nested objects in the preview, but you can still see the full dump by opening
+the event page.
+
+## Trap
+
+Please consider to use [Buggregator Trap](../trap/what-is-trap.md) to dump variables in your application. It uses
+the Symfony VarDumper component under the hood, but it's more powerful and has additional features.
