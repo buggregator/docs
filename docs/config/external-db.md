@@ -1,28 +1,22 @@
 # Configuration — External Database
 
-Buggregator supports the configuration of external databases for storing events, allows for greater flexibility and
-scalability in handling event data.
+Buggregator typically uses [DoltDB](https://github.com/dolthub/dolt) by default, which is a MySQL-compatible server.
+However, for those who need more flexibility or plan to scale up, Buggregator also supports external databases such as
+PostgreSQL and MySQL for data storage.
 
-## Configuration Overview
+This guide will walk you through how to set up and configure an external database with Buggregator.
 
-Events in Buggregator are traditionally stored in local in-memory storage by default. After release 1.7.0, users can
-opt to store events in external databases like **MongoDB** or **PostgreSQL**. This configuration is managed via
-environment variables, enabling easy integration and setup.
-
-Buggregator supports the following databases:
-
-- PostgreSQL
-- MongoDB
-
-To use an external database, set the `PERSISTENCE_DRIVER` environment variable to `database` for PostgreSQL or `mongodb`
-for MongoDB.
+> **Warning**: Buggregator cannot work with SQLite. SQLite’s architecture does not support non-blocking, asynchronous
+> operations.
 
 ## PostgreSQL
 
-Provide the connection details specific to the type of database you are using.
+Here’s how you can configure PostgreSQL:
+
+> **Warning**: Buggregator doesn’t create the database; it only sets up the tables inside it.
 
 ```dotenv
-PERSISTENCE_DRIVER=database
+PERSISTENCE_DRIVER=db # database or cycle are also supported as an alias for db
 
 DB_DRIVER=pgsql
 DB_DATABASE=buggregator
@@ -32,22 +26,30 @@ DB_USERNAME=homestead
 DB_PASSWORD=secret
 ```
 
-### Ensuring the Database is Ready
+## MySQL
 
-Before starting Buggregator, make sure that the database is already created and accessible as specified in your
-environment settings.
+Provide the connection details specific to the type of database you are using.
 
-> **Warning**: Buggregator does not create the database itself; it only creates the tables within the existing
-> database.
+> **Warning**: Buggregator doesn’t create the database; it only sets up the tables inside it.
 
-### Running Migrations
+```dotenv
+PERSISTENCE_DRIVER=db # database or cycle are also supported as an alias for db
+
+DB_DRIVER=mysql
+DB_DATABASE=buggregator
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USERNAME=homestead
+DB_PASSWORD=secret
+```
+
+## Migrations
 
 Buggregator automatically runs migrations when it starts. However, if you encounter any issues with the automatic
 migrations, or if they were not executed for some reason, you can run them manually:
 
-1. **Connect to the Buggregator container:**
-   Depending on your setup, you might use Docker, Kubernetes, or any other container service. Use the appropriate
-   command to access the shell of the running Buggregator container.
+1. **Connect to the container:**
+   Depending on your setup, you might use Docker, Kubernetes, or any other container service.
 
    For example, if you are using Docker, you can use the following command:
 
@@ -55,7 +57,7 @@ migrations, or if they were not executed for some reason, you can run them manua
     docker exec -it buggregator /bin/bash
    ```
 
-   Replace `buggregator` with the name of your Buggregator container.
+   Replace `buggregator` with the name of your container.
 
    If you are using Kubernetes, you can use the following command:
 
@@ -63,11 +65,11 @@ migrations, or if they were not executed for some reason, you can run them manua
     kubectl exec -it buggregator -- /bin/bash
     ```
 
-   Replace `buggregator` with the name of your Buggregator pod.
+   Replace `buggregator` with the name of your pod.
 
 
 2. **Run the migration command:**
-   Within the Buggregator container, execute the following command to force the migrations:
+   Within the container, execute the following command to force the migrations:
 
    ```bash
    php app.php migrate --force
@@ -75,13 +77,3 @@ migrations, or if they were not executed for some reason, you can run them manua
 
    This command forcefully runs the migrations regardless of the current state, ensuring that all necessary tables are
    properly set up in the database.
-
-## MongoDB
-
-Provide the connection details specific to the type of database you are using.
-
-```dotenv
-PERSISTENCE_DRIVER=mongodb
-MONGODB_CONNECTION=mongodb://127.0.0.1:27017
-MONGODB_DATABASE=buggregator
-```
