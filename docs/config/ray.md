@@ -1,15 +1,15 @@
 # Integration — Spatie Ray
 
-Buggregator is compatible with `spatie/ray` package. The Ray debug tool supports PHP, Ruby, JavaScript, TypeScript,
-NodeJS, Go and Bash applications. After installing one of the libraries, you can use the ray function to quickly dump
-stuff. Any variable(s) that you pass will be sent to the Buggregator.
+[Ray](https://myray.app/) is a debug tool that was created by Spatie. It is a great alternative to the Symfony
+VarDumper component especially for Laravel applications. Buggregator is compatible with the Ray, and it's a good free
+alternative for debugging your applications.
+
+> **Note:** Some of the features of Ray are not available in Buggregator, like colors, sizes, and other visual features.
 
 ![ray](https://github.com/buggregator/server/assets/773481/168b27f7-75b1-4837-b0a1-37146d5b8b52)
 
-**Supported features**: Simple data, Labels, Caller, Trace, Counter, Class name of an object, Measure, Json, Xml,
-Carbon, File, Table, Image, Html, Text, Notifications, Phpinfo, Exception, Show queries, Count queries, Show events,
-Show jobs, Show cache, Model, Show views, Markdown, Collections, Env, Response, Request, Application log, Show Http
-client requests
+Ray provides packages for PHP, Ruby, JavaScript, TypeScript, NodeJS, Go, and Bash applications. So using it you can
+dump variables in many languages straight to the Buggregator.
 
 ## Laravel
 
@@ -28,9 +28,9 @@ RAY_HOST=ray@127.0.0.1  # Ray server host (Current HTTP buggregator port)
 RAY_PORT=8000           # Ray server port
 ```
 
-## Framework agnostic PHP
+## Framework-agnostic PHP
 
-In framework agnostic projects you can use this template as the ray config file.
+In framework-agnostic projects you can use this template as the ray config file.
 
 ```php
 <?php
@@ -69,5 +69,13 @@ return [
 ];
 ```
 
-You can find out more information about installation and configuration
-on [official site](https://spatie.be/docs/ray/v1/introduction)
+## Other languages
+
+- [JavaScript](https://myray.app/docs/javascript/vanilla-javascript/getting-started)
+- [Bash](hhttps://myray.app/docs/other-languages/bash/installation)
+- [Go](https://myray.app/docs/other-languages/go/getting-started)
+- [Ruby](https://myray.app/docs/other-languages/ruby/getting-started)
+
+---
+
+That's it! Now you can use the `ray()` function as usual. The output will be sent to the remote server.

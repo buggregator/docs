@@ -1,6 +1,6 @@
 # Integration — Inspector
 
-Buggregator is also compatible with Inspector reports, providing you with a lightweight alternative for local
+Buggregator is compatible with Inspector reports, providing you with a lightweight alternative for local
 development. With it, you can easily configure your Inspector client URL to send data directly to the server, making it
 easier to identify and fix issues during the development phase.
 
@@ -38,3 +38,51 @@ most popular languages.
 
 > **Note:**
 > You can find out documentation on [official site](https://docs.inspector.dev/)
+
+## Secret key validation
+
+Buggregator lets you send reports freely by default, but you can boost your security by setting up a secret key.
+
+In our example, we will use `my-secret-key` as the secret key. Let's see how to set it up.
+
+### Server configuration
+
+To use a secret key, set the `INSPECTOR_SECRET_KEY` environment variable on your server.
+
+**Here’s how to do it:**
+
+```bash
+docker run --pull always \
+  -p ... \
+  -e INSPECTOR_SECRET_KEY=my-secret-key \
+  ghcr.io/buggregator/server:latest
+```
+
+> **Note:** Read more about server configuration [here](../getting-started.md).
+
+When you set the secret key, the server checks the `X-Inspector-Key` header to make sure it matches the secret key.
+
+### Client configuration
+
+To set the secret key on a client, change your DSN like this:
+
+**Laravel**
+
+```dotenv
+INSPECTOR_INGESTION_KEY=my-secret-key
+```
+
+**Other platforms**
+
+```php
+use Inspector\Inspector;
+use Inspector\Configuration;
+
+$configuration = new Configuration('my-secret-key');
+$configuration->setUrl('http://inspector@127.0.0.1:8000');
+$inspector = new Inspector($configuration);
+
+// ...
+```
+
+> **Note:** Read more about ingestion key configuration on [official site](https://docs.inspector.dev/)
