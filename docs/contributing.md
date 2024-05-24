@@ -12,7 +12,7 @@ label. This makes it easier for you to find ways to participate.
 Additionally, we use labels such as `c:easy`, `c:medium`, and `c:difficult` to indicate the complexity level of issues,
 helping you choose tasks that match your skill level.
 
-## The Benefits of Contributing to Open Source for Developers
+## Benefits
 
 Contributing to open source projects offers a wealth of benefits, particularly for junior developers.
 
@@ -31,13 +31,20 @@ Contributing to open source projects offers a wealth of benefits, particularly f
 5. **Making a Real-World Impact:** Your contributions can significantly influence the project and its users. The
    satisfaction of seeing your code being used and appreciated by others is incredibly rewarding.
 
-**Remember, every expert was once a beginner. Contributing to open source is a valuable step in your development
-journey. So, dive in and start making your mark!**
+**Help us enhance Buggregator and make a real difference!**
 
 **We appreciate any contributions to help make Buggregator better!**
 
-Buggregator consist of two repositories
+## Repositories
 
-1. Server part. This is the places where an application will send events which will be handled by server and sent to the client browser. Server also is REST API endpoint where a client requests received events
+There are the following repositories in the Buggregator project:
 
-2. Frontend part. This is the place where a client can observe incomming events such as var dumps and 
+1. [Server](https://github.com/buggregator/server). Manages and sends events to the client. It also serves as a REST API
+   endpoint for event requests.
+2. [Frontend](https://github.com/buggregator/frontend). Allows clients to view incoming events like variable dumps.
+3. [Trap](https://github.com/buggregator/trap). A lightweight alternative to the full Buggregator server, designed for
+   local debugging.
+4. [Documentation](https://github.com/buggregator/docs). Contains all the documentation for the Buggregator project.
+5. [Site](https://github.com/buggregator/buggregator.dev). The official website for Buggregator.
+6. [PHPStorm Plugin](https://github.com/buggregator/phpstorm-plugin). A plugin for PHPStorm that integrates with
+   Buggregator.

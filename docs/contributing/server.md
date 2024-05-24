@@ -10,12 +10,13 @@ crucial for handling the information that flows through Buggregator.
 
 ## Key Technologies:
 
-It's built on a foundation of robust and reliable technologies, including the Spiral Framework, RoadRunner, and
-Centrifugo.
+It's built on a foundation of robust and reliable technologies, including the Spiral Framework, RoadRunner, Centrifugo
+and Doltdb.
 
 - [Spiral Framework](https://spiral.dev/) - A PHP framework that's the foundation of our server.
 - [RoadRunner](https://roadrunner.dev/) - Manages different server tasks like HTTP, TCP, queues, and caching.
 - [Centrifugo](https://centrifugal.dev/) - Handles real-time messaging through WebSockets.
+- [Doltdb](https://github.com/dolthub/dolt) - A SQL database that's built on top of a Git repository.
 
 ## Server requirements
 
@@ -23,8 +24,4 @@ Centrifugo.
 
 ## Installation
 
-1. Clone repository `git clone https://github.com/buggregator/server.git`
-2. Install backend dependencies `composer install`
-3. Download RoadRunner binary `vendor/bin/rr get-binary`
-4. Install Centrifugo server `cd bin && ./get-binaries.sh`
-5. Run RoadRunner server `./rr serve`
+To set up environment for local development read the [development environment setup guide](../cookbook/dev-env.md).
