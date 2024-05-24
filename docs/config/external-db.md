@@ -77,3 +77,40 @@ migrations, or if they were not executed for some reason, you can run them manua
 
    This command forcefully runs the migrations regardless of the current state, ensuring that all necessary tables are
    properly set up in the database.
+
+## Docker compose example
+
+Here’s an example of a `docker-compose.yml` file that sets up a PostgreSQL database for Buggregator:
+
+```yaml
+version: '3.9'
+
+services:
+  buggregator:
+    image: ghcr.io/buggregator/server:latest
+    depends_on:
+      buggregator-database:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:8000:8000
+    environment:
+      PERSISTENCE_DRIVER: db
+      DB_DRIVER: pgsql
+      DB_DATABASE: buggregator
+      DB_HOST: buggregator-database
+      DB_PORT: 5432
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+
+  buggregator-database:
+    image: postgres:latest
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready --username=buggregator --dbname=buggregator" ]
+      interval: 3s
+      timeout: 3s
+      retries: 1
+    environment:
+      POSTGRES_DB: buggregator
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+```
