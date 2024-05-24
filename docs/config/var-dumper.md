@@ -64,6 +64,29 @@ docker run --pull always \
 And the server will show only 3 levels of nested objects in the preview, but you can still see the full dump by opening
 the event page.
 
+## Syntax Highlighting
+
+When you dump a variable that contains only text, you can enable syntax highlighting for it. The easiest way to do this
+is to use the `trap` function from the [Buggregator Trap](../trap/what-is-trap.md) package.
+
+All you need to do is install the package and use the `trap` function with context:
+
+```php
+$code = <<<PHP
+<?php
+
+declare(strict_types=1);
+
+echo 'Hello, World!';
+PHP;
+
+trap($code)->context(language: 'php');
+```
+
+And the output will be highlighted as PHP code.
+
+![image_2024-05-01_00-39-56](https://github.com/buggregator/frontend/assets/773481/9cddfbfa-e3a3-427e-a987-0f4aa1bdb504)
+
 ## Trap
 
 Please consider to use [Buggregator Trap](../trap/what-is-trap.md) to dump variables in your application. It uses
