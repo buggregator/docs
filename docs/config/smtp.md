@@ -39,3 +39,29 @@ bin/magento config:set system/smtp/transport smtp
 bin/magento config:set system/smtp/host 127.0.0.1
 bin/magento config:set system/smtp/port 1025
 ```
+
+## WordPress
+
+Save the following code to a file in the [mu-plugins](https://developer.wordpress.org/advanced-administration/plugins/mu-plugins/) directory (e.g. `smtp.php`):
+
+```php
+<?php
+/**
+ * Plugin Name: MU Buggregator SMTP
+ */
+
+if (! defined('WP_ENVIRONMENT_TYPE') || 'local' !== WP_ENVIRONMENT_TYPE) {
+	return;
+}
+
+/**
+ * Send emails to Buggregator
+ *
+ * @param \PHPMailer $phpmailer The PHPMailer instance (passed by reference).
+ */
+add_action( 'phpmailer_init', function( $phpmailer ) : void {
+	$phpmailer->isSMTP();
+    $phpmailer->Host = '127.0.0.1';
+    $phpmailer->Port = 1025;
+}  );
+```
