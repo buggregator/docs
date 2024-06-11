@@ -5,6 +5,8 @@ debugging PHP applications, but it's also compatible with other programming lang
 for developers. What makes it special is that it offers a range of features that you would usually find in various paid
 tools, but it's available for free.
 
+**Watch introduction video on [YouTube](https://www.youtube.com/watch?v=yKWbuw8xN_c)**
+
 **Project repository:** https://github.com/buggregator/server
 
 ![Cover image](https://github.com/buggregator/server/assets/773481/47491a3c-57a3-4b40-b82e-37976afdf708)

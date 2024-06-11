@@ -1,15 +1,36 @@
 # Integration — Xhprof profiler
 
-The Xhprof profiler is an essential feature of Buggregator that offers a lightweight and hierarchical profiling solution
-for PHP applications. It uses instrumentation to keep track of call counts and inclusive metrics for arcs in the dynamic
-callgraph of your program during the data collection phase. In the reporting and post-processing phase, the profiler
-computes exclusive metrics such as wall (elapsed) time, CPU time, and memory usage.
+Buggregator is not just useful for dumping variables; it’s an essential instrument for deeply analyzing your PHP
+applications to locate and resolve efficiency issues.
 
-![xhprof](https://github.com/buggregator/server/assets/773481/d69e1158-599d-4546-96a9-40a42cb060f4)
+To start, you only need to install the profiling package into your PHP application and begin collecting metrics. The
+collected metrics will be automatically sent to Buggregator, where you can analyze the PHP function call trace. With a
+comprehensive set of tools, you can identify slow calls and work on optimizing them. You can keep sending metrics after
+making changes to ensure that all unoptimized code is streamlined.
 
-With the Xhprof profiler, you can easily identify performance bottlenecks and optimize your application's code for
-better efficiency. So, if you're looking to fine-tune your PHP application's performance, the Xhprof profiler is the
-perfect tool for the job.
+Watch introduction video on [YouTube](https://www.youtube.com/watch?v=2QbgjIVnz78).
+
+### Buggregator offers three types of analysis to help you enhance the performance of your PHP applications:
+
+1. **Call Graph** – This shows the function calls in a tree structure. The nodes in the call tree vary in color from
+   white to dark red. The darker the color, the more resources are being consumed by that call. This visual
+   representation helps you quickly identify which parts of your code are using the most resources, allowing you to
+   pinpoint where optimizations are most needed.
+
+   ![xhprof-callgraph](https://github.com/buggregator/server/assets/773481/1cf3c587-c1df-4742-8fcd-54a320c86252)
+
+2. **FlameGraph** – This graphical representation stacks function calls and shows which functions are called by which
+   other functions. It's particularly useful for spotting repetitive or time-consuming operations that might not be
+   obvious. The FlameGraph helps you see how functions interact and where time is being spent in your application,
+   making it easier to target specific areas for improvement.
+
+   ![xhprof-flamegraph](https://github.com/buggregator/server/assets/773481/5f75e271-527d-4c6b-a0b1-a3558f8bac51)
+
+3. **Top 100 Functions** – This table lists the top 100 function calls that consume the most resources. It provides a
+   clear, focused list of potential problem areas, so you can start optimizing the parts of your application that will
+   make the biggest difference to overall performance.
+
+   ![xhprof-top-func](https://github.com/buggregator/server/assets/773481/43dbe4c8-ac23-4cfb-8715-f5141093618f)
 
 ## Installation extension
 
