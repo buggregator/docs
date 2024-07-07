@@ -15,8 +15,8 @@ specific areas you're interested in or questions about the architecture, feel fr
 
 ## Server requirements
 
-1. NodeJS 18.x
-2. npm 9.x
+1. NodeJS >=20.x (22.x is prefare)
+2. Yarn >=1.22.x
 
 ## Installation
 
@@ -25,7 +25,7 @@ specific areas you're interested in or questions about the architecture, feel fr
 3. Run NodeJS server `yarn dev`
 4. Open http://localhost:3000
 
-You can also run Storybook `yarn sb` to see all components in isolation with mocked data.
+In dev mode you are able to see Storybook components in isolation with mocked data by the link http://localhost:6006.
 
 ---
 
