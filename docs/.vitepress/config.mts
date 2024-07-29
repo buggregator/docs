@@ -56,6 +56,7 @@ export default defineConfig({
             {
                 text: 'Configuration',
                 items: [
+                    { text: 'Projects', link: '/config/projects' },
                     { text: 'Webhooks', link: '/config/webhooks' },
                     { text: 'Single Sign On (SSO)', link: '/config/sso' },
                     { text: 'External Database', link: '/config/external-db' },
