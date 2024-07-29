@@ -42,6 +42,15 @@ $_SERVER['VAR_DUMPER_FORMAT'] = 'server';
 $_SERVER['VAR_DUMPER_SERVER'] = '127.0.0.1:9912';
 ```
 
+You can also set these variables using a bash script.
+
+```bash
+#!/bin/bash
+
+export VAR_DUMPER_FORMAT="server"
+export VAR_DUMPER_SERVER="127.0.0.1:9912"
+```
+
 That's it! Now you can use the `dump()` and `dd()` functions as usual. The output will be sent to the remote server.
 
 ## Browser performance
