@@ -65,6 +65,55 @@ composer require --dev maantje/xhprof-buggregator-laravel
 > **Note:**
 > Read more about package usage in the [package documentation](https://github.com/maantje/xhprof-buggregator-laravel).
 
+## Vanilla PHP
+
+If you are using Vanilla PHP you just need to install
+the [spiral-packages/profiler](https://github.com/spiral-packages/profiler) package.
+
+```bash
+composer require --dev spiral-packages/profiler
+```
+
+And then configure a `WebStorage`  client from the package to send data to Buggregator.
+
+Here is an example:
+
+```php
+use SpiralPackages\Profiler\Profiler;
+use SpiralPackages\Profiler\Driver\DriverInterface;
+use SpiralPackages\Profiler\DriverFactory;
+use SpiralPackages\Profiler\Storage\StorageInterface;
+use SpiralPackages\Profiler\Storage\WebStorage;
+use Symfony\Component\HttpClient\NativeHttpClient;
+
+$storage = new WebStorage(
+    new NativeHttpClient(),
+    'http://127.0.0.1/api/profiler/store',
+);
+
+$driver = DriverFactory::detect();
+
+$profiler = new Profiler(
+    storage: $storage, 
+    driver: $driver, 
+    appName: 'My super app', 
+    tags: [
+        // global tags
+        'env' => 'local',
+    ]
+);
+
+$profiler->start(ignoredFunctions: []);
+
+// Here is your code you want to profile
+
+$profiler->end(tags: [
+    // Tags for specific requests
+]);
+```
+
+Where `http://127.0.0.1/api/profiler/store` is the endpoint to send data to Buggregator.
+
 ## Configuration
 
 After installing the package, you need to configure it. The package provides predefined environment variables to
