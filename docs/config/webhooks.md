@@ -27,7 +27,7 @@ configuration files within a Docker container.
 
 ```bash
 docker run --pull always \
-  -v /path/to/webhooks:/app/runtime/webhooks \
+  -v /path/to/webhooks:/app/runtime/configs \
   ghcr.io/buggregator/server:latest
 ```
 
@@ -37,15 +37,15 @@ or using `docker-compose`:
 buggregator-server:
   ...
   volumes:
-    - /path/to/webhooks:/app/runtime/webhooks
+    - /path/to/webhooks:/app/runtime/configs
 ```
 
 ## Configuring a Webhook
 
-Place each webhook configuration in a YAML file within the `runtime/webhooks` directory. Each configuration file should
+Place each webhook configuration in a YAML file within the `runtime/configs` directory. Each configuration file should
 contain one webhook setup.
 
-Here’s what a typical webhook configuration looks like:
+Here’s what a typical webhook configuration looks like in a YAML file `sentry.webhook.yaml`:
 
 ```yaml
 webhook:
@@ -57,6 +57,8 @@ webhook:
   verify_ssl: false
   retry_on_failure: true
 ```
+
+> **Note:** The webhook configuration file name should have the following pattern: `<name>.webhook.yaml` or `<name>.webhook.yml`.
 
 **Key Components of a Webhook Configuration:**
 
@@ -73,11 +75,11 @@ webhook:
 
 Buggregator can currently handle the following events:
 
-- sentry.received
-- monolog.received
-- var-dumper.received
-- ray.received
-- inspector.received
-- http-dump.received
-- profiler.received
-- smtp.received
+- `sentry.received`
+- `monolog.received`
+- `var-dumper.received`
+- `ray.received`
+- `inspector.received`
+- `http-dump.received`
+- `profiler.received`
+- `smtp.received`
