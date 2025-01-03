@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import {defineConfig} from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
         },
 
         nav: [
-            { text: 'Docs', link: '/' },
+            {text: 'Docs', link: '/'},
         ],
 
         sidebar: [
@@ -42,32 +42,34 @@ export default defineConfig({
             {
                 text: 'Integrations',
                 items: [
-                    { text: 'XHProf', link: '/config/xhprof' },
-                    { text: 'VarDumper', link: '/config/var-dumper' },
-                    { text: 'Ray', link: '/config/ray' },
-                    { text: 'Sentry', link: '/config/sentry' },
-                    { text: 'SMTP server', link: '/config/smtp' },
-                    { text: 'Monolog', link: '/config/monolog' },
-                    { text: 'Inspector', link: '/config/inspector' },
-                    { text: 'Http Dumps', link: '/config/http-dumps' },
+                    {text: 'XHProf', link: '/config/xhprof'},
+                    {text: 'VarDumper', link: '/config/var-dumper'},
+                    {text: 'Ray', link: '/config/ray'},
+                    {text: 'Sentry', link: '/config/sentry'},
+                    {text: 'SMTP server', link: '/config/smtp'},
+                    {text: 'Monolog', link: '/config/monolog'},
+                    {text: 'Inspector', link: '/config/inspector'},
+                    {text: 'Http Dumps', link: '/config/http-dumps'},
                 ]
             },
 
             {
                 text: 'Configuration',
                 items: [
-                    { text: 'Projects', link: '/config/projects' },
-                    { text: 'Webhooks', link: '/config/webhooks' },
-                    { text: 'Single Sign On (SSO)', link: '/config/sso' },
-                    { text: 'External Database', link: '/config/external-db' },
-                    { text: 'Metrics', link: '/config/metrics' },
+                    {text: 'RoadRunner', link: '/config/roadrunner'},
+                    {text: 'Projects', link: '/config/projects'},
+                    {text: 'Webhooks', link: '/config/webhooks'},
+                    {text: 'Single Sign On (SSO)', link: '/config/sso'},
+                    {text: 'External Database', link: '/config/external-db'},
+                    {text: 'Metrics', link: '/config/metrics'},
                 ]
             },
 
             {
                 text: 'Cookbook',
                 items: [
-                    { text: 'Dev environment', link: '/cookbook/dev-env' }
+                    {text: 'Dev environment using docker', link: '/cookbook/docker-install'},
+                    {text: 'Dev environment', link: '/cookbook/manual-install'},
                 ]
             },
 
@@ -95,9 +97,9 @@ export default defineConfig({
         ],
 
         socialLinks: [
-            { icon: 'github', link: 'https://github.com/buggregator/server' },
-            { icon: 'discord', link: 'https://discord.gg/vDsCD3EKUB' },
-            { icon: 'twitter', link: 'https://twitter.com/buggregator' },
+            {icon: 'github', link: 'https://github.com/buggregator/server'},
+            {icon: 'discord', link: 'https://discord.gg/vDsCD3EKUB'},
+            {icon: 'twitter', link: 'https://twitter.com/buggregator'},
         ]
     }
 })

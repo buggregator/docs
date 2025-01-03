@@ -1,6 +1,6 @@
-# Cookbook — Dev environment
+# Cookbook — Manual install dev environment
 
-Hello contributors! This cookbook will guide you through setting up your development environment for Buggregator.
+Hey, developer! 🎉 This guide will help you quickly set up a local dev environment for Buggregator.
 
 ## Clone the Repository
 

@@ -24,4 +24,8 @@ and Doltdb.
 
 ## Installation
 
-To set up environment for local development read the [development environment setup guide](../cookbook/dev-env.md).
+Here are two ways to install the server:
+
+1. **Docker:** The easiest way to get started is by using Docker. To set up environment for local development read
+   the [development environment setup guide](../cookbook/docker-install).
+2. **Manual:** If you prefer to install the server manually, follow the [manual installation guide](../cookbook/manual-install.md).
