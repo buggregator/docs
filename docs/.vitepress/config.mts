@@ -35,6 +35,14 @@ export default defineConfig({
                     {
                         text: 'Getting Started',
                         link: '/trap/getting-started',
+                    },
+                    {
+                        text: 'Commands',
+                        link: '/trap/commands',
+                    },
+                    {
+                        text: 'Usage',
+                        link: '/trap/usage',
                     }
                 ]
             },

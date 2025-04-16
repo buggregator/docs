@@ -1,29 +1,34 @@
 # Trap — What is it?
 
-[Buggregator Trap](https://github.com/buggregator/trap) is a lightweight, standalone debugging tool designed to be
-integrated with PHP applications. It is distributed as a Composer package and includes a suite of utilities that
-significantly enhance the debugging capabilities traditionally available in PHP environments.
+Trap is a powerful, lightweight debugging tool designed to supercharge your PHP development experience. It
+serves as an excellent alternative to Symfony VarDumper by providing all the functionality you need for debugging with
+the addition of a clean, intuitive user interface built right in.
 
 **Project repository:** https://github.com/buggregator/trap
+> Star the project to show your support and help us grow! ⭐️ We appreciate your support!
 
-**We care about the quality of our products' codebase and strive to provide the best user experience. Trap has passed
-the Proof of Concept stage and is now an important part of the Buggregator ecosystem. We have big plans for the
-development of the entire ecosystem, and we would be delighted if you join us on this journey.**
+## What Makes Trap Special
 
-#### Key Features:
+Unlike traditional debugging tools that output to the console or directly into your application's response, Trap
+captures debugging information and presents it both in a dedicated dashboard and console. This separation keeps your
+application output clean while giving you a comprehensive view of all debugging data in one place.
 
+### Key Features:
+
+- **Zero Configuration**: Works immediately after installation with sensible defaults.
+- **Cross-Project Compatibility**: Allows to debug multiple applications simultaneously with a single Trap instance
 - **Dashboard Interface:** It features the same user-friendly dashboard as the full Buggregator Server, allowing for
   seamless monitoring and management of debug outputs directly from the web.
-
+- **Standalone Binary**: Use without adding dependencies to your project on Windows, Linux, or MacOS.
 - **Console Application:** Includes a mini-server written entirely in PHP, eliminating the need for Docker or other
   container technology. This makes it easier to deploy and use in a variety of development environments.
-
-- **Multiple Handlers:** Buggregator Trap supports various handlers for debugging such as **Symfony VarDumper**,
+- **Multiple Handlers:** Trap supports various handlers for debugging such as **Symfony VarDumper**,
   **Monolog**,**Sentry**, **SMTP**, **HTTP dumps**, **Ray**, and more. This versatility allows developers to tailor the
   debugging process to their specific needs and existing development stack.
-
 - **Protobuf Debugging:** Offers an improved way to work with Google Protocol Buffers (protobuf) by providing clearer
-  and more concise debugging outputs, making the process of working with complex data structures more manageable.
+  and more concise debugging outputs.
+
+
 
 ## Console Application
 

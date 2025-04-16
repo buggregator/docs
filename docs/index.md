@@ -18,7 +18,7 @@ The key feature of Buggregator is its ability to bring together debugging inform
 means you can see all your debugging data in one place, which makes fixing bugs a whole lot easier and faster. It's a
 great tool for any developer looking to streamline their debugging process without spending a lot of money.
 
-If you don't have Docker or you need debug your local PHP application, you can
+If you don't have Docker or you need debug your local PHP application with **Zero Configuration** just
 use [Buggregator Trap](./trap/what-is-trap.md). It's a lightweight alternative to the full Buggregator server, designed
 for local debugging.
 
