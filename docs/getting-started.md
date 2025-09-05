@@ -53,7 +53,7 @@ docker run \
   -p 127.0.0.1:1025:1025 \
   -p 127.0.0.1:9912:9912 \
   -p 127.0.0.1:9913:9913 \
-  ghcr.io/buggregator/server:v1.0
+  ghcr.io/buggregator/server:1.0
 ```
 
 > **Note:**
