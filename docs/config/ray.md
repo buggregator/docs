@@ -72,7 +72,7 @@ return [
 ## Other languages
 
 - [JavaScript](https://myray.app/docs/javascript/vanilla-javascript/getting-started)
-- [Bash](hhttps://myray.app/docs/other-languages/bash/installation)
+- [Bash](https://myray.app/docs/other-languages/bash/installation)
 - [Go](https://myray.app/docs/other-languages/go/getting-started)
 - [Ruby](https://myray.app/docs/other-languages/ruby/getting-started)
 
