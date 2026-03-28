@@ -50,14 +50,15 @@ export default defineConfig({
             {
                 text: 'Integrations',
                 items: [
-                    {text: 'XHProf', link: '/config/xhprof'},
+                    {text: 'XHProf Profiler', link: '/config/xhprof'},
+                    {text: 'Sentry', link: '/config/sentry'},
+                    {text: 'SMTP Server', link: '/config/smtp'},
+                    {text: 'HTTP Dumps', link: '/config/http-dumps'},
+                    {text: 'Monolog', link: '/config/monolog'},
                     {text: 'VarDumper', link: '/config/var-dumper'},
                     {text: 'Ray', link: '/config/ray'},
-                    {text: 'Sentry', link: '/config/sentry'},
-                    {text: 'SMTP server', link: '/config/smtp'},
-                    {text: 'Monolog', link: '/config/monolog'},
                     {text: 'Inspector', link: '/config/inspector'},
-                    {text: 'Http Dumps', link: '/config/http-dumps'},
+                    {text: 'JetBrains IDE Plugin', link: '/config/phpstorm-plugin'},
                 ]
             },
 

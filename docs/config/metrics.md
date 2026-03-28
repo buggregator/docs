@@ -1,10 +1,10 @@
 # Configuration — Metrics
 
-Buggregator has a new feature that collects metrics on how many events we receive. This feature lets you use tools like
+Buggregator collects metrics on how many events it receives. This feature lets you use tools like
 Prometheus and Grafana to check on event trends, find issues, and set up alerts.
 
-This new feature will keep track of how many events Buggregator gets. It will sort these events by their types like
-sentry, monolog, var-dumper, ray, inspector, http-dump, profiler, and smtp.
+The metrics system keeps track of how many events Buggregator receives, sorted by their types:
+sentry, monolog, var-dumper, ray, inspector, http-dump, profiler, and smtp. Webhook deliveries are also tracked.
 
 ### How It Works
 

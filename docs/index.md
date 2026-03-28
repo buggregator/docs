@@ -1,9 +1,7 @@
 # What is Buggregator?
 
-[Buggregator](https://github.com/buggregator/server) is a free, multi-purpose server tool designed primarily for
-debugging PHP applications, but it's also compatible with other programming languages. Think of it as a Swiss Army knife
-for developers. What makes it special is that it offers a range of features that you would usually find in various paid
-tools, but it's available for free.
+Buggregator is a free, open-source debugging server for PHP applications. One `docker run` command — and you get
+exceptions, logs, dumps, profiling, emails, and HTTP requests in a single UI. No registration, no limits, no cost.
 
 **Watch introduction video on [YouTube](https://www.youtube.com/watch?v=yKWbuw8xN_c)**
 
@@ -11,128 +9,126 @@ tools, but it's available for free.
 
 ![Cover image](https://github.com/buggregator/server/assets/773481/47491a3c-57a3-4b40-b82e-37976afdf708)
 
-One of the coolest things about Buggregator is how well it fits into Docker environments. If you're working with Docker,
-it is like a dream come true. It's easy to integrate and really powerful.
+## When you need it
 
-The key feature of Buggregator is its ability to bring together debugging information from different services. This
-means you can see all your debugging data in one place, which makes fixing bugs a whole lot easier and faster. It's a
-great tool for any developer looking to streamline their debugging process without spending a lot of money.
+- You have a **long-running PHP app** (RoadRunner, Swoole, FrankenPHP, queue workers) and `dd()` is not an option.
+- You want to see **exceptions with stack traces** like in Sentry, but don’t want to set up Sentry for local dev.
+- You need to **profile performance** and find memory leaks or slow functions.
+- You want to **test emails** your app sends without a real mail server.
+- You have **multiple services** (microservices, Docker Compose) and want all debug data in one place.
+- You want to **inspect HTTP requests** your app makes to external APIs.
+- You just need a better `dump()` — with syntax highlighting, IDE links, and no browser pollution.
 
-If you don't have Docker or you need debug your local PHP application with **Zero Configuration** just
-use [Buggregator Trap](./trap/what-is-trap.md). It's a lightweight alternative to the full Buggregator server, designed
-for local debugging.
+## How it works
 
-## What makes it special?
+Buggregator runs as a standalone server (typically in Docker alongside your app). Your application sends data to it
+using standard integrations you probably already use — Sentry SDK, Symfony VarDumper, Monolog, Spatie Ray, Inspector,
+or plain SMTP. Buggregator collects everything and shows it in a real-time web UI.
 
-1. **Unified Debugging Dashboard**: It allows you to aggregate logs, dumps, and other debug information from
-   all your services into a single, unified interface. This centralization of data is invaluable for developers who
-   manage multiple services or microservices, as it simplifies tracking and analysis.
+```bash
+docker run -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 -p 9914:9914 ghcr.io/buggregator/server:latest
+```
 
-2. **Cross-Service Debugging**: It eliminates the need to toggle between different tools or logs, saving time and
-   reducing complexity.
+Open http://127.0.0.1:8000 and start debugging. That’s it.
 
-3. **Real-Time Monitoring on Various Devices**: You can open its GUI on different devices, such as a tablet, and observe
-   all the debug information in real-time.
-
-4. **Ease of Access and Use**: By integrating Buggregator into your Docker development infrastructure, you set up a
-   system where all debug information is automatically sent to Buggregator's server.
-
-5. **Kubernetes Compatibility**: Deploy Buggregator in your Kubernetes cluster to enhance debugging and operational
-   efficiency.
-
-6. **SSO support**: Securely manage user access and authentication through Single Sign-On (SSO) with providers like
-   [Auth0](https://auth0.com/).
-
-7. **External database support**: Configure Buggregator to use external databases like MongoDB or PostgreSQL for event
-   storage. This flexibility allows you to scale storage according to your project needs.
-
-8. **Full source code available**: Buggregator is open-source, so you can customize it to suit your requirements or
-   contribute to its development.
-
-9. **Free to use**: Buggregator is free to use, making it an accessible and cost-effective solution for developers.
-
-## Tech stack
-
-It's built on a foundation of robust and reliable technologies, including the Spiral Framework, NuxtJs 3, and
-RoadRunner.
-
-- [Spiral Framework](https://spiral.dev/)
-- [RoadRunner](https://roadrunner.dev/) Http, Websocket, TCP, Queue, Cache server in one bottle
-- [NuxtJs 3](https://nuxt.com/)
-- [VueJs 3](https://v3.vuejs.org/)
-- [TailwindCSS](https://tailwindcss.com/)
-- [Storybook](https://storybook.js.org/)
+> For local debugging without Docker, use [Buggregator Trap](./trap/what-is-trap.md) — a lightweight CLI alternative
+> with zero configuration.
 
 ## Key Features
 
-Buggregator is not just a debugging server; it's a comprehensive suite of tools that cater to various aspects of
-application development and maintenance, all available at no cost. Here’s what you can expect:
+### [XHProf Profiler](/config/xhprof) — Performance
 
-### 1. [Xhprof Profiler](/config/xhprof)
-
-A lightweight profiler for PHP applications, helping you identify performance bottlenecks and optimize efficiency.
+Find slow functions and memory leaks. Buggregator visualizes profiling data as a **Call Graph**, **Flame Graph**,
+and **Top Functions** table. **Compare two runs** side-by-side to verify your optimizations actually helped.
 
 ![xhprof](https://github.com/buggregator/server/assets/773481/d69e1158-599d-4546-96a9-40a42cb060f4)
 
-### 2. [Symfony VarDumper Server](/config/var-dumper)
+### [Sentry Compatibility](/config/sentry) — Exceptions
 
-Enhances debugging by collecting and isolating dumped data, making it easier to spot issues.
-
-![var-dumper](https://github.com/buggregator/server/assets/773481/b77fa867-0a8e-431a-9126-f69959dc18f4)
-
-### 3. [Spatie Ray Debug Tool](/config/ray)
-
-Supports a wide range of applications and languages, allowing for easy dumping and debugging of various data types.
-
-![ray](https://github.com/buggregator/server/assets/773481/168b27f7-75b1-4837-b0a1-37146d5b8b52)
-
-### 4. [Fake SMTP Server](/config/smtp)
-
-A feature for testing email functionalities in your applications without the need for an external mail server.
-
-![smtp](https://github.com/buggregator/server/assets/773481/8dd60ddf-c8d8-4a26-a8c0-b05052414a5f)
-
-### 5. [Sentry Compatibility](/config/sentry)
-
-Can replace Sentry for efficient local development, allowing you to catch and fix errors before they hit production.
+Replace Sentry for local development. See exceptions with full **stack traces**, **breadcrumbs**, **request details**,
+**device/browser info**, tags, and context. All Sentry SDKs are supported — PHP, JavaScript, Python, and more.
 
 ![sentry](https://github.com/buggregator/server/assets/773481/e979fda5-54c8-42cc-8224-a1c5d828569a)
 
-### 6. [Monolog Server](/config/monolog)
+### [Fake SMTP Server](/config/smtp) — Emails
 
-A powerful logging tool that helps you track and analyze application logs for better insight into your application's
-behavior.
+Capture all outgoing emails. Preview HTML (with mobile/desktop viewport switcher), plain text, all addresses,
+attachments, and raw source. Just point your app’s SMTP config to port `1025`.
 
-![monolog](https://github.com/buggregator/server/assets/773481/21919110-fd4d-490d-a78e-41242d329885)
+![smtp](https://github.com/buggregator/server/assets/773481/8dd60ddf-c8d8-4a26-a8c0-b05052414a5f)
 
-### 7. [Inspector Compatibility](/config/inspector)
+### [HTTP Dumps](/config/http-dumps) — Requests
 
-Works with Inspector reports, offering a streamlined alternative for local development and debugging.
-
-![inspector](https://github.com/buggregator/server/assets/773481/ab002ecf-e1dc-4433-90d4-0e42ff8c0ab3)
-
-### 8. [HTTP Requests Dump Server](/config/http-dumps)
-
-A valuable tool for capturing and analyzing HTTP requests, aiding in the debugging and development process.
+Capture and inspect HTTP requests: method, URI, headers, cookies, POST data, uploaded files. Get a ready-to-use
+**cURL command** for any captured request.
 
 ![http dumps](https://github.com/buggregator/server/assets/773481/fc823390-b490-4bbb-a787-44471eca9fb6)
 
-### 9. Dumps sharing
+### [Monolog Server](/config/monolog) — Logs
 
-You can share dumps with your colleagues or friends. Just click on the share button and copy your dump as an image.
+Collect application logs in real time. See log level, channel, message, context, extra fields, and source location.
+Supports all PSR-3 levels.
 
-![share](https://github.com/buggregator/server/assets/773481/a524ffcb-8208-4b89-96b8-9c9199142f51)
+![monolog](https://github.com/buggregator/server/assets/773481/21919110-fd4d-490d-a78e-41242d329885)
 
----
+### [Symfony VarDumper](/config/var-dumper) — Variable Dumps
 
-Buggregator is designed with simplicity and efficiency in mind, requiring no additional packages for its operation. This
-makes it an accessible tool for developers at all levels, from beginners to seasoned professionals. Its Docker
-compatibility ensures it can be easily integrated into your existing development setup, enhancing your workflow without
-adding complexity.
+Redirect `dump()` output to Buggregator instead of your browser. See variables with full type info, source location,
+and syntax highlighting. Click on file paths to open them in your IDE.
 
-## Contribute to Our Success
+![var-dumper](https://github.com/buggregator/server/assets/773481/b77fa867-0a8e-431a-9126-f69959dc18f4)
 
-Become a part of our community and help enhance Buggregator by contributing your skills. Whether you're fixing bugs,
-adding features, or improving documentation, every contribution matters.
+### [Spatie Ray](/config/ray) — Debug Tool
 
-Here you can find our [contribution guidelines](./contributing.md)
+A free alternative to the Ray app. Supports 18 payload types: logs, exceptions, SQL queries, Eloquent models,
+Laravel jobs, mail previews, performance measurements, and more. Works with PHP, JavaScript, Ruby, Go, and Bash.
+
+![ray](https://github.com/buggregator/server/assets/773481/168b27f7-75b1-4837-b0a1-37146d5b8b52)
+
+### [Inspector Compatibility](/config/inspector) — Transactions
+
+Monitor application performance. View transaction duration, memory usage, HTTP request details, and timeline
+breakdown to identify bottlenecks.
+
+![inspector](https://github.com/buggregator/server/assets/773481/ab002ecf-e1dc-4433-90d4-0e42ff8c0ab3)
+
+## JetBrains IDE Plugin
+
+Don’t want to leave your IDE? The [Buggregator plugin for JetBrains IDEs](https://plugins.jetbrains.com/plugin/26344-buggregator)
+brings dumps, logs, and debug data directly into PhpStorm, IntelliJ IDEA, WebStorm, and other JetBrains products.
+No need to switch windows — everything is in a panel next to your code, with all IDE shortcuts working.
+
+The plugin launches [Buggregator Trap](/trap/what-is-trap) from your project and provides two views:
+- **Web UI** — the full Buggregator interface embedded in the IDE’s built-in browser.
+- **Terminal** — text-based output for quick inspection.
+
+Install from **Settings** > **Plugins** > **Marketplace** > search "Buggregator", or visit the
+[plugin page](https://plugins.jetbrains.com/plugin/26344-buggregator).
+
+Read more in the [plugin documentation](/config/phpstorm-plugin).
+
+## Also included
+
+- **Event pinning** — pin important events so they don’t get lost.
+- **Event screenshots** — export any event as an image to share with your team.
+- **Keyboard shortcuts** — press `?` to see all shortcuts. Navigate with `j`/`k`, switch modules with `1`-`8`.
+- **IDE integration** — click file paths to open them in VS Code, PhpStorm, or [14 other IDEs](/config/var-dumper). Custom path mappings for Docker.
+- **Dark / Light themes** — follows your system preference or set manually.
+- **[Multi-project support](/config/projects)** — separate events by project or team.
+- **[Webhooks](/config/webhooks)** — trigger external actions when events are received.
+- **[Prometheus metrics](/config/metrics)** — monitor event counts with Grafana.
+- **[SSO authentication](/config/sso)** — Auth0 and Kinde support.
+- **[External database](/config/external-db)** — PostgreSQL or MySQL for persistent storage.
+
+## Tech stack
+
+- [Spiral Framework](https://spiral.dev/) + [RoadRunner](https://roadrunner.dev/) (HTTP, WebSocket, TCP, Queue)
+- [Vue 3](https://vuejs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/)
+- [TailwindCSS](https://tailwindcss.com/) + [Pinia](https://pinia.vuejs.org/)
+- [Centrifugo](https://centrifugal.dev/) (real-time WebSocket messaging)
+
+## Contributing
+
+Buggregator is open-source. Contributions are welcome — bugs, features, docs.
+
+[Contribution guidelines](./contributing.md) · [GitHub](https://github.com/buggregator/server)

@@ -1,37 +1,49 @@
-# Integration — HTTP dumps
+# HTTP Dumps — Request Inspection
 
-It's an indispensable tool that simplifies the process of capturing, analyzing, and debugging HTTP requests in their
-applications. With the HTTP Requests Dump Server, developers can effortlessly capture all the relevant request data and
-gain valuable insights. They can dive deep into the captured requests, examine their contents, and pinpoint any issues
-or anomalies that might be affecting their application's performance.
-
-Simply start the server and send your requests to the `http://http-dump@127.0.0.1:8000` URL, it will not only
-capture the URI segments but also gather additional details such as the request `headers`, `cookies`, `POST data`,
-`query strings`, and any `uploaded files`.
-
-For instance, let's say you have a POST request: `http://http-dump@127.0.0.1:8000/user/3/update`. In this case,
-server will intercept the request and capture all the relevant information. It will then display the
-dumped data, allowing you to examine the request details, including the URI segments (`user/3/update` in this example).
+Your app calls external APIs, sends webhooks, or receives callbacks — and you need to see exactly what goes over
+the wire. Buggregator captures full HTTP requests: method, URI, headers, cookies, POST data, and uploaded files.
+You get a ready-to-use cURL command for any captured request. No need to set up a separate service like
+webhook.site — it's built into the same Buggregator where you already see your logs and exceptions.
 
 ![http dumps](https://github.com/buggregator/server/assets/773481/fc823390-b490-4bbb-a787-44471eca9fb6)
 
-## Client configuration
+## Use cases
 
-There are several ways to say Buggregator that your request is a dump request:
+- **Webhook development** — build a webhook endpoint and see exactly what the other service sends you.
+- **API debugging** — redirect outgoing HTTP calls to Buggregator to inspect request structure before hitting the real API.
+- **Replay requests** — copy the generated cURL command and replay any captured request from your terminal.
+- **All in one place** — HTTP requests alongside exceptions, logs, and dumps in the same dashboard.
 
-### Using http auth
+## What you see in the UI
 
-Add `http-dump` to the host name, e.g. `http://http-dump@...`
+- **HTTP method** — GET, POST, PUT, DELETE, PATCH, etc. (color-coded).
+- **Full URI** — complete request URL with path segments.
+- **Query parameters** — parsed URL query parameters.
+- **POST/form data** — submitted fields and values.
+- **Headers** — all request headers.
+- **Cookies** — cookies sent with the request.
+- **Uploaded files** — attached files, available for download.
+- **cURL command** — generated automatically for easy replay.
 
-```curl
-curl --location 'http://http-dump@127.0.0.1:8000?foo=bar'
+## Configuration
+
+Send any HTTP request to Buggregator and mark it as a dump. Two ways:
+
+### Using HTTP auth
+
+Add `http-dump` to the URL username:
+
+```bash
+curl 'http://http-dump@127.0.0.1:8000/any/path?foo=bar'
 ```
 
 ### Using header
 
-Add a header `X-Buggregator-Event` with value `http-dump`
+Add the `X-Buggregator-Event` header:
 
-```curl
-curl --location 'http://127.0.0.1:8000?foo=bar' \
-    --header 'X-Buggregator-Event: http-dump'
+```bash
+curl 'http://127.0.0.1:8000/any/path?foo=bar' \
+  --header 'X-Buggregator-Event: http-dump'
 ```
+
+> In Docker Compose, replace `127.0.0.1` with the Buggregator service name (e.g., `buggregator`).

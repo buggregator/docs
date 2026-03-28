@@ -1,84 +1,69 @@
-# Integration — Symfony VarDumper server
+# VarDumper — Variable Dumps
 
-The Symfony VarDumper tool is essential for debugging PHP applications. It helps inspect and understand PHP variables
-clearly. Normally, `dump()` and `dd()` functions show their output in the browser or console.
-
-A great feature of VarDumper is redirecting debug outputs to a remote server. Using Buggregator as the remote server,
-you can receive all debug outputs from your application, making debugging smoother and more intuitive for PHP
-developers.
-
-For more details, check
-the [official documentation](https://symfony.com/doc/current/components/var_dumper.html#the-dump-server).
+You call `dump()` or `dd()` and the output lands in the browser response, mixes with HTML, or gets lost in CLI
+output. With Buggregator, dumps go to a dedicated TCP server and show up in a clean UI — alongside your logs,
+exceptions, and everything else. No browser pollution, no output buffering issues, no lost dumps in long-running
+processes.
 
 ![var-dumper](https://github.com/buggregator/server/assets/773481/b77fa867-0a8e-431a-9126-f69959dc18f4)
 
-## Installation
+## Use cases
 
-To use the package, you first need to install it.
+- **Long-running apps** (RoadRunner, Swoole, queue workers) — `dd()` doesn't print to a browser here, but Buggregator catches it.
+- **API development** — dump variables without breaking JSON responses.
+- **Microservices** — collect dumps from all services in one place.
+- **IDE integration** — click the source location to jump straight to the file in your editor.
 
-Just run the following command in your terminal:
+## What you see in the UI
+
+- **Dumped value** — full variable content with type information, rendered as an interactive expandable tree.
+- **Source location** — file and line where `dump()` was called. Clickable — opens in your IDE.
+- **Variable name and label** — custom labels if provided.
+- **Syntax highlighting** — for text-only dumps (see below).
+
+## Setup
+
+Install the Symfony VarDumper component:
 
 ```bash
 composer require --dev symfony/var-dumper
 ```
 
-This command installs the package development-only dependency in your project.
-
-## Configuration
-
-You should change dumper format to `server` for var-dumper component. There is a `VAR_DUMPER_FORMAT` env variable in the
-package to do it.
+Set two env variables to redirect output to Buggregator:
 
 ```dotenv
 VAR_DUMPER_FORMAT=server
 VAR_DUMPER_SERVER=127.0.0.1:9912
 ```
 
-or via PHP if there is no `.env` file in your project:
+> In Docker Compose, replace `127.0.0.1` with the Buggregator service name (e.g., `VAR_DUMPER_SERVER=buggregator:9912`).
+
+That's it. Use `dump()` and `dd()` as usual — the output goes to Buggregator.
+
+If your project doesn't use `.env` files, set via PHP:
 
 ```php
-// Plain PHP
 $_SERVER['VAR_DUMPER_FORMAT'] = 'server';
 $_SERVER['VAR_DUMPER_SERVER'] = '127.0.0.1:9912';
 ```
 
-You can also set these variables using a bash script.
+## Performance tip
 
-```bash
-#!/bin/bash
-
-export VAR_DUMPER_FORMAT="server"
-export VAR_DUMPER_SERVER="127.0.0.1:9912"
-```
-
-That's it! Now you can use the `dump()` and `dd()` functions as usual. The output will be sent to the remote server.
-
-## Browser performance
-
-VarDumper send data to the server in HTML format. So if you dump an object with a lot of properties and nested objects,
-it can significantly slow down the browser. To partially solve this issue, you can use `VAR_DUMPER_PREVIEW_MAX_DEPTH`
-env variable to limit the depth of the preview on the events list page.
-
-All you need to do is add environment variable to a command that starts Buggerator server:
+Large objects with deep nesting can slow down the browser. Limit the preview depth on the events list page:
 
 ```bash
 docker run --pull always \
-  -p ... \
+  -p 127.0.0.1:8000:8000 \
+  -p 127.0.0.1:9912:9912 \
   -e VAR_DUMPER_PREVIEW_MAX_DEPTH=3 \
   ghcr.io/buggregator/server:latest
 ```
 
-> **Note:** Read more about server configuration [here](../getting-started.md).
+The full dump is still available when you open the event detail page.
 
-And the server will show only 3 levels of nested objects in the preview, but you can still see the full dump by opening
-the event page.
+## Syntax highlighting
 
-## Syntax Highlighting
-
-When you dump a variable that contains only text, you can enable syntax highlighting for it. The easiest way to do this
-is to use the `trap` function from the [Buggregator Trap](../trap/what-is-trap.md) package.
-
-All you need to do is install the package and use the `trap` function with context:
+Dump a text string with syntax highlighting using [Buggregator Trap](../trap/what-is-trap.md):
 
 ```php
 $code = <<<PHP
@@ -92,11 +77,9 @@ PHP;
 trap($code)->context(language: 'php');
 ```
 
-And the output will be highlighted as PHP code.
-
 ![image_2024-05-01_00-39-56](https://github.com/buggregator/frontend/assets/773481/9cddfbfa-e3a3-427e-a987-0f4aa1bdb504)
 
-## Trap
+## Buggregator Trap
 
-Please consider to use [Buggregator Trap](../trap/what-is-trap.md) to dump variables in your application. It uses
-the Symfony VarDumper component under the hood, but it's more powerful and has additional features.
+Consider using [Buggregator Trap](../trap/what-is-trap.md) instead of raw VarDumper — it uses VarDumper under the
+hood but adds extra features like `trap()`, `tr()`, and `td()` helpers.

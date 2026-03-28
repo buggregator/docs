@@ -1,26 +1,46 @@
-# Integration — Inspector
+# Inspector — Application Monitoring
 
-Buggregator is compatible with Inspector reports, providing you with a lightweight alternative for local
-development. With it, you can easily configure your Inspector client URL to send data directly to the server, making it
-easier to identify and fix issues during the development phase.
+You want to see how long your requests take, where the bottlenecks are, and how much memory each transaction
+consumes — but [Inspector.dev](https://inspector.dev/) is overkill for local development. Buggregator accepts
+the same Inspector SDK protocol, so your transaction and performance data lands in the same UI where you
+already see exceptions, logs, and dumps.
 
 ![inspector](https://github.com/buggregator/server/assets/773481/ab002ecf-e1dc-4433-90d4-0e42ff8c0ab3)
 
-## Laravel
+## Use cases
 
-Laravel is supported via a native package. You can read about integrations
-on [official site](https://docs.inspector.dev/laravel)
+- **Local APM** — monitor request duration and memory usage without sending data to external services.
+- **Debug slow requests** — use the timeline breakdown to see which parts of a request are slow.
+- **All in one place** — transaction data next to exceptions, logs, and dumps from the same app.
 
-```php
+## What you see in the UI
+
+- **Transaction name** — the name of the monitored transaction.
+- **Duration** — execution time in milliseconds.
+- **Memory peak** — peak memory usage.
+- **Result status** — success, error, etc.
+- **Transaction type** — HTTP request, process, etc.
+- **HTTP details** — method, URI, host (for HTTP transactions).
+- **Timeline breakdown** — visual timeline of events within the transaction.
+
+## Configuration
+
+### Laravel
+
+Install the SDK: [docs.inspector.dev/laravel](https://docs.inspector.dev/laravel)
+
+```dotenv
 INSPECTOR_URL=http://inspector@127.0.0.1:8000
 INSPECTOR_API_KEY=test
 INSPECTOR_INGESTION_KEY=1test
 INSPECTOR_ENABLE=true
 ```
 
-## Other platforms
+> In Docker Compose: `INSPECTOR_URL=http://inspector@buggregator:8000`
 
-For PHP you can use `inspector-apm/inspector-php` package.
+### Other PHP
+
+Using `inspector-apm/inspector-php`:
 
 ```php
 use Inspector\Inspector;
@@ -29,60 +49,32 @@ use Inspector\Configuration;
 $configuration = new Configuration('YOUR_INGESTION_KEY');
 $configuration->setUrl('http://inspector@127.0.0.1:8000');
 $inspector = new Inspector($configuration);
-
-// ...
 ```
 
-To report to Buggregator you’ll need to use a language-specific SDK. The Inspector team builds and maintains these for
-most popular languages.
-
-> **Note:**
-> You can find out documentation on [official site](https://docs.inspector.dev/)
+Other language SDKs: [docs.inspector.dev](https://docs.inspector.dev/)
 
 ## Secret key validation
 
-Buggregator lets you send reports freely by default, but you can boost your security by setting up a secret key.
-
-In our example, we will use `my-secret-key` as the secret key. Let's see how to set it up.
-
-### Server configuration
-
-To use a secret key, set the `INSPECTOR_SECRET_KEY` environment variable on your server.
-
-**Here’s how to do it:**
+To restrict access, set a secret key on the server:
 
 ```bash
 docker run --pull always \
-  -p ... \
+  -p 127.0.0.1:8000:8000 \
   -e INSPECTOR_SECRET_KEY=my-secret-key \
   ghcr.io/buggregator/server:latest
 ```
 
-> **Note:** Read more about server configuration [here](../getting-started.md).
+Then use the key as the ingestion key in your client:
 
-When you set the secret key, the server checks the `X-Inspector-Key` header to make sure it matches the secret key.
-
-### Client configuration
-
-To set the secret key on a client, change your DSN like this:
-
-**Laravel**
+**Laravel:**
 
 ```dotenv
 INSPECTOR_INGESTION_KEY=my-secret-key
 ```
 
-**Other platforms**
+**PHP:**
 
 ```php
-use Inspector\Inspector;
-use Inspector\Configuration;
-
 $configuration = new Configuration('my-secret-key');
 $configuration->setUrl('http://inspector@127.0.0.1:8000');
-$inspector = new Inspector($configuration);
-
-// ...
 ```
-
-> **Note:** Read more about ingestion key configuration on [official site](https://docs.inspector.dev/)

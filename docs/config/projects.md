@@ -1,15 +1,17 @@
 # Configuration — Projects
 
-From version 1.11, Buggregator lets you use "projects" to help organize your data better. Projects are
-super useful for keeping your data organized.
+Buggregator lets you use "projects" to help organize your data. Projects are useful for keeping events from
+different teams, applications, or environments separate.
 
 ![image](https://github.com/user-attachments/assets/cde794f7-83fb-4708-9eef-713c6f8be7cc)
 
 **Here’s why you might want to use projects:**
 
-1. Projects help you keep data from different teams or parts of your app separate. This means it's easier to find what
-   you're looking for and keep track of changes.
+1. Projects help you keep data from different teams or parts of your app separate. This means it’s easier to find what
+   you’re looking for and keep track of changes.
 2. Teams won’t get mixed up with data that isn’t relevant to them, which makes their work faster and less confusing.
+3. The sidebar displays a project selector dropdown, allowing you to quickly switch between projects and view only
+   the events relevant to the selected project.
 
 ### Default Project
 

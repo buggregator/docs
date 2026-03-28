@@ -1,6 +1,6 @@
 # Configuration — Single Sign-On (SSO)
 
-With the release of version 1.7.0, Buggregator now supports Single Sign-On (SSO).
+Buggregator supports Single Sign-On (SSO) for secure user authentication.
 
 There is a list of supported SSO providers:
 

@@ -1,25 +1,8 @@
-# Introduction — Getting Started
+# Getting Started
 
-This guide will walk you through the steps to get Buggregator up and running on your local machine using Docker. Don't
-worry if you're new to Docker or Buggregator; we'll keep things simple and straightforward!
+## Quick Start
 
-## Step 1: Install Docker
-
-Before you can run Buggregator, you need to have Docker installed on your server. Docker is a tool that allows you to
-run applications in containers, which are like lightweight, standalone packages that contain everything the application
-needs to run.
-
-- If you don't have Docker installed, visit Docker's website and download the version suitable for your operating
-  system (Windows, macOS, or Linux).
-- Follow the installation instructions on the website to get Docker set up.
-
-## Step 2: Choose Your Buggregator Version
-
-Buggregator offers different versions for different needs:
-
-### Latest Stable Release
-
-This is the most recent officially released version, recommended for most users.
+Make sure [Docker](https://docs.docker.com/get-docker/) is installed on your machine, then run:
 
 ```bash
 docker run --pull always \
@@ -27,129 +10,149 @@ docker run --pull always \
   -p 127.0.0.1:1025:1025 \
   -p 127.0.0.1:9912:9912 \
   -p 127.0.0.1:9913:9913 \
+  -p 127.0.0.1:9914:9914 \
   ghcr.io/buggregator/server:latest
 ```
 
-### Latest Dev Release
+Open http://127.0.0.1:8000 in your browser. Done.
 
-This version includes the latest features and updates but might be less stable.
+## Ports
+
+Each port serves a specific module. You only need to expose the ports for the features you use:
+
+| Port | Protocol | Module | What it does |
+|------|----------|--------|-------------|
+| **8000** | HTTP | [Sentry](./config/sentry.md), [Ray](./config/ray.md), [Inspector](./config/inspector.md), [HTTP Dumps](./config/http-dumps.md), [XHProf](./config/xhprof.md) | Web UI + HTTP-based event ingestion. This is the only required port. |
+| **1025** | SMTP | [Fake SMTP Server](./config/smtp.md) | Captures outgoing emails. Point your app's SMTP config here (e.g., `MAIL_HOST=127.0.0.1`, `MAIL_PORT=1025`). |
+| **9912** | TCP | [Symfony VarDumper](./config/var-dumper.md) | Receives `dump()` / `dd()` output. Set `VAR_DUMPER_FORMAT=server` and `VAR_DUMPER_SERVER=127.0.0.1:9912`. |
+| **9913** | TCP | [Monolog](./config/monolog.md) | Receives log records via Monolog's `SocketHandler` in JSON format. |
+| **9914** | TCP | [XHProf Profiler](./config/xhprof.md) | Receives XHProf profiling data from `spiral/profiler` and compatible clients. |
+
+If you only need specific features, omit the unused ports. For example, VarDumper only:
 
 ```bash
 docker run --pull always \
   -p 127.0.0.1:8000:8000 \
-  -p 127.0.0.1:1025:1025 \
   -p 127.0.0.1:9912:9912 \
-  -p 127.0.0.1:9913:9913 \
-  ghcr.io/buggregator/server:dev
+  ghcr.io/buggregator/server:latest
 ```
 
-### Specific Version
+## Installation Options
 
-If you need a particular version of Buggregator, you can choose to install that specific one.
+### Docker Compose
 
-```bash
-docker run \
-  -p 127.0.0.1:8000:8000 \
-  -p 127.0.0.1:1025:1025 \
-  -p 127.0.0.1:9912:9912 \
-  -p 127.0.0.1:9913:9913 \
-  ghcr.io/buggregator/server:1.0
-```
-
-> **Note:**
-> If you're not using all the features and want to reduce the number of open ports, you can omit the unused ports in the
-> command.
-
-**If you prefer using Docker Compose:**
-
-1. Create a `docker-compose.yml` file in your project directory.
-2. Add the following service definition to your file:
-
-We recommend publishing ports only on a local server, as shown in the example below:
+Add Buggregator as a service in your `docker-compose.yml`:
 
 ```yaml
 services:
-  # ...
   buggregator:
-    image: ghcr.io/buggregator/server:dev
+    image: ghcr.io/buggregator/server:latest
     ports:
       - 127.0.0.1:8000:8000
       - 127.0.0.1:1025:1025
       - 127.0.0.1:9912:9912
       - 127.0.0.1:9913:9913
-```
-**To add the Buggregator service to an existing service in your docker-compose.yml file, you can follow these :**
-```yaml
-services:
-  # Existing services...
-  
-  buggregator:
-    image: ghcr.io/buggregator/server:dev
-    ports:
-      - 127.0.0.1::8000
-    networks:
-      - your_existing_network
+      - 127.0.0.1:9914:9914
 ```
 
-Here's an example of how you can set the environment variables for Ray, Var Dump Server in your .env file:
-```code
+If Buggregator is part of an existing Docker Compose stack, other services can reach it by its service name.
+Configure your app's `.env` to point at the container:
 
+```dotenv
 RAY_HOST=ray@buggregator
 RAY_PORT=8000
 VAR_DUMPER_FORMAT=server
 VAR_DUMPER_SERVER=buggregator:9912
-```
-3. Run `docker-compose up` in your CLI.
-
-## Step 3: Open Buggregator in Your Browser
-
-Once Buggregator is running, open your web browser and go to http://127.0.0.1:8000. You should now see the Buggregator
-interface, ready to collect and display debugging information from your application.
-
-And that's it! You've successfully installed it on your local machine using Docker. You can now start using it
-to streamline your debugging process. If you encounter any issues or have questions, don't hesitate to refer to the
-official documentation or seek help from the community.
-
-## Port Configuration Advice:
-
-Here are descriptions of the ports used by Buggregator:
-
-- **8000**: This port is used for the following
-  modules: [HTTP Dumps](./config/http-dumps.md), [Sentry](./config/sentry.md), [Ray](./config/ray.md), [Inspector](./config/inspector.md), [XHProf](./config/xhprof.md).
-- **1025**: This port is designated for [SMTP](./config/smtp.md).
-- **9912**: This port is used for [Symfony Var-Dumper](./config/var-dumper.md).
-- **9913**: This port is allocated for [Monolog](./config/monolog.md).
-
-### Stay Secure
-
-By default, the ports are set to listen only on the localhost (`127.0.0.1`), enhancing security by preventing external
-access.
-
-> **Warning**
-> Publishing container ports is insecure by default, meaning when you publish a container's ports, they become available
-> not only to the Docker host but also to the outside world. If you include the localhost IP address (127.0.0.1) with,
-> only the Docker host can access the published container port.
-
-If you require external access to these ports, you can remove `127.0.0.1:` from the respective port forwarding rules.
-However, be cautious as this will make the ports accessible from outside your local network.
-
-Like this:
-
-```bash --pull always \
-  -p 8000:8000 \
-  -p ...
-  ghcr.io/buggregator/server:latest
+SENTRY_LARAVEL_DSN=http://sentry@buggregator:8000/1
+LOG_CHANNEL=socket
+LOG_SOCKET_URL=buggregator:9913
+MAIL_HOST=buggregator
+MAIL_PORT=1025
 ```
 
-### Reduce the Number of Open Ports
+### Kubernetes
 
-If you're not utilizing all the features and wish to reduce the number of open ports, you can omit the unused ports from
-the command. This step can help minimize the attack surface and maintain a cleaner setup.
+Deploy Buggregator as a `Deployment` + `Service` in your cluster:
 
-For example, if you use only var-dumper, you can omit the other ports, like this:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: buggregator
+  template:
+    metadata:
+      labels:
+        app: buggregator
+    spec:
+      containers:
+        - name: buggregator
+          image: ghcr.io/buggregator/server:latest
+          ports:
+            - containerPort: 8000
+            - containerPort: 1025
+            - containerPort: 9912
+            - containerPort: 9913
+            - containerPort: 9914
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: buggregator
+spec:
+  selector:
+    app: buggregator
+  ports:
+    - name: http
+      port: 8000
+    - name: smtp
+      port: 1025
+    - name: var-dumper
+      port: 9912
+    - name: monolog
+      port: 9913
+    - name: profiler
+      port: 9914
+```
+
+Other pods can reach Buggregator at `buggregator:8000` (or the corresponding port) within the cluster.
+
+### Manual Installation
+
+See the [manual installation guide](./cookbook/manual-install.md) for running Buggregator without Docker
+(RoadRunner + Centrifugo binaries).
+
+## Other Image Tags
+
+All available tags can be found in the [GitHub Container Registry](https://github.com/buggregator/server/pkgs/container/server).
+
+| Tag | Description |
+|-----|-------------|
+| `latest` | Latest stable release. **Recommended.** |
+| `dev` | Latest development build. Includes newest features, may be less stable. |
+| `X.Y` (e.g., `1.0`) | A specific release version, pinned. |
+
+Example with the dev tag:
 
 ```bash
 docker run --pull always \
+  -p 127.0.0.1:8000:8000 \
+  -p 127.0.0.1:1025:1025 \
   -p 127.0.0.1:9912:9912 \
-  ghcr.io/buggregator/server:latest
+  -p 127.0.0.1:9913:9913 \
+  -p 127.0.0.1:9914:9914 \
+  ghcr.io/buggregator/server:dev
 ```
+
+## Security
+
+By default, all ports are bound to `127.0.0.1` (localhost only). This prevents external access.
+
+> **Warning:** If you remove the `127.0.0.1:` prefix (e.g., `-p 8000:8000`), the port becomes accessible from
+> outside your machine. Only do this if you understand the implications.
+
+For production-like setups, consider enabling [SSO authentication](./config/sso.md) to restrict access to the UI.

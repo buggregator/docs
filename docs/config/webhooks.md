@@ -83,3 +83,9 @@ Buggregator can currently handle the following events:
 - `http-dump.received`
 - `profiler.received`
 - `smtp.received`
+
+## Delivery Tracking
+
+Buggregator tracks every webhook delivery attempt. You can view the delivery history for each webhook via the API,
+including the response status code and payload. This helps you diagnose issues when webhooks fail to reach their
+destination.
