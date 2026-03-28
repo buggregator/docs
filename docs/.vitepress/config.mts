@@ -53,6 +53,7 @@ export default defineConfig({
                     {text: 'XHProf Profiler', link: '/config/xhprof'},
                     {text: 'Sentry', link: '/config/sentry'},
                     {text: 'SMTP Server', link: '/config/smtp'},
+                    {text: 'SMS Gateway', link: '/config/sms'},
                     {text: 'HTTP Dumps', link: '/config/http-dumps'},
                     {text: 'Monolog', link: '/config/monolog'},
                     {text: 'VarDumper', link: '/config/var-dumper'},

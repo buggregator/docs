@@ -15,6 +15,7 @@ exceptions, logs, dumps, profiling, emails, and HTTP requests in a single UI. No
 - You want to see **exceptions with stack traces** like in Sentry, but don’t want to set up Sentry for local dev.
 - You need to **profile performance** and find memory leaks or slow functions.
 - You want to **test emails** your app sends without a real mail server.
+- You want to **capture SMS messages** without sending real ones through Twilio or Vonage.
 - You have **multiple services** (microservices, Docker Compose) and want all debug data in one place.
 - You want to **inspect HTTP requests** your app makes to external APIs.
 - You just need a better `dump()` — with syntax highlighting, IDE links, and no browser pollution.
@@ -56,6 +57,13 @@ Capture all outgoing emails. Preview HTML (with mobile/desktop viewport switcher
 attachments, and raw source. Just point your app’s SMTP config to port `1025`.
 
 ![smtp](https://github.com/buggregator/server/assets/773481/8dd60ddf-c8d8-4a26-a8c0-b05052414a5f)
+
+### [SMS Gateway](/config/sms) — SMS Messages
+
+Capture SMS messages your app sends through Twilio, Vonage, Plivo, and 40+ other providers. Point your SMS
+webhook URL at Buggregator and see every message with sender, recipient, text, and detected provider. Use
+explicit provider URLs (`/sms/twilio`) for field validation — missing fields are highlighted in the UI while
+your app gets a proper error response.
 
 ### [HTTP Dumps](/config/http-dumps) — Requests
 
