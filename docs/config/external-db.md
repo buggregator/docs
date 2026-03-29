@@ -1,3 +1,7 @@
+---
+llms_description: "External database setup: PostgreSQL and MySQL support via PERSISTENCE_DRIVER=db, DB_DRIVER (pgsql/mysql), DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD. Default DoltDB (MySQL-compatible). No SQLite support. Auto-migrations on startup, manual via 'php app.php migrate --force'. Docker Compose example with PostgreSQL healthcheck."
+---
+
 # Configuration — External Database
 
 Buggregator typically uses [DoltDB](https://github.com/dolthub/dolt) by default, which is a MySQL-compatible server.

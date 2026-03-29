@@ -1,3 +1,7 @@
+---
+llms_description: "JetBrains IDE plugin: embeds Buggregator Trap UI into PhpStorm, IntelliJ IDEA, WebStorm. Requires buggregator/trap Composer package and PHP interpreter. Two views: Web UI (embedded browser) and Terminal. Settings: PHP interpreter, path to Trap binary, Web UI port. Install from JetBrains Marketplace or manual .jar."
+---
+
 # JetBrains IDE Plugin
 
 You use PhpStorm (or another JetBrains IDE) and don't want to switch to a browser to check dumps and logs.

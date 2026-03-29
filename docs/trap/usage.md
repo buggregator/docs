@@ -1,3 +1,7 @@
+---
+llms_description: "Trap PHP functions: trap(mixed ...$values) with ->stackTrace(), ->depth(), ->if(), ->once(), ->times(), ->return(), ->context(), ->code() methods. tr() shorthand for trap()->return() and performance ticker (time/memory between calls). td() dump-and-die. Protobuf message support. TrapHandle method chaining API."
+---
+
 # Trap — Functions
 
 Trap is not just a server; it's also a useful collection of functions that help you debug your PHP applications.

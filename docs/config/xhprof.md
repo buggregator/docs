@@ -1,3 +1,7 @@
+---
+llms_description: "XHProf profiling integration: Call Graph, Flame Graph, Top Functions table, profile comparison. Setup: pecl install xhprof, packages for Laravel (maantje/xhprof-buggregator-laravel), Spiral (spiral/profiler), generic PHP (spiral-packages/profiler). PROFILER_ENDPOINT config, custom client via HTTP auth, X-Buggregator-Event header, or /api/profiler/store endpoint."
+---
+
 # XHProf — Performance Profiling
 
 Your app is slow and you don't know why. Memory grows and you can't find the leak. XHProf profiling with

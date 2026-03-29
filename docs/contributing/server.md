@@ -1,3 +1,8 @@
+---
+llms: "optional"
+llms_description: "Server-side contributing: Spiral Framework, RoadRunner, Centrifugo, DoltDB stack. PHP 8.2+ required. Installation via Docker (docker-install cookbook) or manual setup. Event processing and REST API architecture."
+---
+
 # Contributing — Server side
 
 [The Server Part](https://github.com/buggregator/server) is where all the data processing and management happen. It's

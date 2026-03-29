@@ -1,3 +1,7 @@
+---
+llms_description: "Multi-project support: YAML config files (<name>.project.yaml) mounted at /app/runtime/configs. Default project key 'default'. Per-project DSN formats for Sentry (http://key@host/project_key), Inspector (inspector:project_key@host), XHProf (profiler:project_key@host), Ray (ray:project_key@host). VarDumper and Monolog do not support projects."
+---
+
 # Configuration — Projects
 
 Buggregator lets you use "projects" to help organize your data. Projects are useful for keeping events from

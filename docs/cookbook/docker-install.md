@@ -1,3 +1,8 @@
+---
+llms: "optional"
+llms_description: "Docker Compose dev environment setup: git clone, composer install, make build, make up. Starts Buggregator server, PostgreSQL, example server. Mounted directories: app/, runtime/, vendor/. Access at buggregator.localhost and examples.buggregator.localhost. make down to stop."
+---
+
 # Cookbook — Dev environment using docker compose
 
 Hey, developer! 🎉 This guide will help you quickly set up a local dev environment for Buggregator.

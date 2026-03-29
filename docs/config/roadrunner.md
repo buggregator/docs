@@ -1,3 +1,7 @@
+---
+llms_description: "RoadRunner server configuration via environment variables: RR_LOG_MODE, RR_LOG_LEVEL, RR_HTTP_ALLOWED_ORIGIN, RR_HTTP_NUM_WORKERS, RR_TCP_READ_BUF_SIZE, RR_TCP_MONOLOG_ADDR, RR_TCP_VAR_DUMPER_ADDR, RR_TCP_SMTP_ADDR, RR_CENTRIFUGE_* settings. CORS control, logging levels per plugin (HTTP/TCP/Centrifuge/Server/Service). Docker Compose and docker run examples."
+---
+
 # Configuration — RoadRunner
 
 The **Buggregator server** uses the **RoadRunner application server** to handle HTTP and TCP requests efficiently.

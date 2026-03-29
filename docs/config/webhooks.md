@@ -1,3 +1,7 @@
+---
+llms_description: "Webhook configuration: YAML files (<name>.webhook.yaml) mounted at /app/runtime/configs. Fields: event, url, headers, verify_ssl, retry_on_failure. Supported events: sentry.received, monolog.received, var-dumper.received, ray.received, inspector.received, http-dump.received, profiler.received, smtp.received. Delivery tracking with response status and payload history."
+---
+
 # Configuration — Webhooks
 
 Webhooks are a useful way to help Buggregator communicate in real-time with other applications when certain events

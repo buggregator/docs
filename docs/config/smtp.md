@@ -1,3 +1,7 @@
+---
+llms_description: "Fake SMTP server on port 1025: captures outgoing emails with HTML preview (desktop/mobile viewport), plain text, addresses (From/To/CC/BCC), attachments, raw MIME source. Config for Laravel (MAIL_HOST/MAIL_PORT), Spiral (MAILER_DSN), Symfony, Magento 2, WordPress (mu-plugin phpmailer_init hook)."
+---
+
 # SMTP — Email Testing
 
 Your app sends emails — registration confirmations, password resets, notifications. You need to verify they look

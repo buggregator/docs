@@ -1,3 +1,7 @@
+---
+llms_description: "SMS gateway interceptor: /sms endpoint with auto-detection for 40+ providers (Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, etc.). Explicit provider URLs (/sms/twilio) for field validation with 422 responses. Symfony Notifier DSN config, Laravel HTTP example, generic curl. Supports JSON and form-urlencoded payloads, project URL segments."
+---
+
 # SMS Gateway Interceptor
 
 Your app sends SMS messages — OTP codes, delivery notifications, alerts. During development you don't want to send

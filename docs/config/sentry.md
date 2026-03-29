@@ -1,3 +1,7 @@
+---
+llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (bundled JS SDK at /sentry/<project>.js). UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. SENTRY_SECRET_KEY env for access restriction."
+---
+
 # Sentry — Exceptions
 
 You want to see exceptions with stack traces, breadcrumbs, and request context — but you don't want to deploy

@@ -1,3 +1,7 @@
+---
+llms_description: "Trap installation: standalone binary download (Linux/macOS/Windows amd64/arm64) or Composer (buggregator/trap). Start with 'vendor/bin/trap' or './trap'. trap() function usage: basic dumps, named arguments, ->return(), ->depth(). Web UI via --ui flag on port 8000."
+---
+
 # Trap — Getting Started
 
 There are several ways to get started with Trap, depending on your needs and preferences.

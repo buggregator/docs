@@ -1,7 +1,13 @@
+---
+llms_description: "Buggregator overview: self-hosted debugging server via Docker, supports XHProf profiling, Sentry exceptions, fake SMTP email capture, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, external DB. Built on Spiral Framework, RoadRunner, Vue 3, Centrifugo."
+---
+
 # What is Buggregator?
 
-Buggregator is a free, open-source debugging server for PHP applications. One `docker run` command — and you get
-exceptions, logs, dumps, profiling, emails, and HTTP requests in a single UI. No registration, no limits, no cost.
+## Debug everything. Install nothing.
+
+One `docker run`. Exceptions, dumps, emails, profiling, logs — all in one real-time UI.
+Works with the SDKs you already have. No cloud account. No code changes.
 
 **Watch introduction video on [YouTube](https://www.youtube.com/watch?v=yKWbuw8xN_c)**
 
@@ -9,9 +15,28 @@ exceptions, logs, dumps, profiling, emails, and HTTP requests in a single UI. No
 
 ![Cover image](https://github.com/buggregator/server/assets/773481/47491a3c-57a3-4b40-b82e-37976afdf708)
 
+## How it works
+
+Buggregator runs *beside* your application as a standalone server — not inside it. Your codebase doesn’t change.
+Your dependencies don’t change. You already have the SDKs installed (Sentry, VarDumper, Monolog, Ray) — they just
+need a different address in your `.env`.
+
+```bash
+docker run --pull always \
+  -p 127.0.0.1:8000:8000 \
+  -p 127.0.0.1:1025:1025 \
+  -p 127.0.0.1:9912:9912 \
+  ghcr.io/buggregator/server:latest
+```
+
+Open http://127.0.0.1:8000 and start debugging. That’s it.
+
+> For local debugging without Docker, use [Buggregator Trap](./trap/what-is-trap.md) — a lightweight PHP CLI
+> alternative with zero configuration.
+
 ## When you need it
 
-- You have a **long-running PHP app** (RoadRunner, Swoole, FrankenPHP, queue workers) and `dd()` is not an option.
+- You have a **long-running PHP app** (RoadRunner, FrankenPHP, Swoole, Octane, queue workers) and `dd()` is not an option.
 - You want to see **exceptions with stack traces** like in Sentry, but don’t want to set up Sentry for local dev.
 - You need to **profile performance** and find memory leaks or slow functions.
 - You want to **test emails** your app sends without a real mail server.
@@ -19,21 +44,7 @@ exceptions, logs, dumps, profiling, emails, and HTTP requests in a single UI. No
 - You have **multiple services** (microservices, Docker Compose) and want all debug data in one place.
 - You want to **inspect HTTP requests** your app makes to external APIs.
 - You just need a better `dump()` — with syntax highlighting, IDE links, and no browser pollution.
-
-## How it works
-
-Buggregator runs as a standalone server (typically in Docker alongside your app). Your application sends data to it
-using standard integrations you probably already use — Sentry SDK, Symfony VarDumper, Monolog, Spatie Ray, Inspector,
-or plain SMTP. Buggregator collects everything and shows it in a real-time web UI.
-
-```bash
-docker run -p 8000:8000 -p 1025:1025 -p 9912:9912 -p 9913:9913 -p 9914:9914 ghcr.io/buggregator/server:latest
-```
-
-Open http://127.0.0.1:8000 and start debugging. That’s it.
-
-> For local debugging without Docker, use [Buggregator Trap](./trap/what-is-trap.md) — a lightweight CLI alternative
-> with zero configuration.
+- You want to **replace 8 separate local dev tools** with one free, self-hosted server.
 
 ## Key Features
 

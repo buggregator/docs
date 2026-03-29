@@ -1,3 +1,7 @@
+---
+llms_description: "Monolog log collection via SocketHandler on TCP port 9913 with JsonFormatter. UI shows channel, message, PSR-3 severity level, timestamp, context JSON, extra fields, source location. Config for Laravel (socket channel in logging.php), Spiral (LoggingBootloader), Symfony (monolog.php handler), generic PHP (monolog/monolog SocketHandler)."
+---
+
 # Monolog — Logs
 
 Your app writes logs — but where do they go during development? A file you `tail -f`? Docker container output

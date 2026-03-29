@@ -1,3 +1,8 @@
+---
+llms: "optional"
+llms_description: "Frontend contributing: Vue 3, TailwindCSS, Storybook stack. Requirements: Node.js 20+ (22 preferred), Yarn 1.22+. Setup: git clone, yarn install, yarn dev (port 3000). Storybook at port 6006 for component isolation."
+---
+
 # Contributing — Frontend side
 
 [The Frontend Part](https://github.com/buggregator/frontend) is what users interact with. It displays the events and

@@ -1,3 +1,7 @@
+---
+llms_description: "Trap CLI commands: 'run' (--port/-p, --sender/-s, --ui), 'test' (sends XHProf/dumps/emails/Sentry/binary test data), 'joke'. Default ports: 1025, 8000, 9912, 9913. Senders: console, file, file-body, mail-to-file, server. Environment variables: TRAP_TCP_PORTS, TRAP_TCP_HOST, TRAP_UI_PORT, TRAP_UI_HOST, TRAP_XHPROF_PATH, TRAP_MAIN_LOOP_INTERVAL."
+---
+
 # Trap — Commands
 
 ## `run`

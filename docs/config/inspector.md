@@ -1,3 +1,7 @@
+---
+llms_description: "Inspector.dev SDK compatibility for local APM: transaction name, duration, memory peak, result status, HTTP details, timeline breakdown. Config: INSPECTOR_URL=http://inspector@host:8000, INSPECTOR_API_KEY, INSPECTOR_INGESTION_KEY. Laravel and generic PHP setup. INSPECTOR_SECRET_KEY env for access restriction."
+---
+
 # Inspector — Application Monitoring
 
 You want to see how long your requests take, where the bottlenecks are, and how much memory each transaction

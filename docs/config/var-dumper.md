@@ -1,3 +1,7 @@
+---
+llms_description: "Symfony VarDumper integration via TCP port 9912: VAR_DUMPER_FORMAT=server, VAR_DUMPER_SERVER=host:9912. UI shows dumped values as interactive tree, source location with IDE click-to-open, variable labels. VAR_DUMPER_PREVIEW_MAX_DEPTH env for performance. Syntax highlighting via trap() context(language:). Buggregator Trap alternative with trap()/tr()/td() helpers."
+---
+
 # VarDumper — Variable Dumps
 
 You call `dump()` or `dd()` and the output lands in the browser response, mixes with HTML, or gets lost in CLI

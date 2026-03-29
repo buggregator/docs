@@ -1,10 +1,17 @@
 import {defineConfig} from 'vitepress'
+import {generateLlms, llmsPlugin} from './llms'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
     ignoreDeadLinks: true,
     title: "Buggregator docs",
     description: "Buggregator docs",
+    vite: {
+        plugins: [llmsPlugin()],
+    },
+    buildEnd: async (config) => {
+        await generateLlms(config)
+    },
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         search: {
@@ -23,6 +30,10 @@ export default defineConfig({
             {
                 text: 'Getting Started',
                 link: '/getting-started',
+            },
+            {
+                text: 'For LLM',
+                link: '/llm',
             },
 
             {

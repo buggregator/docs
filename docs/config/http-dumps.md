@@ -1,3 +1,7 @@
+---
+llms_description: "HTTP request capture: method, URI, headers, cookies, POST data, uploaded files, auto-generated cURL command. Two trigger methods: HTTP auth (http-dump@host) or X-Buggregator-Event: http-dump header. Use cases: webhook development, API debugging, request replay."
+---
+
 # HTTP Dumps — Request Inspection
 
 Your app calls external APIs, sends webhooks, or receives callbacks — and you need to see exactly what goes over

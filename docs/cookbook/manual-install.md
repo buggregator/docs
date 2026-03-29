@@ -1,3 +1,8 @@
+---
+llms: "optional"
+llms_description: "Manual dev environment without Docker: composer install, ./vendor/bin/rr get (RoadRunner), bin/get-binaries.sh (Centrifugo + DoltDB). Database: mkdir .db, dolt sql create database. Config: .env.sample, php app.php encrypt:key. Start with ./rr serve. Access at localhost:8082."
+---
+
 # Cookbook — Manual install dev environment
 
 Hey, developer! 🎉 This guide will help you quickly set up a local dev environment for Buggregator.

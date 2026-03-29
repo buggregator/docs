@@ -1,3 +1,7 @@
+---
+llms_description: "Prometheus metrics endpoint on port 2112: event counters by type (sentry, monolog, var-dumper, ray, inspector, http-dump, profiler, smtp). Metric format: 'events{type=\"...\"}' counter. Webhook delivery tracking. Grafana integration: add Prometheus data source, create dashboards for event trends."
+---
+
 # Configuration — Metrics
 
 Buggregator collects metrics on how many events it receives. This feature lets you use tools like

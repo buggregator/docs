@@ -1,3 +1,7 @@
+---
+llms_description: "Spatie Ray compatibility: free self-hosted alternative supporting 18 payload types (Log, Caller, Carbon, Trace, Exception, Table, Measure, Query, Eloquent, View, Event, Job, Lock, Mailable, Notify, Origin). Config: RAY_HOST=ray@host, RAY_PORT=8000. Setup for Laravel (ray:publish-config), PHP (ray.php config file), JavaScript, Ruby, Go, Bash SDKs."
+---
+
 # Ray — Debug Tool
 
 [Ray](https://myray.app/) by Spatie is a popular debug tool, especially in the Laravel ecosystem. Buggregator is

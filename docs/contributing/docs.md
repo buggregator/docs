@@ -1,3 +1,8 @@
+---
+llms: "optional"
+llms_description: "Documentation contributing: VitePress-based docs. Setup: git clone buggregator/docs, npm install, npm run docs:dev. Structure: docs/ directory for markdown files, docs/.vitepress/config.mts for site config and navigation."
+---
+
 # Contributing — Documentation
 
 Buggregator uses [VitePress](https://vitepress.dev/) for its documentation. This makes it easy to contribute to the

@@ -1,3 +1,7 @@
+---
+llms_description: "Installation via Docker run, Docker Compose, and Kubernetes. Port mapping: 8000 (HTTP/Sentry/Ray/Inspector/XHProf), 1025 (SMTP), 9912 (VarDumper TCP), 9913 (Monolog TCP), 9914 (XHProf TCP). Image tags: latest, dev, versioned. Security: localhost binding, SSO reference. Manual install link."
+---
+
 # Getting Started
 
 ## Quick Start

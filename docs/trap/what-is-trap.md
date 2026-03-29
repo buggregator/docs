@@ -1,3 +1,7 @@
+---
+llms_description: "Buggregator Trap: lightweight PHP CLI debugging tool, alternative to Symfony VarDumper. Zero-config, standalone binary (Linux/macOS/Windows), no Docker needed. Supports VarDumper, Monolog, Sentry, SMTP, HTTP dumps, Ray handlers. Protobuf debugging. Console and dashboard UI. Cross-project compatible."
+---
+
 # Trap — What is it?
 
 Trap is a powerful, lightweight debugging tool designed to supercharge your PHP development experience. It

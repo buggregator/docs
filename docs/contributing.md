@@ -1,3 +1,8 @@
+---
+llms: "optional"
+llms_description: "Contributing guide: issue labels (for contributors, c:easy/c:medium/c:difficult), project repositories (Server, Frontend, Trap, Documentation, Site, PHPStorm Plugin). Benefits of contributing to open source."
+---
+
 # Contributing to Buggregator
 
 We're excited to invite you to contribute to the project! Your involvement is crucial, whether it's reporting bugs,

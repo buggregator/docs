@@ -1,3 +1,7 @@
+---
+llms_description: "SSO authentication with Auth0 and Kinde providers. Environment variables: AUTH_ENABLED, AUTH_PROVIDER (auth0/kinde), AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_LOGOUT_URL, AUTH_SCOPES. Callback endpoint /auth/sso/callback, login /auth/sso/login, logout /auth/sso/logout. Troubleshooting tips."
+---
+
 # Configuration — Single Sign-On (SSO)
 
 Buggregator supports Single Sign-On (SSO) for secure user authentication.
