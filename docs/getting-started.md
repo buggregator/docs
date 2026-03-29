@@ -76,7 +76,16 @@ MAIL_PORT=1025
 
 ### Kubernetes
 
-Deploy Buggregator as a `Deployment` + `Service` in your cluster:
+The recommended way to deploy Buggregator on Kubernetes is using the [Helm chart](./config/helm-chart.md):
+
+```bash
+helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator
+```
+
+The Helm chart supports external databases, SSO authentication, Ingress, Prometheus metrics, and more.
+See the [Helm chart documentation](./config/helm-chart.md) for the full configuration reference.
+
+Alternatively, deploy Buggregator as a `Deployment` + `Service` manually:
 
 ```yaml
 apiVersion: apps/v1
