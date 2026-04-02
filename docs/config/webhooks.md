@@ -1,92 +1,108 @@
 ---
-llms_description: "Webhook configuration: YAML files (<name>.webhook.yaml) mounted at /app/runtime/configs. Fields: event, url, headers, verify_ssl, retry_on_failure. Supported events: sentry.received, monolog.received, var-dumper.received, ray.received, inspector.received, http-dump.received, profiler.received, smtp.received. Delivery tracking with response status and payload history."
+llms_description: "Webhook configuration in buggregator.yaml. Fields: event (type filter or '*' for all), url, headers, verify_ssl, retry. Supported event types: sentry, ray, var-dump, inspector, monolog, smtp, sms, http-dump, profiler, or '*' for all. Retry up to 3 times with exponential backoff. Delivery tracking via API."
 ---
 
 # Configuration — Webhooks
 
-Webhooks are a useful way to help Buggregator communicate in real-time with other applications when certain events
-happen. This guide simplifies setting up and managing webhooks for enhancing automation and integration with other
-tools.
+Webhooks allow Buggregator to send HTTP POST notifications to external services when events are received.
+This enables integration with tools like [n8n](https://n8n.io/), Slack, PagerDuty, or any custom endpoint.
 
-This guide will help you understand how to set up and use webhooks.
+## Why Use Webhooks?
 
-### What is a Webhook?
+- **Automate Tasks:** Automatically trigger actions in other services when events happen in Buggregator.
+- **Integrate with Other Tools:** Connect Buggregator with messaging apps, issue tracking software, or custom apps.
 
-A webhook allows applications to share information as soon as specific events occur. Unlike regular APIs that require
-checking for updates periodically, webhooks provide this information automatically, saving time and resources.
+## Configuration
 
-### Why Use Webhooks in Buggregator?
+Webhooks are configured in `buggregator.yaml`:
 
-- **Automate Tasks:** Automatically trigger actions in other services like [n8n](https://n8n.io/) when events happen in
-  Buggregator.
-- **Integrate with Other Tools:** Connect Buggregator with various tools like messaging apps, issue tracking software,
-  or custom apps effortlessly.
+```yaml
+webhooks:
+  - event: "*"                          # Fire on any event type
+    url: https://slack.example.com/webhook
+    headers:
+      Authorization: "Bearer token123"
+    verify_ssl: false
+    retry: true
 
-## Docker Configuration
+  - event: sentry                       # Fire only on Sentry events
+    url: https://pagerduty.example.com/alert
 
-Currently, Buggregator does not have an admin interface for managing webhooks. Instead, you manage them through
-configuration files within a Docker container.
+  - event: smtp                         # Fire only on SMTP events
+    url: https://my-app.example.com/email-hook
+```
 
-**Here's how you can mount a volume containing webhook configurations:**
+**Fields:**
+
+| Field | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `event` | Yes | — | Event type to trigger on, or `"*"` for all events |
+| `url` | Yes | — | URL to send the POST request to |
+| `headers` | No | — | Additional HTTP headers to include |
+| `verify_ssl` | No | `false` | Whether to verify SSL certificates |
+| `retry` | No | `true` | Retry up to 3 times with exponential backoff on failure |
+
+### Supported Event Types
+
+- `sentry`
+- `monolog`
+- `var-dump`
+- `ray`
+- `inspector`
+- `http-dump`
+- `profiler`
+- `smtp`
+- `sms`
+- `*` (all events)
+
+### Webhook Payload
+
+Each webhook sends a JSON payload with the following structure:
+
+```json
+{
+  "uuid": "event-uuid",
+  "type": "sentry",
+  "payload": { ... },
+  "timestamp": 1234567890.123,
+  "project": "default"
+}
+```
+
+## Docker Examples
+
+### Docker Compose
+
+```yaml
+services:
+  buggregator:
+    image: ghcr.io/buggregator/server:latest
+    ports:
+      - 127.0.0.1:8000:8000
+    volumes:
+      - ./buggregator.yaml:/buggregator.yaml
+```
+
+With `buggregator.yaml`:
+
+```yaml
+webhooks:
+  - event: "*"
+    url: https://hooks.slack.com/services/xxx
+    headers:
+      Content-Type: application/json
+```
+
+### Docker Run with Config File
 
 ```bash
 docker run --pull always \
-  -v /path/to/webhooks:/app/runtime/configs \
+  -p 127.0.0.1:8000:8000 \
+  -v ./buggregator.yaml:/buggregator.yaml \
   ghcr.io/buggregator/server:latest
 ```
 
-or using `docker-compose`:
-
-```yaml
-buggregator-server:
-  ...
-  volumes:
-    - /path/to/webhooks:/app/runtime/configs
-```
-
-## Configuring a Webhook
-
-Place each webhook configuration in a YAML file within the `runtime/configs` directory. Each configuration file should
-contain one webhook setup.
-
-Here’s what a typical webhook configuration looks like in a YAML file `sentry.webhook.yaml`:
-
-```yaml
-webhook:
-  event: sentry.received
-  url: http://example.com/webhook
-  headers:
-    Content-Type: application/json
-    Secret-Key: my-secret-key
-  verify_ssl: false
-  retry_on_failure: true
-```
-
-> **Note:** The webhook configuration file name should have the following pattern: `<name>.webhook.yaml` or `<name>.webhook.yml`.
-
-**Key Components of a Webhook Configuration:**
-
-- **Event:** The specific event in Buggregator that will trigger the webhook.
-- **URL:** Where the webhook sends data.
-- **Headers:** Any additional headers needed for the webhook request.
-- **Verify SSL:** Choose whether to check SSL certificates during the webhook call.
-- **Retry on Failure:** If the webhook should retry sending data if the first attempt fails. (3 retries with exponential
-  backoff)
-
-> **Note:** You can test webhooks using tools like https://webhook.site.
-
-### Types of Events Supported:
-
-Buggregator can currently handle the following events:
-
-- `sentry.received`
-- `monolog.received`
-- `var-dumper.received`
-- `ray.received`
-- `inspector.received`
-- `http-dump.received`
-- `profiler.received`
-- `smtp.received`
+> **Tip:** You can test webhooks using tools like https://webhook.site.
 
 ## Delivery Tracking
 

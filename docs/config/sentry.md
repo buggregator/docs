@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (bundled JS SDK at /sentry/<project>.js). UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. SENTRY_SECRET_KEY env for access restriction."
+llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript, Python, and any Sentry SDK. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules."
 ---
 
 # Sentry — Exceptions
@@ -98,17 +98,12 @@ if (defined('WP_ENVIRONMENT_TYPE') && 'local' === WP_ENVIRONMENT_TYPE) {
 
 ### JavaScript
 
-Buggregator serves a pre-configured Sentry JS bundle at `/sentry/<project>.js`:
+Use the official [Sentry JavaScript SDK](https://docs.sentry.io/platforms/javascript/) and point the DSN at Buggregator:
 
-```html
-<script src="http://127.0.0.1:8000/sentry/1.js"></script>
-```
-
-Server-side env variables for customization:
-
-```dotenv
-SENTRY_JS_SDK_URL=https://browser.sentry-cdn.com/7.69.0/bundle.tracing.replay.min.js
-SENTRY_JS_DSN_HOST=http://sentry@127.0.0.1:8000
+```javascript
+Sentry.init({
+  dsn: "http://sentry@127.0.0.1:8000/1",
+});
 ```
 
 ### Other platforms
@@ -119,19 +114,3 @@ Any [Sentry SDK](https://docs.sentry.io/platforms/) works. Just set the DSN:
 SENTRY_DSN=http://sentry@127.0.0.1:8000/1
 ```
 
-## Secret key validation
-
-By default, Buggregator accepts all events. To restrict access, set a secret key on the server:
-
-```bash
-docker run --pull always \
-  -p 127.0.0.1:8000:8000 \
-  -e SENTRY_SECRET_KEY=my-secret-key \
-  ghcr.io/buggregator/server:latest
-```
-
-Then include the key in the client DSN:
-
-```dotenv
-SENTRY_DSN=http://my-secret-key:sentry@127.0.0.1:8000/1
-```

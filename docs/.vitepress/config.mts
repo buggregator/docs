@@ -77,11 +77,12 @@ export default defineConfig({
             {
                 text: 'Configuration',
                 items: [
-                    {text: 'RoadRunner', link: '/config/roadrunner'},
+                    {text: 'Server', link: '/config/server'},
+                    {text: 'Database', link: '/config/database'},
                     {text: 'Projects', link: '/config/projects'},
                     {text: 'Webhooks', link: '/config/webhooks'},
                     {text: 'Single Sign On (SSO)', link: '/config/sso'},
-                    {text: 'External Database', link: '/config/external-db'},
+                    {text: 'MCP (AI Assistants)', link: '/config/mcp'},
                     {text: 'Helm Chart', link: '/config/helm-chart'},
                     {text: 'Metrics', link: '/config/metrics'},
                 ]
@@ -91,7 +92,7 @@ export default defineConfig({
                 text: 'Cookbook',
                 items: [
                     {text: 'Dev environment using docker', link: '/cookbook/docker-install'},
-                    {text: 'Dev environment', link: '/cookbook/manual-install'},
+                    {text: 'Manual installation', link: '/cookbook/manual-install'},
                 ]
             },
 

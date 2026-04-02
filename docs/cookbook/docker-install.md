@@ -1,11 +1,11 @@
 ---
 llms: "optional"
-llms_description: "Docker Compose dev environment setup: git clone, composer install, make build, make up. Starts Buggregator server, PostgreSQL, example server. Mounted directories: app/, runtime/, vendor/. Access at buggregator.localhost and examples.buggregator.localhost. make down to stop."
+llms_description: "Docker Compose dev environment setup: git clone, make build, make run. Starts Buggregator Go server with example services. Access at localhost:8000. Requires Go 1.26+, Make."
 ---
 
-# Cookbook — Dev environment using docker compose
+# Cookbook — Dev environment using Docker Compose
 
-Hey, developer! 🎉 This guide will help you quickly set up a local dev environment for Buggregator.
+This guide will help you quickly set up a local development environment for Buggregator.
 
 ## 1. Clone the Repository
 
@@ -18,20 +18,12 @@ cd server
 
 > **Note:** If you don't have access, fork the repository and clone your fork instead.
 
-## 2. Install Dependencies
+## 2. Build and Start
 
-Run the following to install PHP dependencies:
+The repository includes a Docker Compose setup for a local development environment, including the Buggregator server
+and example services.
 
-```bash
-composer install
-```
-
-## 3. Build and Start the Docker Environment
-
-The repository includes a Docker Compose setup for a local development environment, including the Buggregator server,
-PostgreSQL, and service with examples.
-
-### Build Docker Images
+### Build
 
 ```bash
 make build
@@ -40,59 +32,68 @@ make build
 ### Start the Server
 
 ```bash
-make up
+make run
 ```
-
-> **Note:** Make sure you have make installed on your system. If not, you need to install it first.
 
 This will:
 
-- Start the Buggregator server.
-- Spin up a PostgreSQL database.
-- Launch the example server for testing features.
+- Build the Buggregator Go binary
+- Start the Buggregator server
+- Launch example services for testing features
 
-#### Mounted Directories in Docker Setup
+## 3. Access the Application
 
-The Docker Compose setup uses **mounted directories** to ensure that changes made to your local files are immediately
-reflected inside the running containers. This makes development faster and more seamless.
+Once the server is up:
 
-1. **Application Code**  
-   Local directory: `./app`  
-   Mounted in the container: `/app/app`
+- **Buggregator:** http://localhost:8000
 
-2. **Runtime Files**  
-   Local directory: `./runtime`  
-   Mounted in the container: `/app/runtime`
+## 4. Development without Docker
 
-3. **Vendor Directory**  
-   Local directory: `./vendor`  
-   Mounted in the container: `/app/vendor`
+If you prefer to develop without Docker, you need:
 
-## 4. Access the Application
-
-Once the server is up, you can access the following:
-
-- **Buggregator:** [http://buggregator.localhost](http://buggregator.localhost)
-- **Examples:** [http://examples.buggregator.localhost](http://examples.buggregator.localhost)
-
-## 5. Environment Configuration (Optional)
-
-The default `.env` file is pre-configured, but you can customize it if needed:
+- **Go 1.26+**
+- **Make**
 
 ```bash
-cp .env.sample .env
+# Build and run
+make build
+make run
+
+# Or just compile
+go build ./cmd/buggregator
+
+# Run tests
+go test ./...
 ```
 
-## 6. Stop the Server
+### Frontend Development
 
-To stop the server and clean up, run:
+The frontend is a pre-built SPA that gets embedded into the binary during the build process. To develop
+the frontend separately:
 
 ```bash
+git clone git@github.com:buggregator/frontend.git
+cd frontend
+yarn install
+yarn dev
+```
+
+Then point Buggregator at the frontend dev server:
+
+```bash
+FRONTEND_DIR=/path/to/frontend/dist ./buggregator
+```
+
+## 5. Stop the Server
+
+```bash
+# If using Docker Compose
 make down
-```
 
-> **Note:** If any services like PostgreSQL don't stop, you can manually kill them with `docker ps` and `docker kill`.
+# If running directly
+Ctrl+C
+```
 
 ---
 
-That's it! 🚀 Your Buggregator dev environment is ready. Happy coding! 😊
+That's it! Your Buggregator dev environment is ready.
