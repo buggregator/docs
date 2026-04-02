@@ -1,19 +1,11 @@
-# Clone the project
-FROM alpine/git as git
+FROM node:22-slim AS builder
 
-ARG REPOSITORY=https://github.com/buggregator/docs
-ARG BRANCH=master
-RUN git clone -b $BRANCH $REPOSITORY /app
-
-FROM node:19 as node
-
-COPY --from=git /app /app
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 
-RUN npm add -D vitepress
-RUN npm i
+COPY . .
 RUN npm run docs:build
 
-FROM nginx:alpine as server
-
-COPY --from=node /app/docs/.vitepress/dist /usr/share/nginx/html
+FROM nginx:alpine
+COPY --from=builder /app/docs/.vitepress/dist /usr/share/nginx/html

@@ -19,7 +19,7 @@ export const llmsConfig = {
    * Brief project summary — rendered as blockquote after H1
    */
   summary:
-    'Buggregator is a free, open-source debugging server for PHP applications. Debug everything — install nothing. One docker run gives you exceptions, dumps, emails, profiling, and logs in a single real-time UI. Runs beside your app, not inside it.',
+    'Buggregator is a free, open-source debugging server. Debug everything — install nothing. One docker run (or a single binary) gives you exceptions, dumps, emails, profiling, and logs in a single real-time UI. Written in Go with an embedded SQLite database. Runs beside your app, not inside it.',
 
   /**
    * Key facts about the project — rendered as a list before doc sections.

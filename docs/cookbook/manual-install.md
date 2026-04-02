@@ -1,125 +1,73 @@
 ---
 llms: "optional"
-llms_description: "Manual dev environment without Docker: composer install, ./vendor/bin/rr get (RoadRunner), bin/get-binaries.sh (Centrifugo + DoltDB). Database: mkdir .db, dolt sql create database. Config: .env.sample, php app.php encrypt:key. Start with ./rr serve. Access at localhost:8082."
+llms_description: "Manual installation without Docker: download standalone Go binary from GitHub Releases, run directly. Configuration via buggregator.yaml or environment variables. No external dependencies required."
 ---
 
-# Cookbook — Manual install dev environment
+# Cookbook — Manual Installation
 
-Hey, developer! 🎉 This guide will help you quickly set up a local dev environment for Buggregator.
+Buggregator is a single self-contained binary with no external dependencies. You don't need Docker, PHP, Go, or any
+runtime to run it.
 
-## Clone the Repository
+## Download
 
-First of all you need to clone the repository to your local machine.
-
-```bash
-git clone git@github.com:buggregator/server.git
-```
-
-> **Note**: If you don't have access to the repository, you can fork it and clone your forked repository.
-
-## Install Dependencies
-
-After cloning the repository, navigate to the project directory and install the dependencies.
+Download the latest release for your platform from
+[GitHub Releases](https://github.com/buggregator/server/releases):
 
 ```bash
-composer install
+# Linux (amd64)
+curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-linux-amd64
+chmod +x buggregator
+
+# Linux (arm64)
+curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-linux-arm64
+chmod +x buggregator
+
+# macOS (Apple Silicon)
+curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-arm64
+chmod +x buggregator
+
+# macOS (Intel)
+curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-amd64
+chmod +x buggregator
 ```
 
-## Install RoadRunner
-
-Buggregator uses RoadRunner as an application server. To install RoadRunner, run the following command:
+## Run
 
 ```bash
-./vendor/bin/rr get
+./buggregator
 ```
 
-## Download required binaries
+Open http://127.0.0.1:8000 in your browser. That's it.
 
-Buggregator requires some binaries to be downloaded.
+## Configuration
 
-- Centrifugo server for Websockets
-- DoltDB for local database
+By default, Buggregator runs with in-memory storage (data is lost on restart). To persist data, create
+a `buggregator.yaml` file next to the binary:
 
-To download these binaries, run the following command:
+```yaml
+database:
+  dsn: data.db                    # Persist events to a SQLite file
+
+storage:
+  mode: filesystem                # Persist attachments to disk
+  path: ./storage
+```
+
+Or specify a custom config path:
 
 ```bash
-cd ./bin
-chmod +x ./get-binaries.sh
-./get-binaries.sh
+./buggregator --config /etc/buggregator/buggregator.yaml
 ```
 
-This script will download the required binaries to the `./bin` directory.
+See the [server configuration guide](../config/server.md) for all available options.
 
-## Create a new local database
+## Default Ports
 
-Buggregator uses DoltDB as a local database. To create a new database, run the following command:
+| Port | Service |
+|------|---------|
+| 8000 | HTTP (Web UI + API) |
+| 1025 | SMTP |
+| 9912 | VarDumper (TCP) |
+| 9913 | Monolog (TCP) |
 
-```bash
-mkdir .db
-./bin/dolt --data-dir=.db sql -q "create database buggregator;"
-```
-
-## Configure the Environment
-
-Create a new `.env` file in the project root directory:
-
-```bash
-cp .env.sample .env
-```
-
-Generate a new application key:
-
-```bash
-php app.php encrypt:key --mount=.env
-```
-
-Update the `.env` file with your configuration settings.
-
-```dotenv
-# Queue
-QUEUE_CONNECTION=roadrunner
-
-# Broadcast
-BROADCAST_CONNECTION=centrifugo
-
-# Monolog
-MONOLOG_DEFAULT_CHANNEL=roadrunner
-MONOLOG_DEFAULT_LEVEL=DEBUG
-
-# Database
-PERSISTENCE_DRIVER=db
-DB_DRIVER=mysql # mysql, pgsql
-DB_DATABASE=buggregator
-DB_HOST=127.0.0.1
-DB_USERNAME=root
-DB_PASSWORD=
-
-# Turn off cache for tokenizer
-TOKENIZER_CACHE_TARGETS=false
-```
-
-## Start the Application
-
-To start the application, run the following command:
-
-```bash
-./rr serve
-```
-
-RoadRunner will start the application server and also Centrifugo and DoltDB servers.
-
-> **Warning**: In some cases when you stop the application, the Centrifugo or DoltDB servers may not stop. Kill them
-> manually using the following commands:
-
-```bash
-killall centrifugo
-killall dolt
-killall php
-```
-
-When the application is running, you can access it at `http://localhost:8082`.
-
-
----
-
-Now you have successfully set up your development environment for Buggregator. Happy coding! 🚀
+All ports are configurable via environment variables or the config file.
