@@ -1,5 +1,5 @@
 ---
-llms_description: "HTTP request capture: method, URI, headers, cookies, POST data, uploaded files, auto-generated cURL command. Two trigger methods: HTTP auth (http-dump@host) or X-Buggregator-Event: http-dump header. Use cases: webhook development, API debugging, request replay."
+llms_description: "HTTP request capture: method, URI, headers, cookies, POST data, uploaded files, auto-generated cURL command. Two trigger methods: HTTP auth (http-dump@host) or X-Buggregator-Event: http-dump header. Use cases: webhook development, API debugging, request replay. For capturing both request and response, see HTTP Proxy on port 8080."
 ---
 
 # HTTP Dumps — Request Inspection
@@ -8,6 +8,9 @@ Your app calls external APIs, sends webhooks, or receives callbacks — and you 
 the wire. Buggregator captures full HTTP requests: method, URI, headers, cookies, POST data, and uploaded files.
 You get a ready-to-use cURL command for any captured request. No need to set up a separate service like
 webhook.site — it's built into the same Buggregator where you already see your logs and exceptions.
+
+> **Need to see responses too?** Use the [HTTP Proxy](/config/http-proxy) — it captures both request and response
+> by acting as a forward proxy between your app and external services.
 
 ![http dumps](https://github.com/buggregator/server/assets/773481/fc823390-b490-4bbb-a787-44471eca9fb6)
 

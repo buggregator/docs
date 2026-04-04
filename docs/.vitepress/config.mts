@@ -66,6 +66,7 @@ export default defineConfig({
                     {text: 'SMTP Server', link: '/config/smtp'},
                     {text: 'SMS Gateway', link: '/config/sms'},
                     {text: 'HTTP Dumps', link: '/config/http-dumps'},
+                    {text: 'HTTP Proxy', link: '/config/http-proxy'},
                     {text: 'Monolog', link: '/config/monolog'},
                     {text: 'VarDumper', link: '/config/var-dumper'},
                     {text: 'Ray', link: '/config/ray'},
