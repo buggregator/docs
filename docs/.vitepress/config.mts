@@ -1,5 +1,25 @@
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 import {defineConfig} from 'vitepress'
 import {generateLlms, llmsPlugin} from './llms'
+import {TypesenseSearchPlugin} from 'vitepress-plugin-typesense'
+
+const themeDir = dirname(fileURLToPath(import.meta.url)) + '/theme'
+
+// Internal: for indexing at build time (Docker hostname)
+const typesenseHost = process.env.TYPESENSE_HOST || 'localhost'
+const typesensePort = process.env.TYPESENSE_PORT || '8108'
+const typesenseProtocol = process.env.TYPESENSE_PROTOCOL || 'http'
+const typesenseAdminKey = process.env.TYPESENSE_API_KEY || 'buggregator-search-key'
+
+// Public: for browser search (accessible from user's browser)
+const typesensePublicHost = process.env.TYPESENSE_PUBLIC_HOST || typesenseHost
+const typesensePublicPort = process.env.TYPESENSE_PUBLIC_PORT || typesensePort
+const typesensePublicProtocol = process.env.TYPESENSE_PUBLIC_PROTOCOL || typesenseProtocol
+const typesenseSearchKey = process.env.TYPESENSE_SEARCH_KEY || typesenseAdminKey
+const typesenseCollection = process.env.TYPESENSE_COLLECTION || 'buggregator_docs'
+const docsHostname = process.env.DOCS_HOSTNAME || 'https://docs.buggregator.dev'
+const typesenseIndexingEnabled = process.env.TYPESENSE_INDEXING !== 'false'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -7,17 +27,47 @@ export default defineConfig({
     title: "Buggregator docs",
     description: "Buggregator docs",
     vite: {
-        plugins: [llmsPlugin()],
+        define: {
+            'process.env': {},
+        },
+        resolve: {
+            alias: {
+                // Override plugin's Search.vue with empty component — we use our own DocSearch in Layout
+                './VPNavBarSearch.vue': join(themeDir, 'EmptySearch.vue'),
+                './VPNavBarSearchButton.vue': join(themeDir, 'EmptySearch.vue'),
+            },
+        },
+        plugins: [
+            llmsPlugin(),
+            TypesenseSearchPlugin({
+                typesenseCollectionName: typesenseCollection,
+                typesenseServerConfig: {
+                    apiKey: typesenseSearchKey,
+                    nodes: [{
+                        host: typesensePublicHost,
+                        port: typesensePublicPort,
+                        protocol: typesensePublicProtocol,
+                    }],
+                },
+                indexing: {
+                    enabled: typesenseIndexingEnabled,
+                    hostname: docsHostname,
+                    typesenseServerConfig: {
+                        apiKey: typesenseAdminKey,
+                        nodes: [{
+                            host: typesenseHost,
+                            port: typesensePort,
+                            protocol: typesenseProtocol,
+                        }],
+                    },
+                },
+            }),
+        ],
     },
     buildEnd: async (config) => {
         await generateLlms(config)
     },
     themeConfig: {
-        // https://vitepress.dev/reference/default-theme-config
-        search: {
-            provider: 'local'
-        },
-
         nav: [
             {text: 'Docs', link: '/'},
         ],

@@ -6,6 +6,9 @@
   },
   "devDependencies": {
     "gray-matter": "^4.0.3",
-    "vitepress": "^1.0.0-rc.25"
+    "vitepress": "^1.6.4"
+  },
+  "dependencies": {
+    "vitepress-plugin-typesense": "^1.1.5"
   }
 }
