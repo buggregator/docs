@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import {defineConfig} from 'vitepress'
 import {generateLlms, llmsPlugin} from './llms'
 import {TypesenseSearchPlugin} from 'vitepress-plugin-typesense'
+import {indexToTypesense} from './typesense-indexer.mts'
 
 const themeDir = dirname(fileURLToPath(import.meta.url)) + '/theme'
 
@@ -10,7 +11,7 @@ const themeDir = dirname(fileURLToPath(import.meta.url)) + '/theme'
 const typesenseHost = process.env.TYPESENSE_HOST || 'localhost'
 const typesensePort = process.env.TYPESENSE_PORT || '8108'
 const typesenseProtocol = process.env.TYPESENSE_PROTOCOL || 'http'
-const typesenseAdminKey = process.env.TYPESENSE_API_KEY || 'buggregator-search-key'
+const typesenseAdminKey = process.env.TYPESENSE_API_KEY || 'buggregator-dev-key'
 
 // Public: for browser search (accessible from user's browser)
 const typesensePublicHost = process.env.TYPESENSE_PUBLIC_HOST || typesenseHost
@@ -42,17 +43,10 @@ export default defineConfig({
                         protocol: typesensePublicProtocol,
                     }],
                 },
+                // Indexing disabled — we use our custom indexer (typesense-indexer.mts)
+                // that also indexes code blocks and stores HTML excerpts.
                 indexing: {
-                    enabled: typesenseIndexingEnabled,
-                    hostname: docsHostname,
-                    typesenseServerConfig: {
-                        apiKey: typesenseAdminKey,
-                        nodes: [{
-                            host: typesenseHost,
-                            port: typesensePort,
-                            protocol: typesenseProtocol,
-                        }],
-                    },
+                    enabled: false,
                 },
             }),
             // Override the plugin's Search.vue with our custom DocSearch component
@@ -73,6 +67,18 @@ export default defineConfig({
     },
     buildEnd: async (config) => {
         await generateLlms(config)
+        await indexToTypesense(config, typesenseCollection, {
+            enabled: typesenseIndexingEnabled,
+            hostname: docsHostname,
+            typesenseServerConfig: {
+                apiKey: typesenseAdminKey,
+                nodes: [{
+                    host: typesenseHost,
+                    port: typesensePort,
+                    protocol: typesenseProtocol,
+                }],
+            },
+        })
     },
     themeConfig: {
         nav: [
