@@ -47,6 +47,7 @@ export default defineConfig({
                 // that also indexes code blocks and stores HTML excerpts.
                 indexing: {
                     enabled: false,
+                    failBuildOnDocumentIndexingError: false,
                 },
             }),
             // Override the plugin's Search.vue with our custom DocSearch component
@@ -67,18 +68,22 @@ export default defineConfig({
     },
     buildEnd: async (config) => {
         await generateLlms(config)
-        await indexToTypesense(config, typesenseCollection, {
-            enabled: typesenseIndexingEnabled,
-            hostname: docsHostname,
-            typesenseServerConfig: {
-                apiKey: typesenseAdminKey,
-                nodes: [{
-                    host: typesenseHost,
-                    port: typesensePort,
-                    protocol: typesenseProtocol,
-                }],
-            },
-        })
+        try {
+            await indexToTypesense(config, typesenseCollection, {
+                enabled: typesenseIndexingEnabled,
+                hostname: docsHostname,
+                typesenseServerConfig: {
+                    apiKey: typesenseAdminKey,
+                    nodes: [{
+                        host: typesenseHost,
+                        port: typesensePort,
+                        protocol: typesenseProtocol,
+                    }],
+                },
+            })
+        } catch (e) {
+            console.warn('⚠️ [Typesense] Indexing failed (non-fatal):', (e as Error).message)
+        }
     },
     themeConfig: {
         nav: [
