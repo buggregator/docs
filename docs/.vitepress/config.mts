@@ -30,13 +30,6 @@ export default defineConfig({
         define: {
             'process.env': {},
         },
-        resolve: {
-            alias: {
-                // Override plugin's Search.vue with empty component — we use our own DocSearch in Layout
-                './VPNavBarSearch.vue': join(themeDir, 'EmptySearch.vue'),
-                './VPNavBarSearchButton.vue': join(themeDir, 'EmptySearch.vue'),
-            },
-        },
         plugins: [
             llmsPlugin(),
             TypesenseSearchPlugin({
@@ -62,6 +55,20 @@ export default defineConfig({
                     },
                 },
             }),
+            // Override the plugin's Search.vue with our custom DocSearch component
+            {
+                name: 'custom-search-override',
+                config() {
+                    return {
+                        resolve: {
+                            alias: {
+                                './VPNavBarSearch.vue': join(themeDir, 'DocSearch.vue'),
+                                './VPNavBarSearchButton.vue': join(themeDir, 'EmptySearch.vue'),
+                            },
+                        },
+                    }
+                },
+            },
         ],
     },
     buildEnd: async (config) => {

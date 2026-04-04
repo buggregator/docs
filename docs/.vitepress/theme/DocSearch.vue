@@ -84,6 +84,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKey))
 </script>
 
 <template>
+  <div class="ts-search-wrapper">
   <!-- Trigger -->
   <button class="ts-search-btn" aria-label="Search" @click="open">
     <svg class="ts-search-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -127,9 +128,29 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKey))
       </div>
     </Transition>
   </Teleport>
+  </div>
 </template>
 
 <style>
+/* Wrapper — matches VPNavBarSearch layout */
+.ts-search-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .ts-search-wrapper {
+    flex-grow: 1;
+    padding-left: 24px;
+  }
+}
+
+@media (min-width: 960px) {
+  .ts-search-wrapper {
+    padding-left: 32px;
+  }
+}
+
 /* Button */
 .ts-search-btn {
   display: flex; align-items: center; gap: 6px; padding: 0 10px; height: 36px;
