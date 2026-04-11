@@ -74,5 +74,8 @@ jobs:
             # Restart docs container with new image
             docker compose up -d buggregator-docs
 
+            # Reindex documentation in Typesense
+            docker compose run --rm docs-indexer
+
             # Clean up old images
             docker image prune -f
