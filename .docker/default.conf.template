@@ -1,0 +1,20 @@
+server {
+    listen 80;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Search API proxy — routes browser requests to Typesense inside Docker network
+    location /api/search {
+        proxy_pass ${TYPESENSE_UPSTREAM}/collections/${TYPESENSE_COLLECTION}/documents/search$is_args$args;
+        proxy_set_header X-TYPESENSE-API-KEY ${TYPESENSE_API_KEY};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass_request_body off;
+    }
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

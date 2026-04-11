@@ -2,7 +2,6 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {defineConfig} from 'vitepress'
 import {generateLlms, llmsPlugin} from './llms'
-import {TypesenseSearchPlugin} from 'vitepress-plugin-typesense'
 import {indexToTypesense} from './typesense-indexer.mts'
 
 const themeDir = dirname(fileURLToPath(import.meta.url)) + '/theme'
@@ -12,12 +11,6 @@ const typesenseHost = process.env.TYPESENSE_HOST || 'localhost'
 const typesensePort = process.env.TYPESENSE_PORT || '8108'
 const typesenseProtocol = process.env.TYPESENSE_PROTOCOL || 'http'
 const typesenseAdminKey = process.env.TYPESENSE_API_KEY || 'buggregator-dev-key'
-
-// Public: for browser search (accessible from user's browser)
-const typesensePublicHost = process.env.TYPESENSE_PUBLIC_HOST || typesenseHost
-const typesensePublicPort = process.env.TYPESENSE_PUBLIC_PORT || typesensePort
-const typesensePublicProtocol = process.env.TYPESENSE_PUBLIC_PROTOCOL || typesenseProtocol
-const typesenseSearchKey = process.env.TYPESENSE_SEARCH_KEY || typesenseAdminKey
 const typesenseCollection = process.env.TYPESENSE_COLLECTION || 'buggregator_docs'
 const docsHostname = process.env.DOCS_HOSTNAME || 'https://docs.buggregator.dev'
 const typesenseIndexingEnabled = process.env.TYPESENSE_INDEXING !== 'false'
@@ -31,26 +24,26 @@ export default defineConfig({
         define: {
             'process.env': {},
         },
+        server: {
+            proxy: {
+                '/api/search': {
+                    target: `${typesenseProtocol}://${typesenseHost}:${typesensePort}`,
+                    changeOrigin: true,
+                    rewrite: (path: string) => {
+                        const qs = path.includes('?') ? path.substring(path.indexOf('?')) : ''
+                        return `/collections/${typesenseCollection}/documents/search${qs}`
+                    },
+                    configure: (proxy) => {
+                        proxy.on('proxyReq', (proxyReq) => {
+                            proxyReq.setHeader('X-TYPESENSE-API-KEY', typesenseAdminKey)
+                        })
+                    },
+                },
+            },
+        },
         plugins: [
             llmsPlugin(),
-            TypesenseSearchPlugin({
-                typesenseCollectionName: typesenseCollection,
-                typesenseServerConfig: {
-                    apiKey: typesenseSearchKey,
-                    nodes: [{
-                        host: typesensePublicHost,
-                        port: typesensePublicPort,
-                        protocol: typesensePublicProtocol,
-                    }],
-                },
-                // Indexing disabled — we use our custom indexer (typesense-indexer.mts)
-                // that also indexes code blocks and stores HTML excerpts.
-                indexing: {
-                    enabled: false,
-                    failBuildOnDocumentIndexingError: false,
-                },
-            }),
-            // Override the plugin's Search.vue with our custom DocSearch component
+            // Override VitePress search with our custom DocSearch component
             {
                 name: 'custom-search-override',
                 config() {

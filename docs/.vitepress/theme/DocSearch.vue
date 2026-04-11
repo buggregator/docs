@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
-// @ts-ignore — virtual module from vitepress-plugin-typesense
-import getConfig from 'virtual:typesense-config'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 
 const isOpen = ref(false)
 const query = ref('')
@@ -22,15 +20,6 @@ interface SearchHit {
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-const cfg = computed(() => (typeof getConfig === 'function' ? getConfig() : getConfig))
-
-const typesenseUrl = computed(() => {
-  const node = cfg.value.typesenseServerConfig?.nodes?.[0]
-  if (!node) return ''
-  const port = (node.protocol === 'https' && node.port === '443') || (node.protocol === 'http' && node.port === '80') ? '' : `:${node.port}`
-  return `${node.protocol}://${node.host}${port}`
-})
-
 const open = () => { isOpen.value = true; nextTick(() => inputRef.value?.focus()) }
 const close = () => { isOpen.value = false; query.value = ''; results.value = []; selectedIndex.value = 0 }
 
@@ -48,10 +37,7 @@ const search = async (q: string) => {
       per_page: '20',
       prioritize_exact_match: 'false',
     })
-    const res = await fetch(
-      `${typesenseUrl.value}/collections/${cfg.value.typesenseCollectionName}/documents/search?${params}`,
-      { headers: { 'X-TYPESENSE-API-KEY': cfg.value.typesenseServerConfig.apiKey } },
-    )
+    const res = await fetch(`/api/search?${params}`)
     if (!res.ok) throw new Error(`${res.status}`)
     const data = await res.json()
     results.value = (data.hits || []).map((hit: any) => {
