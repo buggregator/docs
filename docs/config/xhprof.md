@@ -76,7 +76,7 @@ composer require --dev spiral/profiler:^3.0
 Please mind, bundle in early development stage - feedback much appreciated
 
 ```bash
-composer require --dev velpl/buggregator-profiler-bundle:^0.2
+composer require --dev velpl/buggregator-profiler-bundle:^0.3
 ```
 
 [Package documentation](https://github.com/velPL/buggregator-profiler-bundle)
