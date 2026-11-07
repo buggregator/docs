@@ -140,7 +140,7 @@ the UI and your captured data. To keep it on your machine only:
   -monolog-addr 127.0.0.1:9913
 ```
 
-Add `PROXY_ADDR=127.0.0.1:8080` in front if you keep the HTTP proxy.
+Add `PROXY_ADDR=127.0.0.1:8080` in front for the HTTP proxy: it has no flag.
 
 ## Keep events after a restart
 
