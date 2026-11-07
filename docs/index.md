@@ -15,7 +15,7 @@ Works with the SDKs you already have. No cloud account. No code changes. No runt
 
 **Project repository:** https://github.com/buggregator/server
 
-![Cover image](https://github.com/buggregator/server/assets/773481/47491a3c-57a3-4b40-b82e-37976afdf708)
+<img src="/images/cover-image.webp" alt="Buggregator" width="1672" height="288">
 
 ## What's new in v2.0
 
@@ -105,7 +105,7 @@ Microservices, monorepos, multiple teams — one dashboard.
 Find slow functions and memory leaks. Visualize profiling data as a **Call Graph**, **Flame Graph**,
 and **Top Functions** table. **Compare two runs** side-by-side to verify your optimizations actually helped.
 
-![xhprof](https://github.com/buggregator/server/assets/773481/d69e1158-599d-4546-96a9-40a42cb060f4)
+<img src="/images/xhprof.webp" alt="xhprof" width="1399" height="803" loading="lazy">
 
 ### [Sentry Compatibility](/config/sentry) — Exceptions
 
@@ -113,14 +113,14 @@ Catch unhandled exceptions with full **stack traces**, **breadcrumbs**, **reques
 **device/browser info**, tags, and context. See exactly where your code breaks.
 All Sentry SDKs are supported — PHP, JavaScript, Python, and more.
 
-![sentry](https://github.com/buggregator/server/assets/773481/e979fda5-54c8-42cc-8224-a1c5d828569a)
+<img src="/images/sentry.webp" alt="sentry" width="1399" height="803" loading="lazy">
 
 ### [Fake SMTP Server](/config/smtp) — Emails
 
 Intercept outgoing emails during development. Preview HTML (with mobile/desktop viewport switcher),
 plain text, all addresses, attachments, and raw source. No emails actually sent.
 
-![smtp](https://github.com/buggregator/server/assets/773481/8dd60ddf-c8d8-4a26-a8c0-b05052414a5f)
+<img src="/images/smtp.webp" alt="smtp" width="1399" height="803" loading="lazy">
 
 ### [SMS Gateway](/config/sms) — SMS Messages
 
@@ -132,35 +132,35 @@ Sinch, and more. See every message with sender, recipient, text, and detected pr
 Capture and inspect HTTP requests: method, URI, headers, cookies, POST data, uploaded files. Get a ready-to-use
 **cURL command** for any captured request.
 
-![http dumps](https://github.com/buggregator/server/assets/773481/fc823390-b490-4bbb-a787-44471eca9fb6)
+<img src="/images/http-dumps.webp" alt="http dumps" width="1399" height="803" loading="lazy">
 
 ### [Monolog Server](/config/monolog) — Logs
 
 Aggregate application logs in real time. See log level, channel, message, context, extra fields, and source
 location. Filter by level, search by message. Supports all PSR-3 levels.
 
-![monolog](https://github.com/buggregator/server/assets/773481/21919110-fd4d-490d-a78e-41242d329885)
+<img src="/images/monolog.webp" alt="monolog" width="1399" height="803" loading="lazy">
 
 ### [Symfony VarDumper](/config/var-dumper) — Variable Dumps
 
 Inspect variables with `dump()`. See object properties, array contents, and types — right in the browser.
 Click on file paths to open them in your IDE.
 
-![var-dumper](https://github.com/buggregator/server/assets/773481/b77fa867-0a8e-431a-9126-f69959dc18f4)
+<img src="/images/var-dumper.webp" alt="var-dumper" width="1399" height="803" loading="lazy">
 
 ### [Spatie Ray](/config/ray) — Debug Tool
 
 Debug with `ray()` — tables, queries, models, jobs, mail, counters, and 18 more payload types.
 A free alternative to the Ray app. Works with PHP, JavaScript, Ruby, Go, and Bash.
 
-![ray](https://github.com/buggregator/server/assets/773481/168b27f7-75b1-4837-b0a1-37146d5b8b52)
+<img src="/images/ray.webp" alt="ray" width="1399" height="803" loading="lazy">
 
 ### [Inspector Compatibility](/config/inspector) — Transactions
 
 Monitor application performance with transaction tracing, memory tracking, and timeline breakdowns
 to identify bottlenecks. Local APM alternative.
 
-![inspector](https://github.com/buggregator/server/assets/773481/ab002ecf-e1dc-4433-90d4-0e42ff8c0ab3)
+<img src="/images/inspector.webp" alt="inspector" width="1399" height="803" loading="lazy">
 
 ## Works with your framework
 
@@ -222,7 +222,7 @@ Enterprise features when you need them:
 
 ## Tech stack
 
-- [Go](https://go.dev/) (single binary, ~30 MB, no external dependencies)
+- [Go programming language](https://go.dev/) (single binary, ~30 MB, no external dependencies)
 - [SQLite](https://www.sqlite.org/) (embedded database, in-memory or file-based)
 - [Vue 3](https://vuejs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/)
 - [TailwindCSS](https://tailwindcss.com/) + [Pinia](https://pinia.vuejs.org/)
