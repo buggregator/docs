@@ -1,5 +1,5 @@
 ---
-llms_description: "For AI agents (Claude Code, Cursor, Codex): set up Buggregator for the user in one pass. One command per OS to download the binary and start it in the background on 127.0.0.1 with MCP on and a database file; check with GET /api/version and a test event; connect MCP (claude mcp add buggregator -- <path>/buggregator mcp); env lines to point the user's app (Sentry DSN, VarDumper, Monolog, SMTP, Ray); stop and restart."
+llms_description: "For AI agents (Claude Code, Cursor, Codex): set up Buggregator for the user in one pass. Install script per OS (install.sh, install.ps1), then start the binary in the background on 127.0.0.1 with MCP on and a database file; check with GET /api/version and a test event; connect MCP (claude mcp add buggregator -- <path>/buggregator mcp); env lines to point the user's app (Sentry DSN, VarDumper, Monolog, SMTP, Ray); stop and restart."
 ---
 
 # Set up with an AI agent
@@ -19,27 +19,14 @@ The rest of the page is the agent's instructions.
 Goal: Buggregator runs on this machine, the user's app sends events to it, and you can read them over MCP.
 Run the steps in order. Each step has a check; do not go on until it passes.
 
-### 1. Pick the binary
+### 1. Install
 
-| OS | `uname -s` / `uname -m` | File |
-|----|-------------------------|------|
-| Linux x86-64 | `Linux` / `x86_64` | `buggregator-linux-amd64` |
-| Linux ARM64 | `Linux` / `aarch64` or `arm64` | `buggregator-linux-arm64` |
-| macOS Apple Silicon | `Darwin` / `arm64` | `buggregator-darwin-arm64` |
-| macOS Intel | `Darwin` / `x86_64` | `buggregator-darwin-amd64` |
-| Windows x86-64 | — | `buggregator-windows-amd64.exe` |
-
-URL: `https://github.com/buggregator/server/releases/latest/download/<file>`.
-
-### 2. Download and start
-
-Linux and macOS (picks the file itself, puts it in `~/.local/bin`, starts it in the background):
+Linux and macOS: the script picks the binary for this OS and CPU, checks its checksum and puts it in
+`~/.local/bin/buggregator`. Then start it in the background:
 
 ```bash
-OS=$(uname -s | tr A-Z a-z); ARCH=$(uname -m); case $ARCH in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac
-mkdir -p ~/.local/bin ~/.local/share/buggregator
-curl -fsSL "https://github.com/buggregator/server/releases/latest/download/buggregator-$OS-$ARCH" -o ~/.local/bin/buggregator
-chmod +x ~/.local/bin/buggregator
+curl -fsSL https://raw.githubusercontent.com/buggregator/server/master/scripts/install.sh | sh
+mkdir -p ~/.local/share/buggregator
 MCP_ENABLED=true PROXY_ADDR=127.0.0.1:8080 nohup ~/.local/bin/buggregator \
   -http-addr 127.0.0.1:8000 -smtp-addr 127.0.0.1:1025 \
   -vardumper-addr 127.0.0.1:9912 -monolog-addr 127.0.0.1:9913 \
@@ -47,23 +34,31 @@ MCP_ENABLED=true PROXY_ADDR=127.0.0.1:8080 nohup ~/.local/bin/buggregator \
   > ~/.local/share/buggregator/buggregator.log 2>&1 &
 ```
 
-Windows (PowerShell):
+Windows (PowerShell): the script puts `buggregator.exe` in `%LOCALAPPDATA%\Programs\buggregator`. MCP runs over
+HTTP on Windows (no Unix socket there):
 
 ```powershell
-$dir = "$env:LOCALAPPDATA\buggregator"; New-Item -ItemType Directory -Force $dir | Out-Null
-Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download/buggregator-windows-amd64.exe -OutFile "$dir\buggregator.exe"
+irm https://raw.githubusercontent.com/buggregator/server/master/scripts/install.ps1 | iex
+$dir = "$env:LOCALAPPDATA\Programs\buggregator"
 $env:MCP_ENABLED = "true"; $env:MCP_TRANSPORT = "http"; $env:MCP_ADDR = "127.0.0.1:8001"; $env:PROXY_ADDR = "127.0.0.1:8080"
 Start-Process -WindowStyle Hidden "$dir\buggregator.exe" -ArgumentList "-http-addr 127.0.0.1:8000 -smtp-addr 127.0.0.1:1025 -monolog-addr 127.0.0.1:9913 -db `"$dir\buggregator.db`""
 ```
 
-<!-- TODO(#4507): Windows and macOS first-run steps (SmartScreen, Gatekeeper) once tested; confirm MCP transport on Windows. -->
+The script fails with `no checksums.txt in this release`: the latest release is older than v2.6.0. Run it again with
+`BUGGREGATOR_NO_VERIFY=1` (`curl … | BUGGREGATOR_NO_VERIFY=1 sh`; PowerShell: `$env:BUGGREGATOR_NO_VERIFY = "1"`
+before `irm`).
+
+No `curl`/`sh` or the script fails otherwise: download by hand. URL
+`https://github.com/buggregator/server/releases/latest/download/<file>`, where `<file>` is
+`buggregator-linux-amd64`, `buggregator-linux-arm64`, `buggregator-darwin-arm64`, `buggregator-darwin-amd64`,
+`buggregator-windows-amd64.exe` or `buggregator-windows-arm64.exe`; then `chmod +x`.
 
 Rules:
 - Every port listens on `127.0.0.1` only: captured data stays on this machine.
 - `-db` keeps events after a restart. Without it, events live in memory.
 - A port already taken: Buggregator exits at start (code 1), the log says `address already in use`
   (`failed to start HTTP server` for `8000`, `failed to start TCP servers` for the others). Find what holds it (`lsof -i :1025`), ask the user,
-  or move the module, e.g. `-smtp-addr 127.0.0.1:2525`, and use the new port in step 4.
+  or move the module, e.g. `-smtp-addr 127.0.0.1:2525`, and use the new port in step 3.
 - On Windows the VarDumper module (port `9912`) does not work; everything else does.
 
 Check:
@@ -75,7 +70,7 @@ curl -s http://127.0.0.1:8000/api/version
 
 No answer: read the log (`~/.local/share/buggregator/buggregator.log`).
 
-### 3. Send a test event
+### 2. Send a test event
 
 ```bash
 curl -s -H 'X-Buggregator-Event: http-dump' http://127.0.0.1:8000/agent-setup-test
@@ -85,7 +80,7 @@ curl -s http://127.0.0.1:8000/api/events | head -c 300
 Check: the list has an event of type `http-dump` with `agent-setup-test` in its URI. Tell the user it is in the UI at
 http://127.0.0.1:8000.
 
-### 4. Point the user's app at Buggregator
+### 3. Point the user's app at Buggregator
 
 Change only the addresses below in the app's config (`.env` or similar). Keep the user's other settings. Add only the
 lines for tools the app already uses.
@@ -108,7 +103,7 @@ Details per tool: [Sentry](/config/sentry), [VarDumper](/config/var-dumper), [Mo
 Check: trigger something in the app (an error, a `dump()`, a log line, an email) and see a new event in
 `GET /api/events`.
 
-### 5. Connect MCP
+### 4. Connect MCP
 
 Claude Code, Linux and macOS (socket, the default):
 
@@ -116,7 +111,7 @@ Claude Code, Linux and macOS (socket, the default):
 claude mcp add buggregator -- ~/.local/bin/buggregator mcp
 ```
 
-Claude Code, Windows (HTTP, as started in step 2):
+Claude Code, Windows (HTTP, as started in step 1):
 
 ```bash
 claude mcp add --transport http buggregator http://127.0.0.1:8001/mcp
@@ -124,10 +119,10 @@ claude mcp add --transport http buggregator http://127.0.0.1:8001/mcp
 
 Other clients: [MCP → Integration with AI assistants](/config/mcp#integration-with-ai-assistants).
 
-Check: the client lists the tool `events_list`; calling it returns the test event from step 3. A new MCP server may
+Check: the client lists the tool `events_list`; calling it returns the test event from step 2. A new MCP server may
 need a new session of the client: tell the user if so.
 
-### 6. Tell the user
+### 5. Tell the user
 
 Say in plain words: where the UI is (http://127.0.0.1:8000), which lines of their config you changed, and how to
 stop it (below).
@@ -142,9 +137,9 @@ pkill -f '.local/bin/buggregator'     # Linux, macOS
 Stop-Process -Name buggregator         # Windows
 ```
 
-Start again with the start command of step 2 (skip the download).
+Start again with the start command of step 1 (skip the install line).
 
 ## Update
 
-Run step 2 again: it downloads the latest release over the old file. Stop the running one first. Events stay in the
+Run the install line of step 1 again: it replaces the old file with the latest release. Stop the running one first. Events stay in the
 `-db` file.
