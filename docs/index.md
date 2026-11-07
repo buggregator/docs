@@ -23,7 +23,7 @@ Buggregator v2.0 is a **complete rewrite in Go**. The result is a single ~30 MB 
 with everything built in — web UI, WebSocket server, SQLite database. No PHP runtime, no external
 services, no infrastructure to manage.
 
-- **Single binary** — download, run, done. No Docker required (though Docker is still supported).
+- **Single binary** — download, run, done. Docker works too.
 - **~30 MB** — the entire server with the embedded web UI weighs less than a typical node_modules folder.
 - **Zero dependencies** — no PHP, no Go runtime, no database server, no message broker. Everything is inside.
 - **Embedded SQLite** — in-memory by default for instant startup, or file-based for persistence.
@@ -34,7 +34,7 @@ services, no infrastructure to manage.
 ### Download and run
 
 ```bash
-curl -sL https://github.com/buggregator/server/releases/latest/download/buggregator-linux-amd64 -o buggregator \
+curl -fsSL https://github.com/buggregator/server/releases/latest/download/buggregator-linux-amd64 -o buggregator \
   && chmod +x buggregator \
   && ./buggregator
 ```

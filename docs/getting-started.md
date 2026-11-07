@@ -21,43 +21,75 @@ Setting it up with an AI agent? Give it [the agent setup page](/agent-setup).
 
 ### Binary
 
-Buggregator is a single binary with no dependencies. Download and run:
+Buggregator is a single binary with no dependencies. One command installs it (from v2.6.0).
+
+Linux and macOS — puts `buggregator` in `~/.local/bin`, no `sudo`, checks the checksum:
 
 ```bash
-# Linux (amd64)
-curl -sL https://github.com/buggregator/server/releases/latest/download/buggregator-linux-amd64 -o buggregator \
-  && chmod +x buggregator \
-  && ./buggregator
+curl -fsSL https://raw.githubusercontent.com/buggregator/server/master/scripts/install.sh | sh
+buggregator
 ```
 
+Windows (PowerShell) — puts `buggregator.exe` in `%LOCALAPPDATA%\Programs\buggregator`, checks the checksum:
+
+```powershell
+irm https://raw.githubusercontent.com/buggregator/server/master/scripts/install.ps1 | iex
+& "$env:LOCALAPPDATA\Programs\buggregator\buggregator.exe"
+```
+
+- The script picks the file for your system and CPU (Intel/AMD or ARM).
+- Windows: the folder is not added to `PATH`, so run it by its full path, as above.
+- Linux and macOS: if `~/.local/bin` is not in your `PATH`, the script says so. Then run `~/.local/bin/buggregator`.
+- On Windows, the VarDumper module (port 9912) is not available. Every other module works.
+
 <details>
-<summary>Other platforms</summary>
+<summary>Download the file yourself</summary>
 
 ```bash
-# Linux (arm64)
-curl -sL https://github.com/buggregator/server/releases/latest/download/buggregator-linux-arm64 -o buggregator \
-  && chmod +x buggregator
+# Linux (Intel/AMD). ARM: buggregator-linux-arm64
+curl -fsSL -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-linux-amd64
+chmod +x buggregator
+./buggregator
 
-# macOS (Apple Silicon)
-curl -sL https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-arm64 -o buggregator \
-  && chmod +x buggregator
+# macOS (Apple Silicon). Intel: buggregator-darwin-amd64
+curl -fsSL -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-arm64
+chmod +x buggregator
+./buggregator
+```
 
-# macOS (Intel)
-curl -sL https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-amd64 -o buggregator \
-  && chmod +x buggregator
-
-# Windows (amd64, PowerShell)
+```powershell
+# Windows (PowerShell). ARM, from v2.6.0: buggregator-windows-arm64.exe
 Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download/buggregator-windows-amd64.exe -OutFile buggregator.exe
 .\buggregator.exe
 ```
 
-> On Windows, the VarDumper module (port 9912) is not available. Every other module works.
+Downloaded in a browser instead (not tested on a real Mac or Windows machine):
+
+- macOS blocks the file once. Run `xattr -d com.apple.quarantine buggregator`, or right-click → **Open**.
+  `curl` and the script do not hit this.
+- Windows SmartScreen says «Windows protected your PC». Click **More info → Run anyway**, or run
+  `Unblock-File .\buggregator.exe`.
 
 </details>
 
 Open http://127.0.0.1:8000 in your browser. Done.
 
 All systems, ports, keeping events after a restart: [Install the binary](/install).
+
+### Only on this computer
+
+The binary listens on all network interfaces, so other machines on your network can reach it. To keep it local:
+
+```bash
+HTTP_ADDR=127.0.0.1:8000 SMTP_ADDR=127.0.0.1:1025 MONOLOG_ADDR=127.0.0.1:9913 VAR_DUMPER_ADDR=127.0.0.1:9912 PROXY_ADDR=127.0.0.1:8080 buggregator
+```
+
+```powershell
+$env:HTTP_ADDR="127.0.0.1:8000"; $env:SMTP_ADDR="127.0.0.1:1025"; $env:MONOLOG_ADDR="127.0.0.1:9913"; $env:PROXY_ADDR="127.0.0.1:8080"; & "$env:LOCALAPPDATA\Programs\buggregator\buggregator.exe"
+```
+
+The install scripts print the same line after they finish. The Docker samples below already publish on
+`127.0.0.1` only.
 
 ### Docker
 
