@@ -1,5 +1,5 @@
 ---
-llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only); mock server: mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, and (mcp.mock_write, default true, env MCP_MOCK_WRITE) mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request, mock_import_openapi, mock_group_delete. Integration with Claude Code, Cursor, and other MCP-compatible clients."
+llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only), xdebug_breakpoints, and with allow_control (default true; a session without an IDE) xdebug_wait, xdebug_step, xdebug_continue, xdebug_stop, xdebug_breakpoint_set, xdebug_breakpoint_remove; mock server: mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, and (mcp.mock_write, default true, env MCP_MOCK_WRITE) mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request, mock_import_openapi, mock_group_delete. Integration with Claude Code, Cursor, and other MCP-compatible clients."
 ---
 
 # Configuration — MCP (Model Context Protocol)
@@ -220,9 +220,9 @@ mcp:
 
 ### Xdebug
 
-With the [Xdebug proxy](/config/xdebug) on (`xdebug.enabled: true`), MCP clients also get these tools. They read a
-debug session paused in the IDE; only `xdebug_eval` (off unless `xdebug.allow_eval: true`) runs code. Stepping and
-continuing stay in the IDE.
+With the [Xdebug proxy](/config/xdebug) on (`xdebug.enabled: true`), MCP clients also get these tools. The first
+six read a paused session, `xdebug_breakpoints` lists breakpoints; only `xdebug_eval` (off unless `xdebug.allow_eval: true`) runs code. While an IDE drives
+the session, stepping and continuing stay in the IDE.
 
 | Tool | Description |
 |------|-------------|
@@ -232,6 +232,17 @@ continuing stay in the IDE.
 | `xdebug_variables` | Variables of a frame: locals by default (`context_id` `1` = superglobals, `2` = constants). Arrays and objects show their first level. |
 | `xdebug_property` | One variable or property by its full name (`$user`, `$user->address`, `$items[0]`) with its children. Long strings up to 64 KB. |
 | `xdebug_eval` | The value of a PHP expression in the current frame. Present only with `xdebug.allow_eval: true`: the code really runs inside the debugged request. |
+| `xdebug_wait` | Waits until a session pauses (up to 60 s). |
+| `xdebug_step` | One step (`mode` `over`, `into`, `out`); waits for the next pause and returns where the script stopped. |
+| `xdebug_continue` | Runs to the next breakpoint or `xdebug_break()`; same answer as `xdebug_step`. |
+| `xdebug_stop` | `mode` `detach` (default, the script runs to the end) or `stop` (ends the request now). |
+| `xdebug_breakpoints` | The saved breakpoints; with `session_id`, their state and hit count in that session. |
+| `xdebug_breakpoint_set` | Saves a breakpoint: `file` + `line`, or `exception`; `condition` only with `allow_eval`. |
+| `xdebug_breakpoint_remove` | Removes a saved breakpoint by `id`. |
+
+`xdebug_wait`, `xdebug_step`, `xdebug_continue`, `xdebug_stop`, `xdebug_breakpoint_set` and
+`xdebug_breakpoint_remove` drive a session that has no IDE ([Debug without an IDE](/config/xdebug#debug-without-an-ide)).
+They are left out with `xdebug.allow_control: false`; stepping is refused while an IDE drives.
 
 `session_id` can be left out when exactly one session is paused. More in [Xdebug → MCP tools](/config/xdebug#mcp-tools).
 
