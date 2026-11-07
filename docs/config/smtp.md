@@ -146,10 +146,6 @@ duration such as `10s` or `1m`, default `30s`, at most `60s`.
 A message that is already stored and matches comes back at once. So take a cursor before the action, and pass it
 as `since`. Otherwise an old email from an earlier test can match.
 
-> **Limit:** `project` filters only the messages already stored. A new message from another project that matches
-> the other filters is returned too. Until this is fixed, add a filter that tells your test's email apart, such
-> as `to`.
-
 Example — a password reset test:
 
 ```bash

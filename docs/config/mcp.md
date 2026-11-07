@@ -193,7 +193,8 @@ MCP clients can use the following tools to query Buggregator data:
 ### Xdebug
 
 With the [Xdebug proxy](/config/xdebug) on (`xdebug.enabled: true`), MCP clients also get these tools. They read a
-debug session paused in the IDE. All are read-only: stepping and continuing stay in the IDE.
+debug session paused in the IDE; only `xdebug_eval` (off unless `xdebug.allow_eval: true`) runs code. Stepping and
+continuing stay in the IDE.
 
 | Tool | Description |
 |------|-------------|
