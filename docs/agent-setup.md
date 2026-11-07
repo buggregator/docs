@@ -61,8 +61,9 @@ Start-Process -WindowStyle Hidden "$dir\buggregator.exe" -ArgumentList "-http-ad
 Rules:
 - Every port listens on `127.0.0.1` only: captured data stays on this machine.
 - `-db` keeps events after a restart. Without it, events live in memory.
-- Port already taken (the log says `address already in use`): that module does not start, the rest runs. Ask
-  the user, or move it, e.g. `-smtp-addr 127.0.0.1:2525`, and use the new port in step 4.
+- Port `1025`, `9912`, `9913` or `8080` already taken: Buggregator exits at start, the log says
+  `failed to start TCP servers` with `address already in use`. Find what holds it (`lsof -i :1025`), ask the user,
+  or move the module, e.g. `-smtp-addr 127.0.0.1:2525`, and use the new port in step 4.
 - On Windows the VarDumper module (port `9912`) does not work; everything else does.
 
 Check:

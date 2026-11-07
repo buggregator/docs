@@ -83,8 +83,9 @@ and each integration page has its own (for example [Sentry](/config/sentry) or [
 | `9913` | Monolog | `-monolog-addr` or `MONOLOG_ADDR` |
 | `8080` | HTTP proxy | `PROXY_ADDR` |
 
-If a port is already taken, that one module does not start; the log shows `address already in use`, and the rest
-keeps running. Example: another mail tool holds `1025`. Move Buggregator's SMTP elsewhere:
+If one of the ports `1025`, `9912`, `9913` or `8080` is already taken, Buggregator stops at start. The log says
+`failed to start TCP servers` with `address already in use`. Example: another mail tool holds `1025`. Move
+Buggregator's SMTP elsewhere:
 
 ```bash
 ./buggregator -smtp-addr :2525
