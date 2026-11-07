@@ -187,7 +187,7 @@ Rules from the config file have `"source": "config"`, `"read_only": true` and id
 | `GET` | `/api/mocks/{id}` | — | the rule, or `404` |
 | `PUT` | `/api/mocks/{id}` | rule fields (replaces the rule, keeps its position) | the rule; `409` for a config rule |
 | `DELETE` | `/api/mocks/{id}` | — | `{"status": true}`; `409` for a config rule |
-| `POST` | `/api/mocks/order` | `{"ids": ["…", "…"]}` | `{"data": [rule, …]}`; listed rules first, the rest keep their order |
+| `POST` | `/api/mocks/order` | `{"ids": ["…", "…"]}` | `{"data": [rule, …]}`; listed rules first, the rest keep their order; an unknown or config rule id gets `404` |
 | `GET` | `/api/mocks/requests?limit=50&project=&rule_id=` | — | captured mock requests, newest first; `limit` 1–500, default 50 |
 
 Defaults on create: `method` `ANY`, `status` `200`, `enabled` `true`.

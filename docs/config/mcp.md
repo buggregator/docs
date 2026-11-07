@@ -88,12 +88,43 @@ If Buggregator runs in Docker, you can use the HTTP transport instead:
 {
   "mcpServers": {
     "buggregator": {
-      "type": "url",
+      "type": "http",
       "url": "http://localhost:8001/mcp"
     }
   }
 }
 ```
+
+Or add it from the command line:
+
+```bash
+claude mcp add --transport http buggregator http://localhost:8001/mcp
+```
+
+With `MCP_AUTH_TOKEN` set, pass the token as a header:
+
+```json
+{
+  "mcpServers": {
+    "buggregator": {
+      "type": "http",
+      "url": "http://localhost:8001/mcp",
+      "headers": {
+        "Authorization": "Bearer my-secret-token"
+      }
+    }
+  }
+}
+```
+
+The same from the command line:
+
+```bash
+claude mcp add --transport http buggregator http://localhost:8001/mcp \
+  --header "Authorization: Bearer my-secret-token"
+```
+
+Without the header, the server answers `401`.
 
 ### Cursor
 
@@ -153,9 +184,19 @@ MCP clients can use the following tools to query Buggregator data:
 
 ### Xdebug
 
-With the [Xdebug proxy](/config/xdebug) on, MCP clients also get read-only tools for a paused debug session:
-`xdebug_sessions`, `xdebug_location`, `xdebug_stack`, `xdebug_variables`, `xdebug_property`, and
-`xdebug_eval` (only with `xdebug.allow_eval: true`). See [Xdebug → MCP tools](/config/xdebug#mcp-tools).
+With the [Xdebug proxy](/config/xdebug) on (`xdebug.enabled: true`), MCP clients also get these tools. They read a
+debug session paused in the IDE. All are read-only: stepping and continuing stay in the IDE.
+
+| Tool | Description |
+|------|-------------|
+| `xdebug_sessions` | List debug sessions, including ones closed in the last 10 minutes. A session can be read only while it is paused (state `break`). |
+| `xdebug_location` | Current file and line, the function it is in, and the source lines around it. |
+| `xdebug_stack` | The call stack, one frame per level; `0` is the current frame. |
+| `xdebug_variables` | Variables of a frame: locals by default (`context_id` `1` = superglobals, `2` = constants). Arrays and objects show their first level. |
+| `xdebug_property` | One variable or property by its full name (`$user`, `$user->address`, `$items[0]`) with its children. Long strings up to 64 KB. |
+| `xdebug_eval` | The value of a PHP expression in the current frame. Present only with `xdebug.allow_eval: true`: the code really runs inside the debugged request. |
+
+`session_id` can be left out when exactly one session is paused. More in [Xdebug → MCP tools](/config/xdebug#mcp-tools).
 
 ### Example Usage in Claude Code
 
