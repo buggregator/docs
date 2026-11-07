@@ -17,7 +17,7 @@ logging stack.
 - **Structured log viewer** — see context and extra fields as formatted JSON, not a raw string in a terminal.
 - **Multi-service logging** — collect logs from all containers in one place.
 - **Debug long-running apps** — workers, daemons, and queue consumers write logs that are easy to miss in stdout. Buggregator catches them all.
-- **All in one place** — correlate logs with exceptions and dumps from the same request flow.
+- **All in one place** — see logs in the same UI as your exceptions and dumps.
 
 ## What you see in the UI
 

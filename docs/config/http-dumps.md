@@ -1,12 +1,12 @@
 ---
-llms_description: "HTTP request capture: method, URI, headers, cookies, POST data, uploaded files, auto-generated cURL command. Two trigger methods: HTTP auth (http-dump@host) or X-Buggregator-Event: http-dump header. Use cases: webhook development, API debugging, request replay. For capturing both request and response, see HTTP Proxy on port 8080."
+llms_description: "HTTP request capture: method, URI, headers, cookies, POST data, uploaded files, a cURL command built from the request. Two trigger methods: HTTP auth (http-dump@host) or X-Buggregator-Event: http-dump header. Use cases: webhook development, API debugging. For capturing both request and response, see HTTP Proxy on port 8080."
 ---
 
 # HTTP Dumps — Request Inspection
 
 Your app calls external APIs, sends webhooks, or receives callbacks — and you need to see exactly what goes over
 the wire. Buggregator captures full HTTP requests: method, URI, headers, cookies, POST data, and uploaded files.
-You get a ready-to-use cURL command for any captured request. No need to set up a separate service like
+Each request also comes as a cURL command you can copy. No need to set up a separate service like
 webhook.site — it's built into the same Buggregator where you already see your logs and exceptions.
 
 > **Need to see responses too?** Use the [HTTP Proxy](/config/http-proxy) — it captures both request and response
@@ -21,7 +21,6 @@ webhook.site — it's built into the same Buggregator where you already see your
 
 - **Webhook development** — build a webhook endpoint and see exactly what the other service sends you.
 - **API debugging** — redirect outgoing HTTP calls to Buggregator to inspect request structure before hitting the real API.
-- **Replay requests** — copy the generated cURL command and replay any captured request from your terminal.
 - **All in one place** — HTTP requests alongside exceptions, logs, and dumps in the same dashboard.
 
 ## What you see in the UI
@@ -33,7 +32,7 @@ webhook.site — it's built into the same Buggregator where you already see your
 - **Headers** — all request headers.
 - **Cookies** — cookies sent with the request.
 - **Uploaded files** — attached files, available for download.
-- **cURL command** — generated automatically for easy replay.
+- **cURL command** — the request written as a `curl` command, with a copy button.
 
 ## Configuration
 
