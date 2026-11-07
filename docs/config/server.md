@@ -1,5 +1,5 @@
 ---
-llms_description: "Server configuration via buggregator.yaml, environment variables, and CLI flags. Covers HTTP address, CORS, database (SQLite), storage modes, TCP ports (SMTP, Monolog, VarDumper, HTTP proxy), module enable/disable, metrics, auth, MCP, webhooks, projects, memory limits (90% of the container limit, GOMEMLIMIT override), UI list limits (UI_DEFAULT_LIMIT, UI_MAX_LIMIT, UI_DEFAULT_WINDOW), DATABASE_MAX_OPEN_CONNS, Xdebug proxy (XDEBUG_PROXY_*), mock rules (mocks:). Priority: CLI flags > env vars > config file > defaults."
+llms_description: "Server configuration via buggregator.yaml, environment variables, and CLI flags. Covers HTTP address, CORS, database (SQLite), storage modes, TCP ports (SMTP, Monolog, VarDumper, HTTP proxy), module enable/disable, metrics, auth, MCP, webhooks, projects, memory limits (90% of the container limit, GOMEMLIMIT override), new-version check (update_check.enabled/interval, env UPDATE_CHECK_ENABLED default true = one GET to api.github.com releases/latest at start and every 12h, false = no network call; result in GET /api/settings update), UI list limits (UI_DEFAULT_LIMIT, UI_MAX_LIMIT, UI_DEFAULT_WINDOW), DATABASE_MAX_OPEN_CONNS, Xdebug proxy (XDEBUG_PROXY_*), mock rules (mocks:). Priority: CLI flags > env vars > config file > defaults."
 ---
 
 # Configuration — Server
@@ -125,6 +125,11 @@ metrics:
 #     body: '{"id": 1}'
 #     delay: 150ms
 
+# New-version check (GitHub releases/latest); false = no network call
+update_check:
+  enabled: ${UPDATE_CHECK_ENABLED:true}
+  interval: ${UPDATE_CHECK_INTERVAL:12h}
+
 # Pre-defined projects
 # projects:
 #   - key: my-app
@@ -231,6 +236,13 @@ or through the API. See [Mock Server](/config/mock-server).
 | `MCP_ADDR` | `:8001` | HTTP listen address (for HTTP transport) |
 | `MCP_AUTH_TOKEN` | — | Bearer token for HTTP transport authentication |
 
+### New-Version Check
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `UPDATE_CHECK_ENABLED` | `true` | Ask GitHub for the newest server release. `false` = no network call at all. See [New-version check](#new-version-check) |
+| `UPDATE_CHECK_INTERVAL` | `12h` | Time between checks, a Go duration (`6h`, `24h`); at least `1h` |
+
 ### Other
 
 | Variable | Default | Description |
@@ -238,6 +250,37 @@ or through the API. See [Mock Server](/config/mock-server).
 | `FRONTEND_DIR` | — | Serve frontend from disk instead of embedded (for development) |
 
 ---
+
+## New-Version Check
+
+Since server [version: to fill], Buggregator asks GitHub whether a newer server release is out. It sends one
+request to `https://api.github.com/repos/buggregator/server/releases/latest` at start and then every 12 hours. The request
+carries only your server version (`User-Agent: buggregator/2.6.0`); nothing about your events or projects is sent.
+
+**Turn it off** where the server must not call out, e.g. a locked-down CI runner or a machine without internet:
+
+```bash
+UPDATE_CHECK_ENABLED=false ./buggregator
+```
+
+```yaml
+update_check:
+  enabled: false
+```
+
+With `false`, Buggregator makes no network call for this at all.
+
+- `interval` changes how often it asks: a Go duration, at least `1h` (a smaller value is raised to `1h`).
+- A failed check is tried again after an hour. It never stops the server from starting.
+- A development build (version `dev`) never checks.
+
+The result is in `GET /api/settings`, field `update`:
+
+```json
+"update": {"current": "2.6.0", "latest": "2.7.0", "url": "https://github.com/buggregator/server/releases/tag/v2.7.0", "available": true, "checked_at": "2026-11-07T10:30:00Z"}
+```
+
+`available` is `true` when `latest` is newer than `current`. With the check off, `update` is `null`.
 
 ## Docker Examples
 
