@@ -330,7 +330,8 @@ docker run --memory=512m -e GOMEMLIMIT=400MiB -p 127.0.0.1:8000:8000 ghcr.io/bug
 `GOMEMLIMIT=off` turns the soft limit off; the log then has no such line.
 
 It is a soft limit. Near it, the garbage collector (the part of Go that frees unused memory) works harder; memory
-can still go above it. The VarDumper parser runs as its own process, and its memory is not counted. A large upload, e.g. a big profiler snapshot, needs room on top of what Buggregator
+can still go above it. The VarDumper parser runs as its own process, and its memory is not counted in the soft limit (the container's limit
+still counts it). A large upload, e.g. a big profiler snapshot, needs room on top of what Buggregator
 normally uses, so leave headroom in the container's limit.
 
 ## Disabling Modules
