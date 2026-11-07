@@ -7,7 +7,7 @@ llms_description: "Multi-project support: configured in buggregator.yaml with ke
 Buggregator lets you use "projects" to help organize your data. Projects are useful for keeping events from
 different teams, applications, or environments separate.
 
-![image](https://github.com/user-attachments/assets/cde794f7-83fb-4708-9eef-713c6f8be7cc)
+![Project switcher in the sidebar](/images/projects-switcher.webp)
 
 **Here's why you might want to use projects:**
 

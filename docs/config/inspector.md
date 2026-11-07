@@ -9,7 +9,7 @@ consumes — but [Inspector.dev](https://inspector.dev/) is overkill for local d
 the same Inspector SDK protocol, so your transaction and performance data lands in the same UI where you
 already see exceptions, logs, and dumps.
 
-![inspector](https://github.com/buggregator/server/assets/773481/ab002ecf-e1dc-4433-90d4-0e42ff8c0ab3)
+![Inspector transaction](/images/inspector.webp)
 
 ## Use cases
 

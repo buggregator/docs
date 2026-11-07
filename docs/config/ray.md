@@ -8,7 +8,7 @@ llms_description: "Spatie Ray compatibility: free self-hosted alternative suppor
 a free, self-hosted alternative — you get the same `ray()` calls, but the data lands in Buggregator alongside
 your exceptions, logs, emails, and profiling. One place for everything.
 
-![ray](https://github.com/buggregator/server/assets/773481/168b27f7-75b1-4837-b0a1-37146d5b8b52)
+![Ray dumps](/images/ray.webp)
 
 ## Use cases
 
