@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript, Python, and any Sentry SDK. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or X-Buggregator-Project header; numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
+llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript, Python, and any Sentry SDK. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
 ---
 
 # Sentry — Exceptions
@@ -127,14 +127,23 @@ SENTRY_DSN=http://sentry@127.0.0.1:8000/shop
 
 A number in the path (`/1`, `/42`) is the SDK's own project id, not a Buggregator project. Such events go to
 `default`. Some SDKs accept only a number there: the Sentry JavaScript SDK, for example. Then keep the number
-and send the project in a header, if your SDK lets you add HTTP headers:
+and, if your SDK lets you add HTTP headers, send two headers together:
+
+```
+X-Buggregator-Event: sentry
+X-Buggregator-Project: shop
+```
+
+`X-Buggregator-Project` alone is not enough: a Sentry SDK request is recognized by its `X-Sentry-Auth` header,
+and that path ignores `X-Buggregator-Project`.
 
 | How | Example |
 |-----|---------|
-| DSN path (wins over the header) | `http://sentry@127.0.0.1:8000/shop` |
-| Header | `X-Buggregator-Project: shop` |
+| DSN path (wins over the headers) | `http://sentry@127.0.0.1:8000/shop` |
+| Headers | `X-Buggregator-Event: sentry` + `X-Buggregator-Project: shop` |
 
-A project that does not exist yet is created when its first event arrives.
+A project that does not exist yet is added to the project list when its first error arrives. A project that
+receives only traces, logs or metrics is not added: put it in `buggregator.yaml` (see [Projects](/config/projects)).
 
 Errors, traces, logs and metrics all land in the same project, however you set it.
 
@@ -163,7 +172,7 @@ The REST API accepts more filters than the page shows:
 | `GET /api/sentry/exceptions` | `project`, `environment`, `level`, `handled`, `grouped=true`, `from`, `to`, `window` |
 | `GET /api/sentry/traces` | `project`, `environment`, `release`, `from`, `to`, `window` |
 | `GET /api/sentry/logs` | `project`, `level` (several, comma-separated), `trace_id`, `from`, `to`, `window` |
-| `GET /api/sentry/metrics` | `project`, `search` (part of the name) |
+| `GET /api/sentry/metrics` | `project`, `name`, `type`, `trace_id`, `search` (part of the name), `from`, `to`, `window` |
 | `GET /api/sentry/counts` | `project`, `from`, `to`, `window` |
 
 `window` is a period like `15m`, `24h` or `7d`. `from` and `to` take unix seconds or ISO 8601.

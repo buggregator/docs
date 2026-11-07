@@ -81,7 +81,10 @@ Then start a debug session in the IDE as usual and stop at a breakpoint.
 ### Docker
 
 When Buggregator runs in a container and the IDE on your machine, the proxy must listen on all interfaces inside
-the container and dial the host. The IDE can stay on port 9003.
+the container and dial the host.
+
+**PHP in a container too.** PHP reaches the proxy over the Docker network, so port 9003 is not published, and
+the IDE can stay on port 9003:
 
 ```yaml
 services:
@@ -89,7 +92,6 @@ services:
     image: ghcr.io/buggregator/server:latest
     ports:
       - 127.0.0.1:8000:8000
-      - 127.0.0.1:9003:9003
     environment:
       XDEBUG_PROXY_ENABLED: "true"
       XDEBUG_PROXY_ADDR: 0.0.0.0:9003
@@ -99,6 +101,21 @@ services:
 ```
 
 In the PHP container, set `xdebug.client_host` to the Buggregator service name (e.g., `buggregator`).
+
+**PHP on your machine.** Then Xdebug needs the proxy on a host port, and that port cannot also be the IDE's.
+Publish 9003 and move the IDE to 9004:
+
+```yaml
+    ports:
+      - 127.0.0.1:8000:8000
+      - 127.0.0.1:9003:9003
+    environment:
+      XDEBUG_PROXY_ENABLED: "true"
+      XDEBUG_PROXY_ADDR: 0.0.0.0:9003
+      XDEBUG_PROXY_IDE_ADDR: host.docker.internal:9004
+```
+
+Set the IDE's Xdebug debug port to `9004`, and keep `xdebug.client_host=127.0.0.1`, `xdebug.client_port=9003`.
 
 > The proxy has no login of its own. Anyone who can reach its port can start a session. Keep it on
 > `127.0.0.1` or inside your Docker network.
@@ -175,8 +192,9 @@ Errors are `{"code", "error", "state"?}`.
 | `POST` | `/api/xdebug/sessions/{id}/eval` | body `{"expression": "count($items)"}`, `Content-Type: application/json`; needs `allow_eval` |
 | `GET` | `/api/xdebug/sessions/{id}/agent-log` | the last 200 MCP calls of the session |
 
-While the script is not paused, reads answer `409 not_paused`. Other codes: `404 not_found`,
-`422 xdebug_error` (Xdebug refused the read), `504 timeout`.
+While the script is not paused, reads answer `409 not_paused`. Other codes: `400 bad_request` (a missing or
+bad parameter), `404 not_found`, `415 unsupported_media_type` (eval without JSON), `422 xdebug_error` (Xdebug
+refused the read), `502 xdebug_failed`, `504 timeout`.
 
 A session's `state` is one of `starting`, `break`, `running`, `stopping`, `stopped`, `detached`. A closed session
 also has `closed_reason`: `ide_unreachable`, `ide_closed`, `engine_closed` or `stopped`.

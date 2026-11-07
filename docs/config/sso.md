@@ -189,6 +189,10 @@ These stay open, so your apps keep sending events without a token:
 - event ingestion (Sentry SDK, Ray, Inspector, profiler, SMS, HTTP dumps) and the TCP ports;
 - the mock server under `/mock/`;
 - `/api/version`, `/api/settings` and the SSO login pages;
+- attachment download and preview: `/api/{smtp,http-dump}/attachments/{eventUuid}/{uuid}` and
+  `/api/{smtp,http-dump}/attachments/{eventUuid}/preview/{uuid}`. The UI opens them as plain links, which carry
+  no token. A link needs both the event and the attachment UUID, and only the protected API returns those;
+- the WebSocket of the live feed, `/connection/websocket`;
 - Prometheus `GET /metrics` on the main port, when [metrics](/config/metrics) are on and `metrics.addr` is
   empty. It has counters only, no event content. Set `metrics.addr` to move it to its own port.
 

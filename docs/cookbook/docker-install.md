@@ -33,6 +33,13 @@ This will:
 - Start the Buggregator server
 - Start the example app for testing features
 
+> The example app mounts code from an `examples` checkout next to `server` (`../examples/app`,
+> `../examples/routes`, `../examples/resources`, `../examples/config/sentry.php`). Clone it first:
+>
+> ```bash
+> git clone git@github.com:buggregator/examples.git ../examples
+> ```
+
 > The compose file mounts `../frontend/dist` and sets `FRONTEND_DIR`, so the server serves a frontend build
 > from a `frontend` checkout next to `server`. Build it there first (`yarn install && yarn build:prod`), or remove
 > those two lines to use the embedded UI.
