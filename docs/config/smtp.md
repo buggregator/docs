@@ -16,7 +16,7 @@ module in the same Buggregator instance where you already see your logs and exce
 - **Email template testing** — preview HTML emails with a desktop/mobile viewport switcher to check responsive layouts.
 - **Transactional email verification** — make sure the right recipients, subject, and content are set before going to production.
 - **Attachment testing** — verify that attachments are generated correctly and can be downloaded.
-- **All in one place** — see emails next to the exceptions, logs, and dumps from the same request flow.
+- **All in one place** — see emails in the same UI as your exceptions, logs, and dumps.
 
 ## What you see in the UI
 
