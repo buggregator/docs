@@ -71,14 +71,22 @@ Add to your `.mcp.json` or configure via Claude Code settings:
 {
   "mcpServers": {
     "buggregator": {
-      "command": "./buggregator",
+      "type": "stdio",
+      "command": "buggregator",
       "args": ["mcp"]
     }
   }
 }
 ```
 
+Or from the command line:
+
+```bash
+claude mcp add buggregator -- buggregator mcp
+```
+
 The `buggregator mcp` subcommand bridges stdio to the running Buggregator instance via the Unix socket.
+`command` is the path to the binary: `buggregator` when it is on your `PATH`, else the full path.
 
 > **Note:** Make sure Buggregator is running with MCP enabled before connecting.
 
@@ -130,7 +138,7 @@ Without the header, the server answers `401`.
 
 In Cursor settings, add the MCP server:
 
-- **Command:** `./buggregator mcp`
+- **Command:** `buggregator mcp`
 - Or use the HTTP URL: `http://localhost:8001/mcp`
 
 ### Docker Setup
