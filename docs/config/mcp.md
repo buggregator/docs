@@ -220,9 +220,9 @@ mcp:
 
 ### Xdebug
 
-With the [Xdebug proxy](/config/xdebug) on (`xdebug.enabled: true`), MCP clients also get these tools. They read a
-debug session paused in the IDE; only `xdebug_eval` (off unless `xdebug.allow_eval: true`) runs code. Stepping and
-continuing stay in the IDE.
+With the [Xdebug proxy](/config/xdebug) on (`xdebug.enabled: true`), MCP clients also get these tools. The first
+six read a paused session; only `xdebug_eval` (off unless `xdebug.allow_eval: true`) runs code. While an IDE drives
+the session, stepping and continuing stay in the IDE.
 
 | Tool | Description |
 |------|-------------|
@@ -232,6 +232,13 @@ continuing stay in the IDE.
 | `xdebug_variables` | Variables of a frame: locals by default (`context_id` `1` = superglobals, `2` = constants). Arrays and objects show their first level. |
 | `xdebug_property` | One variable or property by its full name (`$user`, `$user->address`, `$items[0]`) with its children. Long strings up to 64 KB. |
 | `xdebug_eval` | The value of a PHP expression in the current frame. Present only with `xdebug.allow_eval: true`: the code really runs inside the debugged request. |
+| `xdebug_wait` | Waits until a session pauses (up to 60 s). |
+| `xdebug_step` | One step (`mode` `over`, `into`, `out`); waits for the next pause and returns where the script stopped. |
+| `xdebug_continue` | Runs to the next `xdebug_break()`; same answer as `xdebug_step`. |
+| `xdebug_stop` | `mode` `detach` (default, the script runs to the end) or `stop` (ends the request now). |
+
+The last four drive a session that has no IDE ([Debug without an IDE](/config/xdebug#debug-without-an-ide)). They
+are refused while an IDE drives, and are left out with `xdebug.allow_control: false`.
 
 `session_id` can be left out when exactly one session is paused. More in [Xdebug → MCP tools](/config/xdebug#mcp-tools).
 
