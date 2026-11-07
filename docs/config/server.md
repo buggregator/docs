@@ -277,10 +277,17 @@ With `false`, Buggregator makes no network call for this at all.
 The result is in `GET /api/settings`, field `update`:
 
 ```json
-"update": {"current": "2.6.0", "latest": "2.7.0", "url": "https://github.com/buggregator/server/releases/tag/v2.7.0", "available": true, "checked_at": "2026-11-07T10:30:00Z"}
+{"update":{"current":"2.6.0","latest":"2.7.0","url":"https://github.com/buggregator/server/releases/tag/v2.7.0","available":true,"checked_at":"2026-11-07T14:44:55.253807102Z"}}
 ```
 
-`available` is `true` when `latest` is newer than `current`. With the check off, `update` is `null`.
+`available` is `true` when `latest` is newer than `current`. Before the first check, or while GitHub cannot be
+reached, only `current` and `available` are there:
+
+```json
+{"update":{"current":"2.7.0","available":false}}
+```
+
+With the check off, `update` is `null`.
 
 ## Docker Examples
 
