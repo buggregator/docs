@@ -1,5 +1,5 @@
 ---
-llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only). Integration with Claude Code, Cursor, and other MCP-compatible clients."
+llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only); mock server: mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, and (mcp.mock_write, default true, env MCP_MOCK_WRITE) mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request, mock_import_openapi, mock_group_delete. Integration with Claude Code, Cursor, and other MCP-compatible clients."
 ---
 
 # Configuration — MCP (Model Context Protocol)
@@ -189,6 +189,34 @@ MCP clients can use the following tools to query Buggregator data:
 | `profiler_summary` | Quick overview: total CPU/wall time/memory, slowest function, biggest memory consumer, most called function. |
 | `profiler_top` | Top functions sorted by metric (cpu, wt, mu, pmu, ct, and their exclusive variants). Returns inclusive and exclusive metrics with percentages. |
 | `profiler_call_graph` | Filtered call graph showing function relationships. Use `threshold` and `percentage` to control which nodes are shown. |
+
+### Mock server
+
+Tools for the [mock server](/config/mock-server) rules. Details and an example flow:
+[Response templates → MCP tools](/config/mock-templates#mcp-tools-for-ai-agents).
+
+| Tool | Description |
+|------|-------------|
+| `mock_rules_list` | The rules in matching order: config rules first (read-only), then stored ones. |
+| `mock_rule_get` | One rule with its full body. |
+| `mock_rule_preview` | Runs a rule against a sample request without saving it: status, headers, body, `matched`, `error`. |
+| `mock_requests_list` | Requests the mock server got, newest first, with the rule that answered. |
+| `mock_template_helpers` | Template helpers and fake data generators with their parameters. |
+| `mock_rule_create` | Creates a rule. |
+| `mock_rule_update` | Changes a stored rule; only the given fields change. |
+| `mock_rule_delete` | Deletes a stored rule. |
+| `mock_rule_from_request` | Creates a rule from a captured request (e.g. one that got `404`). |
+| `mock_import_openapi` | Imports an OpenAPI 3.0/3.1 spec: one rule per operation, in one group. |
+| `mock_group_delete` | Deletes all stored rules of a group. |
+
+The last six change rules. They are on by default; `mcp.mock_write: false` (env `MCP_MOCK_WRITE=false`) leaves
+only the first five.
+
+```yaml
+mcp:
+  enabled: true
+  mock_write: false
+```
 
 ### Xdebug
 
