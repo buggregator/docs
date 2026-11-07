@@ -66,6 +66,10 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
+            # Stop at the first failing command, so the job goes red
+            # instead of reporting a deploy that did not happen.
+            set -eu
+
             cd /servers/buggregator.dev.v2
 
             # Pull latest docs image
