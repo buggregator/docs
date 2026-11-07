@@ -22,11 +22,46 @@ const typesenseCollection = process.env.TYPESENSE_COLLECTION || 'buggregator_doc
 const docsHostname = process.env.DOCS_HOSTNAME || 'https://docs.buggregator.dev'
 const typesenseIndexingEnabled = process.env.TYPESENSE_INDEXING !== 'false'
 
+const siteUrl = 'https://docs.buggregator.dev'
+const gaId = 'G-T3KSNEP67B'
+
+// Short page description for search results: frontmatter `description`, else the
+// start of `llms_description` cut at a word boundary (max 155 characters).
+function pageDescription(fm: Record<string, any>, fallback: string): string {
+    if (fm.description) return String(fm.description)
+    if (!fm.llms_description) return fallback
+    const text = String(fm.llms_description).trim()
+    if (text.length <= 155) return text
+    const cut = text.slice(0, 154)
+    return cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,;:.]+$/, '') + '…'
+}
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
     ignoreDeadLinks: true,
     title: "Buggregator docs",
     description: "Buggregator docs",
+    sitemap: {hostname: siteUrl},
+    head: [
+        ['script', {async: '', src: `https://www.googletagmanager.com/gtag/js?id=${gaId}`}],
+        ['script', {}, `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}');`],
+    ],
+    transformPageData(pageData) {
+        pageData.description = pageDescription(pageData.frontmatter, pageData.description)
+    },
+    transformHead({pageData}) {
+        const path = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '.html')
+        const url = `${siteUrl}/${path}`
+        return [
+            ['link', {rel: 'canonical', href: url}],
+            ['link', {rel: 'alternate', type: 'text/markdown', href: '/' + pageData.relativePath}],
+            ['meta', {property: 'og:type', content: 'website'}],
+            ['meta', {property: 'og:title', content: pageData.title || 'Buggregator docs'}],
+            ['meta', {property: 'og:description', content: pageData.description}],
+            ['meta', {property: 'og:url', content: url}],
+            ['meta', {property: 'og:image', content: 'https://buggregator.dev/buggregator.png'}],
+        ]
+    },
     vite: {
         define: {
             'process.env': {},
@@ -88,6 +123,7 @@ export default defineConfig({
     themeConfig: {
         nav: [
             {text: 'Docs', link: '/'},
+            {text: 'buggregator.dev', link: 'https://buggregator.dev'},
         ],
 
         sidebar: [

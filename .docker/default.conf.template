@@ -1,0 +1,38 @@
+server {
+    listen 80;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    charset utf-8;
+    charset_types text/plain text/markdown text/css application/javascript application/xml;
+
+    gzip on;
+    gzip_types text/css application/javascript application/json text/markdown text/plain text/xml application/xml image/svg+xml;
+
+    # Raw Markdown copy of every page (written by the llms build step)
+    location ~ \.md$ {
+        types { }
+        # charset utf-8 is added by charset_types above; a type with parameters would not match gzip_types
+        default_type text/markdown;
+        try_files $uri =404;
+    }
+
+    # Point agents at the Markdown copy of each page
+    location ~ ^(?<page>/.+)\.html$ {
+        add_header Link "<$page.md>; rel=\"alternate\"; type=\"text/markdown\"";
+        try_files $uri =404;
+    }
+
+    location ^~ /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # Unknown paths answer 404, never the home page (no duplicate pages for search engines)
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    error_page 404 /404.html;
+}
