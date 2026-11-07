@@ -1,5 +1,5 @@
 ---
-llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~30 MB binary, supports XHProf profiling, Sentry exceptions, fake SMTP email capture, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
+llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions, fake SMTP email capture, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
 ---
 
 # What is Buggregator?
@@ -19,12 +19,12 @@ Works with the SDKs you already have. No cloud account. No code changes. No runt
 
 ## What's new in v2.0
 
-Buggregator v2.0 is a **complete rewrite in Go**. The result is a single ~30 MB self-contained binary
+Buggregator v2.0 is a **complete rewrite in Go**. The result is a single ~40 MB self-contained binary
 with everything built in — web UI, WebSocket server, SQLite database. No PHP runtime, no external
 services, no infrastructure to manage.
 
 - **Single binary** — download, run, done. Docker works too.
-- **~30 MB** — the entire server with the embedded web UI weighs less than a typical node_modules folder.
+- **~40 MB** — the entire server with the embedded web UI weighs less than a typical node_modules folder.
 - **Zero dependencies** — no PHP, no Go runtime, no database server, no message broker. Everything is inside.
 - **Embedded SQLite** — in-memory by default for instant startup, or file-based for persistence.
 - **MCP server** — AI assistants (Claude Code, Cursor) can query your debugging data directly.
@@ -223,7 +223,7 @@ Enterprise features when you need them:
 
 ## Tech stack
 
-- [Go programming language](https://go.dev/) (single binary, ~30 MB, no external dependencies)
+- [Go programming language](https://go.dev/) (single binary, ~40 MB, no external dependencies)
 - [SQLite](https://www.sqlite.org/) (embedded database, in-memory or file-based)
 - [Vue 3](https://vuejs.org/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/)
 - [TailwindCSS](https://tailwindcss.com/) + [Pinia](https://pinia.vuejs.org/)
