@@ -31,6 +31,7 @@ export const llmsConfig = {
     'Lightweight CLI alternative (no Docker): `composer require --dev buggregator/trap`',
     'JetBrains IDE plugin: https://plugins.jetbrains.com/plugin/26344-buggregator',
     'Supported integrations: Sentry SDK, Symfony VarDumper, Monolog, Spatie Ray, Inspector, SMTP, HTTP dumps, XHProf, SMS',
+    'Also built in: HTTP proxy, mock server under /mock/, Xdebug proxy (off by default), MCP server for AI assistants',
     'Works with: Laravel, Symfony, Spiral, WordPress, Yii, Drupal — and JS, Python, Ruby, Go via Sentry SDK',
   ],
 

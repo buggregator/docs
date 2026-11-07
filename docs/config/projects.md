@@ -1,5 +1,5 @@
 ---
-llms_description: "Multi-project support: configured in buggregator.yaml with key/name pairs. Default project key 'default'. Per-project DSN formats for Sentry (http://key@host/project_key), Inspector (inspector:project_key@host), XHProf (profiler:project_key@host), Ray (ray:project_key@host). VarDumper and Monolog do not support projects."
+llms_description: "Multi-project support: configured in buggregator.yaml with key/name pairs. Default project key 'default'. Per-project DSN formats for Sentry (http://key@host/project_key), Inspector (inspector:project_key@host), XHProf (profiler:project_key@host), Ray (ray:project_key@host). Monolog and VarDumper: a 'project' key in the record or dump context. Mock server: X-Buggregator-Project header or Basic Auth mock:project_key. Unknown project keys are added on the first event card (not by Sentry traces/logs/metrics alone)."
 ---
 
 # Configuration — Projects
@@ -63,10 +63,26 @@ projects:
 To use Sentry with your project, format your DSN like this:
 
 ```dotenv
-SENTRY_DSN=http://<secret_key>@127.0.0.1:8000/<project_key>
+SENTRY_DSN=http://sentry@127.0.0.1:8000/<project_key>
 ```
 
-> **Note:** Read more about Sentry configuration [here](/config/sentry.html).
+A numeric last segment (`/1`) is the SDK's own project id and sends events to `default`. If your SDK accepts
+only numbers there, send both `X-Buggregator-Event: sentry` and `X-Buggregator-Project: <project_key>`; the
+project header alone is ignored for Sentry SDK requests.
+
+> **Note:** Read more in [Sentry → Projects](/config/sentry.html#projects).
+
+## Mock Server
+
+Rules can be limited to one project, and requests choose their project with the `X-Buggregator-Project`
+header or Basic Auth `mock:<project_key>`. See [Mock Server → Projects](/config/mock-server.html#projects).
+
+## Projects created on the fly
+
+A project key that is not in `buggregator.yaml` is added to the list when its first event card arrives, with
+the key as its name. Example: an error sent to `http://sentry@127.0.0.1:8000/billing` adds the project
+`billing`. Sentry traces, logs and metrics make no card, so a project that gets only those is not added: list it
+in `buggregator.yaml`.
 
 ## Inspector Configuration
 
@@ -100,8 +116,15 @@ RAY_PORT=8000
 
 ## VarDumper Configuration
 
-At this moment, VarDumper does not support projects.
+A dump goes to the project named by the `project` key of its context. A plain `dump()` has no such key, so it
+lands in `default`.
 
 ## Monolog Configuration
 
-At this moment, Monolog does not support projects.
+A log record goes to the project named by `project` in its context:
+
+```php
+$logger->error('Payment failed', ['project' => 'shop']);
+```
+
+Records without it land in `default`.

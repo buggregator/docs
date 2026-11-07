@@ -1,5 +1,5 @@
 ---
-llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback."
+llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings stay open."
 ---
 
 # Configuration — Single Sign-On (SSO)
@@ -166,6 +166,37 @@ After logging in successfully, users will be redirected back to the Buggregator 
 user's profile information in the bottom left corner of the app.
 
 ![image](https://github.com/buggregator/frontend/assets/773481/6f996c5e-f43a-4f5e-8da4-71f83110c7ba)
+
+## Calling the API from Scripts
+
+With SSO on, the APIs behind the UI need a login token in the `X-Auth-Token` header. Without it they answer
+`401`. This covers `/api/events`, Sentry (`/api/sentry/*`), the profiler, the SMTP testing API
+(`/api/smtp/*`), attachment lists, `/api/metrics`, mock rules (`/api/mocks*`) and Xdebug (`/api/xdebug*`).
+
+Since v2.6.0 this includes the Sentry, profiler and SMTP testing APIs. Before, they answered without a token.
+A test script that reads captured emails must now send the header:
+
+```bash
+curl http://buggregator.example.com/api/smtp/messages \
+  -H "X-Auth-Token: $BUGGREGATOR_TOKEN"
+```
+
+The token is the one the UI gets after you sign in. It is valid for 30 days. To copy it, open the browser's
+developer tools on the Buggregator page and read `token` from Local Storage.
+
+These stay open, so your apps keep sending events without a token:
+
+- event ingestion (Sentry SDK, Ray, Inspector, profiler, SMS, HTTP dumps) and the TCP ports;
+- the mock server under `/mock/`;
+- `/api/version`, `/api/settings` and the SSO login pages;
+- attachment download and preview: `/api/{smtp,http-dump}/attachments/{eventUuid}/{uuid}` and
+  `/api/{smtp,http-dump}/attachments/{eventUuid}/preview/{uuid}`. The UI opens them as plain links, which carry
+  no token. A link needs both the event and the attachment UUID, and only the protected API returns those;
+- the WebSocket of the live feed, `/connection/websocket`;
+- Prometheus `GET /metrics` on the main port, when [metrics](/config/metrics) are on and `metrics.addr` is
+  empty. It has counters only, no event content. Set `metrics.addr` to move it to its own port.
+
+With SSO off, nothing needs a token.
 
 ### Troubleshooting
 

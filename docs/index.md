@@ -29,8 +29,6 @@ services, no infrastructure to manage.
 - **Embedded SQLite** — in-memory by default for instant startup, or file-based for persistence.
 - **MCP server** — AI assistants (Claude Code, Cursor) can query your debugging data directly.
 
-> Looking for the PHP version (v1.x)? See the [1.x branch](https://github.com/buggregator/server/tree/1.x).
-
 ## Get started in 60 seconds
 
 ### Download and run
@@ -211,14 +209,17 @@ Enterprise features when you need them:
 - **[Prometheus Metrics](/config/metrics)** — monitor event counts with Grafana.
 - **[Multi-project Support](/config/projects)** — separate events by project or team.
 - **[MCP Server](/config/mcp)** — let AI assistants (Claude Code, Cursor) query your debugging data.
+- **[Mock Server](/config/mock-server)** — answer API calls with fixed responses and capture every request.
+- **[Xdebug Proxy](/config/xdebug)** — share a paused Xdebug session with the browser and AI assistants, read-only.
 
 ## Also included
 
 - **Event pinning** — pin important events so they don't get lost.
 - **Event screenshots** — export any event as an image to share with your team.
-- **Keyboard shortcuts** — press `?` to see all shortcuts. Navigate with `j`/`k`, switch modules with `1`-`8`.
+- **Keyboard shortcuts** — press `?` to see all shortcuts. Navigate with `j`/`k`, switch modules with `1`-`8`, `0` for all events. Single-key shortcuts can be turned off in Settings.
 - **IDE integration** — click file paths to open them in VS Code, PhpStorm, or [14 other IDEs](/config/var-dumper). Custom path mappings for Docker.
 - **Dark / Light themes** — follows your system preference or set manually.
+- **[Installable app](/config/pwa)** — install the UI as a desktop app with a new-events badge on its icon.
 
 ## Tech stack
 
