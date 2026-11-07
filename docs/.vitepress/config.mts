@@ -172,6 +172,7 @@ export default defineConfig({
                     {text: 'HTTP Dumps', link: '/config/http-dumps'},
                     {text: 'HTTP Proxy', link: '/config/http-proxy'},
                     {text: 'Mock Server', link: '/config/mock-server'},
+                    {text: 'Mock Templates', link: '/config/mock-templates'},
                     {text: 'Monolog', link: '/config/monolog'},
                     {text: 'VarDumper', link: '/config/var-dumper'},
                     {text: 'Ray', link: '/config/ray'},

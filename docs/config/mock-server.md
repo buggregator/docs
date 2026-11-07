@@ -1,5 +1,5 @@
 ---
-llms_description: "Mock server (since v2.6.0): requests to http://host:8000/mock/<path> get the response of the first enabled matching rule (method + path -> status, headers, body, delay). Path forms: exact, {param} for one segment, trailing * for the rest. Rules from buggregator.yaml (mocks:) come first and are read-only; rules from the UI or REST API /api/mocks follow by position. Every mock request is captured as an http-dump event with a payload.mock field (matched, rule_id, status, headers, body, near). Unmatched: 404 JSON. Project via X-Buggregator-Project or Basic Auth mock:<project>. Limits: status 100-599, delay up to 30s, body up to 1 MB."
+llms_description: "Mock server (since v2.6.0): requests to http://host:8000/mock/<path> get the response of the first enabled matching rule (method + path -> status, headers, body, delay). Path forms: exact, {param} for one segment, trailing * for the rest. Rules from buggregator.yaml (mocks:) come first and are read-only; rules from the UI or REST API /api/mocks follow by position. Every mock request is captured as an http-dump event with a payload.mock field (matched, rule_id, status, headers, body, near). Unmatched: 404 JSON. Project via X-Buggregator-Project or Basic Auth mock:<project>. Limits: status 100-599, delay up to 30s, body up to 1 MB. Dynamic responses: template: true and seed, see /config/mock-templates."
 ---
 
 # Mock Server — Fake API Responses
@@ -19,6 +19,8 @@ that was sent next to your logs and exceptions.
 - **Error handling** — make a rule that answers `500` or `429` and check how your app reacts.
 - **Slow responses** — add a delay to test timeouts and loading states.
 - **CI** — put the rules in `buggregator.yaml`, so every test run gets the same answers.
+- **Realistic data** — a [template rule](/config/mock-templates) copies the id from the path and fills in fake
+  names, emails and prices for each request.
 
 ## How it works
 
@@ -169,6 +171,8 @@ A rule looks like this:
   "headers": {"Content-Type": "application/json"},
   "body": "{\"id\": 1}",
   "delay_ms": 100,
+  "template": false,
+  "seed": 0,
   "enabled": true,
   "position": 0,
   "source": "api",
@@ -190,7 +194,10 @@ Rules from the config file have `"source": "config"`, `"read_only": true` and id
 | `POST` | `/api/mocks/order` | `{"ids": ["…", "…"]}` | `{"data": [rule, …]}`; listed rules first, the rest keep their order; an unknown or config rule id gets `404` |
 | `GET` | `/api/mocks/requests?limit=50&project=&rule_id=` | — | captured mock requests, newest first; `limit` 1–500, default 50 |
 
-Defaults on create: `method` `ANY`, `status` `200`, `enabled` `true`.
+Defaults on create: `method` `ANY`, `status` `200`, `enabled` `true`, `template` `false`, `seed` `0`.
+
+Template rules (`template`, `seed`), `POST /api/mocks/preview` and `GET /api/mocks/helpers`:
+[Response templates](/config/mock-templates).
 
 Errors are `{"message", "code"}`. A rule that fails validation gets `422` with the bad fields:
 
@@ -225,4 +232,5 @@ A mock request is a normal `http-dump` event. Its payload has an extra `mock` fi
 - `body` keeps the first 64 KB; `body_truncated` says when it was cut.
 - For an unmatched request, `matched` is `false`, `rule_id` and `rule_name` are `null`, and `near` lists up to
   5 rules that missed by one condition: `[{"rule_id", "rule_name", "reason"}]`.
+- A [template](/config/mock-templates) that failed adds `template_error` with the error text; `status` is then `500`.
 - Ordinary HTTP dumps have no `mock` field.
