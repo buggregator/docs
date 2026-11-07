@@ -6,8 +6,9 @@ llms_description: "Monolog log collection via SocketHandler on TCP port 9913 wit
 
 Your app writes logs — but where do they go during development? A file you `tail -f`? Docker container output
 you scroll through? With Buggregator, logs from all your services land in the same UI where you already see
-exceptions, dumps, and emails. Filter by level, see structured context, click on source locations — all without
-setting up Elasticsearch or a separate logging stack.
+exceptions, dumps, and emails. Search by message, channel or level, read the context as JSON, and
+see the file and line that wrote a record when it sends them — all without setting up Elasticsearch or a separate
+logging stack.
 
 ![Monolog log records](/images/monolog.webp)
 
@@ -26,7 +27,7 @@ setting up Elasticsearch or a separate logging stack.
 - **Timestamp** — when the log was recorded.
 - **Context** — structured context data in JSON format.
 - **Extra fields** — additional data from Monolog processors.
-- **Source** — file, line, and function where the log was generated.
+- **Source** — file, line, and function where the log was generated, when the record has a `source` key in its context.
 
 ## Configuration
 
