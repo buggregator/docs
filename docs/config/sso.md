@@ -188,7 +188,9 @@ These stay open, so your apps keep sending events without a token:
 
 - event ingestion (Sentry SDK, Ray, Inspector, profiler, SMS, HTTP dumps) and the TCP ports;
 - the mock server under `/mock/`;
-- `/api/version`, `/api/settings` and the SSO login pages.
+- `/api/version`, `/api/settings` and the SSO login pages;
+- Prometheus `GET /metrics` on the main port, when [metrics](/config/metrics) are on and `metrics.addr` is
+  empty. It has counters only, no event content. Set `metrics.addr` to move it to its own port.
 
 With SSO off, nothing needs a token.
 

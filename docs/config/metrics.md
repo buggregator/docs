@@ -48,6 +48,11 @@ docker run --pull always \
 
 Access metrics at `http://127.0.0.1:8000/metrics`.
 
+> **With SSO on**, `/metrics` on the main port stays open: Prometheus scrapes it without a login. It shows only
+> counters and gauges (event counts by type, HTTP requests, connections), no event content. To keep it off the
+> public port, set `metrics.addr` (Option 2) and do not publish that port. The JSON for the UI dashboard,
+> `/api/metrics`, needs a login token when SSO is on.
+
 ### Option 2: On a Separate Server
 
 For production environments where you want to keep metrics on a separate port:
