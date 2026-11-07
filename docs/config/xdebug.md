@@ -213,6 +213,9 @@ Add one in the **Breakpoints** panel:
 | `RuntimeException` | when a `RuntimeException` is thrown |
 | `*` | on every exception |
 
+An exception breakpoint matches the thrown class and its parent classes, not interfaces: `Exception` stops on a
+`RuntimeException`, `Throwable` never stops. For every exception, use `*`.
+
 The path is absolute, as PHP sees it: inside the container, not on your machine. The field suggests files from
 earlier pauses. While a session is paused, click a line number in the code to add or remove a breakpoint there.
 
@@ -285,7 +288,7 @@ removes them, and the Xdebug tools only read again (except `xdebug_eval` with `a
 | `xdebug_step` | One step: `mode` `over` (default), `into` or `out`. Waits for the next pause (`timeout_seconds` 1–30, default 30); returns the file, line, function and source around it, or that the script ended |
 | `xdebug_continue` | Runs to the next breakpoint or `xdebug_break()`; the same wait and answer as `xdebug_step` |
 | `xdebug_stop` | `mode` `detach` (default): the script runs to the end. `stop`: ends the request now, work can stay half done |
-| `xdebug_breakpoint_set` | Saves a breakpoint: `file` (absolute path as PHP sees it) and `line`, or `exception` (a class, e.g. `Throwable`). `condition` only with `allow_eval` |
+| `xdebug_breakpoint_set` | Saves a breakpoint: `file` (absolute path as PHP sees it) and `line`, or `exception` (a class, e.g. `RuntimeException`, or `*` for any). `condition` only with `allow_eval` |
 | `xdebug_breakpoint_remove` | Removes a saved breakpoint by `id` |
 
 `session_id` can be left out when exactly one session is paused.
