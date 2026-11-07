@@ -35,7 +35,7 @@ The source location of a dump is a link. Since server [version: to fill], Buggre
    PhpStorm, mapping `/var/www/` → `/home/me/project/`. A dump from `/var/www/src/Foo.php:12` opens
    `/home/me/project/src/Foo.php` at line 12. When several mappings match, the longest one wins.
 2. **The link your app sends.** Otherwise Buggregator uses the link from the dump as is, if it opens an editor.
-   Your app has already mapped the path, so this works well when the app runs in Docker.
+   If your app's link template maps the path (see below), this works when the app runs in Docker.
 3. **The default.** Otherwise the link is built for VS Code (the Settings default) with the path as the app sees it.
 
 Buggregator uses the app's link only when it starts with an editor scheme: `phpstorm`, `idea`, `vscode`,
@@ -44,6 +44,9 @@ Buggregator uses the app's link only when it starts with an editor scheme: `phps
 `file:///var/www/src/Foo.php#L12`. That path is inside the container, so Buggregator skips it.
 
 ### Set the link in your app
+
+The app sends this link only when `symfony/error-handler` is installed. Symfony and Laravel apps have it; otherwise
+run `composer require --dev symfony/error-handler`.
 
 Symfony VarDumper builds the link from the first of these that is set:
 
