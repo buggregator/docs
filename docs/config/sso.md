@@ -1,5 +1,5 @@
 ---
-llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings stay open."
+llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008)."
 ---
 
 # Configuration — Single Sign-On (SSO)
@@ -191,10 +191,14 @@ These stay open, so your apps keep sending events without a token:
 - `/api/version`, `/api/settings` and the SSO login pages;
 - attachment download and preview: `/api/{smtp,http-dump}/attachments/{eventUuid}/{uuid}` and
   `/api/{smtp,http-dump}/attachments/{eventUuid}/preview/{uuid}`. The UI opens them as plain links, which carry
-  no token. A link needs both the event and the attachment UUID, and only the protected API returns those;
-- the WebSocket of the live feed, `/connection/websocket`;
+  no token. A link needs both the event and the attachment UUID, and with SSO on only signed-in clients (the
+  protected API and the live feed) get those;
 - Prometheus `GET /metrics` on the main port, when [metrics](/config/metrics) are on and `metrics.addr` is
   empty. It has counters only, no event content. Set `metrics.addr` to move it to its own port.
+
+The live feed needs the same token. A WebSocket client of `/connection/websocket` sends it as `token` in its
+Centrifugo `connect` command. Without a valid token the connect gets error `109 unauthorized`, the socket is
+closed with code `1008`, and no events are pushed. The UI does this by itself after you sign in.
 
 With SSO off, nothing needs a token.
 
