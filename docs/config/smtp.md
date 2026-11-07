@@ -9,7 +9,7 @@ correct without actually delivering them. Buggregator includes a fake SMTP serve
 port `1025` and every email shows up in the UI. No Mailhog, no Mailtrap, no external services — just another
 module in the same Buggregator instance where you already see your logs and exceptions.
 
-![smtp](https://github.com/buggregator/server/assets/773481/8dd60ddf-c8d8-4a26-a8c0-b05052414a5f)
+![A captured email with HTML preview](/images/smtp.webp)
 
 ## Use cases
 

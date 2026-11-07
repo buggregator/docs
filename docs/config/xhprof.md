@@ -25,19 +25,19 @@ Watch introduction video on [YouTube](https://www.youtube.com/watch?v=2QbgjIVnz7
 
 Function calls as a tree. Nodes colored from white to dark red — the darker, the more resources consumed.
 
-![xhprof-callgraph](https://github.com/buggregator/server/assets/773481/1cf3c587-c1df-4742-8fcd-54a320c86252)
+![XHProf call graph](/images/xhprof-callgraph.webp)
 
 ### Flame Graph
 
 Stacked function calls showing where time is spent. Useful for spotting repetitive or time-consuming operations.
 
-![xhprof-flamegraph](https://github.com/buggregator/server/assets/773481/5f75e271-527d-4c6b-a0b1-a3558f8bac51)
+![XHProf flame graph](/images/xhprof-flamegraph.webp)
 
 ### Top Functions
 
 Ranked table of the most expensive function calls — CPU time, wall time, memory, and call count.
 
-![xhprof-top-func](https://github.com/buggregator/server/assets/773481/43dbe4c8-ac23-4cfb-8715-f5141093618f)
+![XHProf top functions](/images/xhprof-top-functions.webp)
 
 ### Profile Comparison
 

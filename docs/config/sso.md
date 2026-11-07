@@ -160,12 +160,12 @@ AUTH_JWT_SECRET=your-secret-key
 Once you set the environment variables, start your Buggregator server. You should see a Login page with an option to
 sign in. If everything is set up right, clicking this option will take you to the provider's login page.
 
-![image](https://github.com/buggregator/server/assets/773481/3bc5dd4b-b8ac-4e2c-a9c0-5707dd053d0b)
+![SSO login page](/images/sso-login.webp)
 
 After logging in successfully, users will be redirected back to the Buggregator server and logged in. You will see the
 user's profile information in the bottom left corner of the app.
 
-![image](https://github.com/buggregator/frontend/assets/773481/6f996c5e-f43a-4f5e-8da4-71f83110c7ba)
+![User menu with the signed-in user](/images/sso-user-menu.webp)
 
 ## Calling the API from Scripts
 

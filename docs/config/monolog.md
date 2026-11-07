@@ -9,7 +9,7 @@ you scroll through? With Buggregator, logs from all your services land in the sa
 exceptions, dumps, and emails. Filter by level, see structured context, click on source locations — all without
 setting up Elasticsearch or a separate logging stack.
 
-![monolog](https://github.com/buggregator/server/assets/773481/21919110-fd4d-490d-a78e-41242d329885)
+![Monolog log records](/images/monolog.webp)
 
 ## Use cases
 

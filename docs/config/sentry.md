@@ -11,7 +11,7 @@ emails, profiling — in a single UI.
 
 No registration. No limits. No heavy infrastructure.
 
-![sentry](https://github.com/buggregator/server/assets/773481/e979fda5-54c8-42cc-8224-a1c5d828569a)
+![Sentry exceptions](/images/sentry.webp)
 
 ## Use cases
 

@@ -9,7 +9,7 @@ output. With Buggregator, dumps go to a dedicated TCP server and show up in a cl
 exceptions, and everything else. No browser pollution, no output buffering issues, no lost dumps in long-running
 processes.
 
-![var-dumper](https://github.com/buggregator/server/assets/773481/b77fa867-0a8e-431a-9126-f69959dc18f4)
+![VarDumper dumps](/images/var-dumper.webp)
 
 ## Use cases
 
@@ -81,7 +81,7 @@ PHP;
 trap($code)->context(language: 'php');
 ```
 
-![image_2024-05-01_00-39-56](https://github.com/buggregator/frontend/assets/773481/9cddfbfa-e3a3-427e-a987-0f4aa1bdb504)
+![A dump with SQL code highlighting](/images/var-dumper-code-highlight.webp)
 
 ## Buggregator Trap
 
