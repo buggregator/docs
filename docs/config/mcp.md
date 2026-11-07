@@ -221,7 +221,7 @@ mcp:
 ### Xdebug
 
 With the [Xdebug proxy](/config/xdebug) on (`xdebug.enabled: true`), MCP clients also get these tools. The first
-six read a paused session; only `xdebug_eval` (off unless `xdebug.allow_eval: true`) runs code. While an IDE drives
+six read a paused session, `xdebug_breakpoints` lists breakpoints; only `xdebug_eval` (off unless `xdebug.allow_eval: true`) runs code. While an IDE drives
 the session, stepping and continuing stay in the IDE.
 
 | Tool | Description |
@@ -236,9 +236,13 @@ the session, stepping and continuing stay in the IDE.
 | `xdebug_step` | One step (`mode` `over`, `into`, `out`); waits for the next pause and returns where the script stopped. |
 | `xdebug_continue` | Runs to the next `xdebug_break()`; same answer as `xdebug_step`. |
 | `xdebug_stop` | `mode` `detach` (default, the script runs to the end) or `stop` (ends the request now). |
+| `xdebug_breakpoints` | The saved breakpoints; with `session_id`, their state and hit count in that session. |
+| `xdebug_breakpoint_set` | Saves a breakpoint: `file` + `line`, or `exception`; `condition` only with `allow_eval`. |
+| `xdebug_breakpoint_remove` | Removes a saved breakpoint by `id`. |
 
-The last four drive a session that has no IDE ([Debug without an IDE](/config/xdebug#debug-without-an-ide)). They
-are refused while an IDE drives, and are left out with `xdebug.allow_control: false`.
+`xdebug_wait`, `xdebug_step`, `xdebug_continue`, `xdebug_stop`, `xdebug_breakpoint_set` and
+`xdebug_breakpoint_remove` drive a session that has no IDE ([Debug without an IDE](/config/xdebug#debug-without-an-ide)).
+They are left out with `xdebug.allow_control: false`; stepping is refused while an IDE drives.
 
 `session_id` can be left out when exactly one session is paused. More in [Xdebug → MCP tools](/config/xdebug#mcp-tools).
 
