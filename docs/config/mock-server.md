@@ -1,5 +1,5 @@
 ---
-llms_description: "Mock server (since v2.6.0): requests to http://host:8000/mock/<path> get the response of the first enabled matching rule (method + path -> status, headers, body, delay). Path forms: exact, {param} for one segment, trailing * for the rest. Rules from buggregator.yaml (mocks:) come first and are read-only; rules from the UI or REST API /api/mocks follow by position. Every mock request is captured as an http-dump event with a payload.mock field (matched, rule_id, status, headers, body, near). Unmatched: 404 JSON. Project via X-Buggregator-Project or Basic Auth mock:<project>. Limits: status 100-599, delay up to 30s, body up to 1 MB. Dynamic responses: template: true and seed, see /config/mock-templates."
+llms_description: "Mock server (since v2.6.0): requests to http://host:8000/mock/<path> get the response of the first enabled matching rule (method + path -> status, headers, body, delay). Path forms: exact, {param} for one segment, trailing * for the rest. Rules from buggregator.yaml (mocks:) come first and are read-only; rules from the UI or REST API /api/mocks follow by position. Every mock request is captured as an http-dump event with a payload.mock field (matched, rule_id, status, headers, body, near). Unmatched: 404 JSON. Project via X-Buggregator-Project or Basic Auth mock:<project>. Limits: status 100-599, delay up to 30s, body up to 1 MB. Up to 500 stored rules per project. OpenAPI 3.0/3.1 import: POST /api/mocks/import/openapi {spec|url, project, group (default openapi:<info.title>), base_path} -> {group, title, rules, skipped}; one rule per operation (lowest 2xx, spec example as is or a template from the schema); re-import replaces the group; DELETE /api/mocks/groups/{group}; config mocks_openapi: (file, project, group, base_path), read-only; MCP mock_import_openapi, mock_group_delete. Dynamic responses: template: true and seed, see /config/mock-templates."
 ---
 
 # Mock Server — Fake API Responses
@@ -119,6 +119,7 @@ Without such a rule, Buggregator answers `204` with the CORS headers, and the re
 | delay | up to 30 seconds |
 | `body` | up to 1 MB |
 | header names | no spaces, no `:` |
+| stored rules | at most 500 per project; rule 501 gets `422` with `errors.project` |
 
 ## The Mock server page
 
@@ -153,6 +154,142 @@ mocks:
 
 See [Server configuration](/config/server) for where the file goes.
 
+::: v-pre
+
+## Import an OpenAPI spec
+
+Have an OpenAPI 3.0 or 3.1 spec? Import it, and every operation becomes a rule. Example: a spec with
+`GET /users/{id}` and `POST /orders` gives two rules, and `/mock/v1/users/42` answers at once.
+
+How a rule is built:
+
+- **One rule per operation**, all in one group. The rule's name is the `operationId`, else the `summary`, else
+  `GET /users/{id}`.
+- **Status**: the lowest `2xx` response of the operation.
+- **Body**: the spec's `example`, as is. No example: a [template](/config/mock-templates) built from the schema,
+  with fake data. A root field named like a path parameter echoes it (`id` for the last one).
+- **Path**: the path of `servers[0].url` goes in front. `https://api.example.com/v1` + `/users/{id}` →
+  `/v1/users/{id}`. Set `base_path` to change it; `""` means no prefix.
+- **Import again** into the same group, and the group's old rules are replaced.
+- Local `$ref` only. `oneOf` and `anyOf` take the first option. Swagger 2.0 is refused: convert it to OpenAPI 3.
+
+The rules are ordinary rules: edit them afterwards like any other.
+
+Import a spec:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/mocks/import/openapi \
+  -H 'Content-Type: application/json' \
+  -d "$(jq -n --rawfile spec shop.yaml '{spec: $spec}')"
+```
+
+With this `shop.yaml`:
+
+```yaml
+openapi: 3.0.3
+info: { title: Shop API, version: "1.0" }
+servers:
+  - url: https://api.example.com/v1
+paths:
+  /users/{id}:
+    get:
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: A user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer }
+                  name: { type: string }
+                  email: { type: string, format: email }
+                  status: { type: string, enum: [active, banned] }
+  /orders:
+    post:
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example: { id: 1001, status: pending }
+```
+
+The answer lists the rules (cut here) and the operations it skipped:
+
+```json
+{"group": "openapi:Shop API", "title": "Shop API",
+ "rules": [
+   {"name": "GET /v1/users/{id}", "method": "GET", "path": "/v1/users/{id}", "status": 200, "template": true,
+    "body": "{\n  \"id\": {{ int (path \"id\") }},\n  \"name\": {{ fake \"name\" | json }},\n  \"email\": {{ fake \"email\" | json }},\n  \"status\": {{ pick \"active\" \"banned\" | json }}\n}", …},
+   {"name": "POST /v1/orders", "method": "POST", "path": "/v1/orders", "status": 201, "template": false,
+    "body": "{\n  \"id\": 1001,\n  \"status\": \"pending\"\n}", …}],
+ "skipped": []}
+```
+
+Then:
+
+```bash
+curl http://127.0.0.1:8000/mock/v1/users/42
+# {"id": 42, "name": "Alden Vaughn", "email": "troy-hart@ramirez.net", "status": "active"}
+curl -X POST http://127.0.0.1:8000/mock/v1/orders
+# {"id": 1001, "status": "pending"}   (status 201)
+```
+
+(Bodies come indented; shown here on one line.)
+
+Request fields:
+
+| Field | What it does |
+|-------|--------------|
+| `spec` | The spec text, YAML or JSON |
+| `url` | Or the spec's address: `http`/`https`, at most 5 MB, downloaded within 10 s |
+| `project` | The rules' project; empty = every project |
+| `group` | The group name; default `openapi:<info.title>` |
+| `base_path` | The prefix for every path; default: the path of `servers[0].url`; `""` = none |
+
+Answer fields: `group`, `title`, `rules` (the created rules), `skipped` (a list of `method`, `path`, `reason`).
+An operation is skipped, for example, when the project would go over 500 rules (`reason`: `over 500 rules`).
+
+Errors are `422`, the field in `errors`:
+
+| Case | `errors` |
+|------|----------|
+| neither `spec` nor `url` | `{"spec": "give the spec text or its url"}` |
+| both | `{"spec": "give spec or url, not both"}` |
+| Swagger 2.0 | `{"spec": "Swagger 2.0 is not supported; convert it to OpenAPI 3"}` |
+| not OpenAPI | `{"spec": "not an OpenAPI 3 document (no openapi: 3.x)"}` |
+| `url` not http(s) | `{"url": "url must be http or https"}` |
+| download failed | `{"url": "download: raw.githubusercontent.com answered 404"}` |
+
+Delete a group (the name URL-encoded):
+
+```bash
+curl -X DELETE 'http://127.0.0.1:8000/api/mocks/groups/openapi%3AShop%20API'
+# {"deleted":2}
+```
+
+### A spec in `buggregator.yaml`
+
+```yaml
+mocks_openapi:
+  - file: ./shop.yaml
+    project: shop          # optional; empty = every project
+    group: shop-api        # optional; default openapi:<info.title>
+    base_path: ""          # optional; "" = no prefix
+```
+
+The spec is read at startup; the log says `mock: OpenAPI spec loaded` with the file, group and rule count. These
+rules are read-only, like other config rules (`"source": "config"`, ids `config-1`, …): changing or deleting one
+gets `409`.
+
+AI agents import with the MCP tool `mock_import_openapi` and delete a group with `mock_group_delete`, see
+[MCP tools](/config/mock-templates#mcp-tools-for-ai-agents).
+
+:::
+
 ## REST API
 
 All routes need the same login as the rest of `/api` when [SSO](/config/sso) is on. The mock server itself
@@ -173,6 +310,7 @@ A rule looks like this:
   "delay_ms": 100,
   "template": false,
   "seed": 0,
+  "group": "",
   "enabled": true,
   "position": 0,
   "source": "api",
@@ -193,6 +331,8 @@ Rules from the config file have `"source": "config"`, `"read_only": true` and id
 | `DELETE` | `/api/mocks/{id}` | — | `{"status": true}`; `409` for a config rule |
 | `POST` | `/api/mocks/order` | `{"ids": ["…", "…"]}` | `{"data": [rule, …]}`; listed rules first, the rest keep their order; an unknown or config rule id gets `404` |
 | `GET` | `/api/mocks/requests?limit=50&project=&rule_id=` | — | captured mock requests, newest first; `limit` 1–500, default 50 |
+| `POST` | `/api/mocks/import/openapi` | `{"spec" or "url", "project", "group", "base_path"}` | `{"group", "title", "rules", "skipped"}`, see [OpenAPI import](#import-an-openapi-spec) |
+| `DELETE` | `/api/mocks/groups/{group}` | — | `{"deleted": n}`: the group's stored rules are gone |
 
 Defaults on create: `method` `ANY`, `status` `200`, `enabled` `true`, `template` `false`, `seed` `0`.
 

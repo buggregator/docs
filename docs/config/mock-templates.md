@@ -1,5 +1,5 @@
 ---
-llms_description: "Mock response templates (dynamic mock responses): rule field template: true makes body and header values Go text/template; seed (0 = new random data per request, not 0 = same data every time). Helpers: path, query, queryAll, header, body (JSON dot path, list index), bodyRaw, method, requestPath; fake (gofakeit generators, args fill params in order), pick, repeat (range $i := repeat n), add, now; json, default, upper, lower; if/else/eq/gt, with. Rules: every string in a JSON body through | json; request values are strings, JSON body numbers are float64 (compare with 100.0), repeat/add take int literals only. Limits: 1 MB output, 10000 loop items, fake counts 1000. Errors: parse error 422 on save, runtime error 500 {\"error\":\"mock template: …\"} and mock.template_error. API: POST /api/mocks/preview, GET /api/mocks/helpers. YAML mocks: template, seed."
+llms_description: "Mock response templates (dynamic mock responses): rule field template: true makes body and header values Go text/template; seed (0 = new random data per request, not 0 = same data every time). Helpers: path, query, queryAll, header, body (JSON dot path, list index), bodyRaw, method, requestPath; fake (gofakeit generators, args fill params in order), pick, repeat (range $i := repeat n), add, int, now; json, default, upper, lower; if/else/eq/gt, with. Rules: every string in a JSON body through | json; request values are strings and JSON body numbers are float64: convert with int before repeat, add or comparing with a whole number (repeat (int (query \"limit\"))). Limits per response: 1 MB output, 10000 loop items, 1000000 steps, 4 MB made by helpers, fake counts 1000; 500 stored rules per project. Errors: parse error 422 on save, runtime error 500 {\"error\":\"mock template: …\"} and mock.template_error. API: POST /api/mocks/preview, GET /api/mocks/helpers. MCP tools mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request (write tools off with mcp.mock_write: false). YAML mocks: template, seed."
 ---
 
 ::: v-pre
@@ -77,9 +77,16 @@ spaces. Strings are in double quotes.
    `gt (body "amount") 100.0`. `gt (body "amount") 100` fails with
    `incompatible types for comparison: float64 and int`.
 
-   No helper turns a request value into a whole number. So the count of `repeat` and the arguments of `add` are
-   written in the template: `repeat 3` works, `repeat (query "limit")` fails with
-   `wrong type for value; expected int; got string`.
+   **Need a whole number? Use `int`.** `repeat`, `add` and a comparison with a whole number need one. Wrap the
+   request value in `int`:
+
+   | Template | Request | Output |
+   |----------|---------|--------|
+   | `{{ range $i := repeat (int (query "limit" \| default "2")) }}…` | `?limit=3` | 3 items |
+   | `{"qty": {{ add (int (body "qty")) 1 }}}` | body `{"qty": 2}` | `{"qty": 3}` |
+   | `{{ if gt (int (body "amount")) 100 }}…` | body `{"amount": 250}` | the `if` part |
+
+   Without `int`, `repeat (query "limit")` fails with `wrong type for value; expected int; got string`.
 
 ## Guide
 
@@ -273,9 +280,13 @@ Body:
 A header present or not: body `{{ if header "Authorization" }}{"user": "alice"}{{ else }}{"error": "no token"}{{ end }}`,
 request without the header → `{"error": "no token"}`.
 
-A number from the JSON body, compared with a decimal: body
-`{{ if gt (body "amount") 100.0 }}{"review": true}{{ else }}{"review": false}{{ end }}`, request body
-`{"amount": 250}` → `{"review": true}`.
+A number from the JSON body: compare it with a decimal, or turn it into a whole number with `int`. Both bodies
+answer `{"review": true}` to the request body `{"amount": 250}`:
+
+```
+{{ if gt (body "amount") 100.0 }}{"review": true}{{ else }}{"review": false}{{ end }}
+{{ if gt (int (body "amount")) 100 }}{"review": true}{{ else }}{"review": false}{{ end }}
+```
 
 `with` runs a block only when the value is there; inside it, `.` is the value. Body
 `{{ with body "coupon" }}{"coupon": {{ . | json }}}{{ else }}{"coupon": null}{{ end }}`, request body
@@ -323,8 +334,9 @@ Body `{"created_at": {{ now | json }}, "day": {{ now "2006-01-02" | json }}, "ts
 | `requestPath` | `requestPath` | the request path without `/mock` | `{{ requestPath \| json }}` → `"/users/42"` |
 | `fake` | `fake "generator" [args…]` | fake data; args fill the generator's parameters in order | `{{ fake "number" 18 90 }}` → `73` |
 | `pick` | `pick a b c…` | one of the arguments at random (follows `seed`) | `{{ pick "paid" "pending" "failed" \| json }}` → `"failed"` (`seed: 5`) |
-| `repeat` | `repeat n` | the list 0…n-1, for `range`; `n` is a whole number written in the template | `{{ range $i := repeat 3 }}{{ $i }}{{ end }}` → `012` |
-| `add` | `add a b` | the sum of two whole numbers | `{{ add 2 3 }}` → `5`; `{{ add $i 1 }}` in a `range` |
+| `repeat` | `repeat n` | the list 0…n-1, for `range`; `n` is a whole number (a request value through `int`) | `{{ range $i := repeat 3 }}{{ $i }}{{ end }}` → `012` |
+| `add` | `add a b` | the sum of two whole numbers (request values through `int`) | `{{ add 2 3 }}` → `5`; `{{ add $i 1 }}` in a `range` |
+| `int` | `int value` | a whole number: from text (`"42"` → 42, `"4.9"` → 4), a JSON body number, a bool (`true` → 1, `false` → 0); missing or `""` → 0; other text is an error | `{{ int "42" }} {{ int "4.9" }} {{ int "" }} {{ int true }}` → `42 4 0 1` |
 | `now` | `now`, `now "layout"`, `now "unix"` | the current UTC time: RFC 3339, a Go layout, or unix seconds | `{{ now "2006-01-02" \| json }}` → `"2026-11-07"` |
 | `json` | `json value`, `value \| json` | the value as JSON: strings quoted and escaped, lists and objects encoded | `{{ query "q" \| json }}` → `"say \"hi\""` |
 | `default` | `default fallback value`, `value \| default fallback` | `value`, or `fallback` when it is empty or missing | `{{ query "limit" \| default 20 }}` → `20` |
@@ -344,10 +356,18 @@ Generators left out on purpose: `sql`, `csv`, `json`, `xml`, `regex`, `template`
 |------|-------|-----------------|
 | Response body | 1 MB | `response is larger than 1048576 bytes` |
 | Loop items in one response (`repeat`, `range` over `queryAll` and `body`, nested loops added up) | 10000 | `repeat: more than 10000 loop items in one response` |
+| Steps in one response: each loop item costs the number of steps (helper calls, text pieces) inside the loop | 1,000,000 | `template does more than 1000000 steps in one response (fewer or smaller loops)` |
+| Text made by helpers in one response (`fake`, `json`…), written out or not | 4 MB | `helpers made more than 4194304 bytes in one response` |
 | Count-like `fake` parameters (`wordcount`, `length`, `count`…) | 1000 | `fake "loremipsumsentence": wordcount must be at most 1000` |
 | `body` and `bodyRaw` | read the first 1 MB of the request body | — |
 
 Nested loops add up: `repeat 200` with `repeat 100` inside is 20200 items and fails.
+
+Steps add up too. `repeat 9000` with `{{ $i }}` written 100 times inside fails on steps, though 9000 items are
+allowed. `repeat 1000` with the same loop body works.
+
+One more limit is not about templates: a project holds at most 500 stored rules. Rule 501 is refused with `422`
+and `errors.project`: `at most 500 rules per project; delete unused ones first`.
 
 ## Errors
 
@@ -373,9 +393,10 @@ Errors you will meet most:
 
 | Error text | Cause | Fix |
 |------------|-------|-----|
-| `wrong type for value; expected int; got string` | a request value passed to `repeat` or `add` | write the number in the template |
-| `expected int; got float64` | a JSON body number passed to `add` or `repeat` | same |
-| `incompatible types for comparison: float64 and int` | `gt (body "n") 100` | compare with `100.0` |
+| `wrong type for value; expected int; got string` | a request value passed to `repeat` or `add` | wrap it: `int (query "limit")` |
+| `expected int; got float64` | a JSON body number passed to `add` or `repeat` | wrap it: `int (body "qty")` |
+| `incompatible types for comparison: float64 and int` | `gt (body "n") 100` | `gt (int (body "n")) 100`, or compare with `100.0` |
+| `int: "abc" is not a number` | `int` got text that is not a number | check the request value, or give it a `default` |
 | `fake: unknown generator "…"` | a typo, or a left-out generator | look it up in `GET /api/mocks/helpers` |
 | `fake "name" takes at most 0 arguments` | too many arguments | see the generator's `params` |
 | `could not find field: min` | a parameter with no default left out | pass it |
@@ -443,6 +464,28 @@ A generator: `params` in the order the arguments fill them:
 (e.g. `person`) needs `| json`.
 
 Both routes need the login when [SSO](/config/sso) is on.
+
+## MCP tools for AI agents
+
+With the [MCP server](/config/mcp) on, an AI agent manages mock rules without the REST API. Example: the agent reads
+the helper list, tries a template with `mock_rule_preview`, then saves it with `mock_rule_create`.
+
+| Tool | What it does |
+|------|--------------|
+| `mock_rules_list` | The rules in matching order: config rules first (read-only), then stored ones |
+| `mock_rule_get` | One rule with its full body |
+| `mock_rule_preview` | Runs a rule against a sample request; nothing is saved. Same answer as `POST /api/mocks/preview` |
+| `mock_requests_list` | Requests the mock server got, newest first, with the rule that answered and `template_error` |
+| `mock_template_helpers` | The helpers and the fake generators with their parameters; filter by `category` or `search` |
+| `mock_rule_create` | Creates a rule |
+| `mock_rule_update` | Changes a stored rule; only the given fields change |
+| `mock_rule_delete` | Deletes a stored rule |
+| `mock_rule_from_request` | Creates a rule from a captured request (e.g. one that got `404`) |
+| `mock_import_openapi` | Imports an OpenAPI spec, see [OpenAPI import](/config/mock-server#import-an-openapi-spec) |
+| `mock_group_delete` | Deletes all stored rules of a group |
+
+The last six tools change rules. Turn them off with `mcp.mock_write: false` (env `MCP_MOCK_WRITE=false`): the agent
+then only reads and previews.
 
 ## Rules in `buggregator.yaml`
 
