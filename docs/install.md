@@ -162,7 +162,8 @@ MCP_ENABLED=true ./buggregator
 ```
 
 Then connect your assistant: [MCP](/config/mcp). On Windows, use the MCP HTTP transport
-(`MCP_TRANSPORT=http`, port `8001`): the default Unix socket path `/tmp/buggregator-mcp.sock` does not exist there.
+(`MCP_TRANSPORT=http MCP_ADDR=127.0.0.1:8001`): the default Unix socket path `/tmp/buggregator-mcp.sock` does not
+exist there. Without `MCP_ADDR`, the MCP server listens on `:8001`, on all network interfaces, with no token.
 
 ## Update
 

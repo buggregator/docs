@@ -63,7 +63,7 @@ Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download
 .\buggregator.exe
 ```
 
-Downloaded in a browser instead (not tested on a real Mac or Windows machine):
+Downloaded in a browser instead? These are the usual system prompts:
 
 - macOS blocks the file once. Run `xattr -d com.apple.quarantine buggregator`, or right-click → **Open**.
   `curl` and the script do not hit this.
