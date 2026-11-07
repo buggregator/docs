@@ -26,7 +26,8 @@ export const llmsConfig = {
    * Keep concise and factual, oriented at what an LLM needs to know.
    */
   details: [
-    'Install: `docker run --pull always -p 127.0.0.1:8000:8000 -p 127.0.0.1:1025:1025 -p 127.0.0.1:9912:9912 ghcr.io/buggregator/server:latest`',
+    'Install (binary, no Docker): download https://github.com/buggregator/server/releases/latest/download/buggregator-<os>-<arch> (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe), chmod +x, run. AI agents: follow /agent-setup.md',
+    'Install (Docker): `docker run --pull always -p 127.0.0.1:8000:8000 -p 127.0.0.1:1025:1025 -p 127.0.0.1:9912:9912 ghcr.io/buggregator/server:latest`',
     'GitHub: https://github.com/buggregator/server',
     'Lightweight CLI alternative (no Docker): `composer require --dev buggregator/trap`',
     'JetBrains IDE plugin: https://plugins.jetbrains.com/plugin/26344-buggregator',

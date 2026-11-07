@@ -15,27 +15,42 @@ Download the latest release for your platform from
 
 ```bash
 # Linux (amd64)
-curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-linux-amd64
+curl -fsSL -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-linux-amd64
 chmod +x buggregator
 
 # Linux (arm64)
-curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-linux-arm64
+curl -fsSL -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-linux-arm64
 chmod +x buggregator
 
 # macOS (Apple Silicon)
-curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-arm64
+curl -fsSL -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-arm64
 chmod +x buggregator
 
 # macOS (Intel)
-curl -L -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-amd64
+curl -fsSL -o buggregator https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-amd64
 chmod +x buggregator
 ```
+
+Windows (PowerShell):
+
+```powershell
+# x86-64
+Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download/buggregator-windows-amd64.exe -OutFile buggregator.exe
+# ARM64, from v2.6.0
+Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download/buggregator-windows-arm64.exe -OutFile buggregator.exe
+```
+
+> On Windows, the VarDumper module (port 9912) is not available. Every other module works.
+
+One command that also checks the checksum (from v2.6.0): see [Install the binary](/install#with-the-install-script).
 
 ## Run
 
 ```bash
 ./buggregator
 ```
+
+On Windows: `.\buggregator.exe`.
 
 Open http://127.0.0.1:8000 in your browser. That's it.
 

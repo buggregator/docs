@@ -136,6 +136,14 @@ export default defineConfig({
                 link: '/getting-started',
             },
             {
+                text: 'Install the Binary',
+                link: '/install',
+            },
+            {
+                text: 'Set Up with an AI Agent',
+                link: '/agent-setup',
+            },
+            {
                 text: 'For LLM',
                 link: '/llm',
             },
