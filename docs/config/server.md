@@ -270,7 +270,7 @@ update_check:
 
 With `false`, Buggregator makes no network call for this at all.
 
-- `interval` changes how often it asks: a Go duration, at least `1h` (a smaller value is raised to `1h`).
+- `interval` changes how often it asks: a Go duration, at least `1h`. A smaller value is raised to `1h`; a value that is not a duration falls back to `12h`. Both log a warning.
 - A failed check is tried again after an hour. It never stops the server from starting.
 - A development build (version `dev`) never checks.
 
@@ -280,12 +280,14 @@ The result is in `GET /api/settings`, field `update`:
 {"update":{"current":"2.6.0","latest":"2.7.0","url":"https://github.com/buggregator/server/releases/tag/v2.7.0","available":true,"checked_at":"2026-11-07T14:44:55.253807102Z"}}
 ```
 
-`available` is `true` when `latest` is newer than `current`. Before the first check, or while GitHub cannot be
-reached, only `current` and `available` are there:
+`available` is `true` when `latest` is newer than `current`. Before the first successful check, only `current` and
+`available` are there:
 
 ```json
 {"update":{"current":"2.7.0","available":false}}
 ```
+
+A failed check keeps the last good result.
 
 With the check off, `update` is `null`.
 
