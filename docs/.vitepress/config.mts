@@ -135,10 +135,12 @@ export default defineConfig({
                     {text: 'SMS Gateway', link: '/config/sms'},
                     {text: 'HTTP Dumps', link: '/config/http-dumps'},
                     {text: 'HTTP Proxy', link: '/config/http-proxy'},
+                    {text: 'Mock Server', link: '/config/mock-server'},
                     {text: 'Monolog', link: '/config/monolog'},
                     {text: 'VarDumper', link: '/config/var-dumper'},
                     {text: 'Ray', link: '/config/ray'},
                     {text: 'Inspector', link: '/config/inspector'},
+                    {text: 'Xdebug Proxy', link: '/config/xdebug'},
                     {text: 'JetBrains IDE Plugin', link: '/config/phpstorm-plugin'},
                 ]
             },
@@ -152,6 +154,7 @@ export default defineConfig({
                     {text: 'Webhooks', link: '/config/webhooks'},
                     {text: 'Single Sign On (SSO)', link: '/config/sso'},
                     {text: 'MCP (AI Assistants)', link: '/config/mcp'},
+                    {text: 'Installable App (PWA)', link: '/config/pwa'},
                     {text: 'Helm Chart', link: '/config/helm-chart'},
                     {text: 'Metrics', link: '/config/metrics'},
                 ]

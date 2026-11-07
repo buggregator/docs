@@ -1,5 +1,5 @@
 ---
-llms_description: "Installation via standalone binary (~30 MB, curl one-liner), Docker run, Docker Compose, and Kubernetes. Port mapping: 8000 (HTTP/Sentry/Ray/Inspector/XHProf/SMS/HTTP Dumps), 1025 (SMTP), 9912 (VarDumper TCP), 9913 (Monolog TCP). Configuration via buggregator.yaml, environment variables, or CLI flags. Image tags: latest, dev, versioned."
+llms_description: "Installation via standalone binary (~30 MB, curl one-liner), Docker run, Docker Compose, and Kubernetes. Port mapping: 8000 (HTTP/Sentry/Ray/Inspector/XHProf/SMS/HTTP Dumps), 1025 (SMTP), 9912 (VarDumper TCP), 9913 (Monolog TCP). Configuration via buggregator.yaml, environment variables, or CLI flags. Optional ports: 8080 (HTTP proxy), 9003 (Xdebug proxy, off by default). Mock server under /mock/ on 8000. Binaries for Linux, macOS and Windows (no VarDumper on Windows). Image tags: latest, 2, 2.6, 2.6.0."
 ---
 
 # Getting Started
@@ -38,7 +38,13 @@ curl -sL https://github.com/buggregator/server/releases/latest/download/buggrega
 # macOS (Intel)
 curl -sL https://github.com/buggregator/server/releases/latest/download/buggregator-darwin-amd64 -o buggregator \
   && chmod +x buggregator
+
+# Windows (amd64, PowerShell)
+Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download/buggregator-windows-amd64.exe -OutFile buggregator.exe
+.\buggregator.exe
 ```
+
+> On Windows, the VarDumper module (port 9912) is not available. Every other module works.
 
 </details>
 
@@ -108,6 +114,10 @@ Each port serves a specific module. You only need to expose the ports for the fe
 | **1025** | SMTP | [Fake SMTP Server](./config/smtp.md) | Captures outgoing emails. Point your app's SMTP config here. |
 | **9912** | TCP | [Symfony VarDumper](./config/var-dumper.md) | Receives `dump()` / `dd()` output. |
 | **9913** | TCP | [Monolog](./config/monolog.md) | Receives log records via Monolog's `SocketHandler`. |
+| **8080** | HTTP | [HTTP Proxy](./config/http-proxy.md) | Forward proxy that captures request + response pairs. Optional. |
+| **9003** | TCP (DBGp) | [Xdebug Proxy](./config/xdebug.md) | Sits between Xdebug and your IDE. Off by default; listens on `127.0.0.1` unless you change `XDEBUG_PROXY_ADDR`. |
+
+Port 8000 also serves the [mock server](./config/mock-server.md) under `/mock/`.
 
 If you only need specific features, omit the unused ports. For example, VarDumper only:
 
@@ -184,7 +194,7 @@ See the [server configuration guide](./config/server.md) for the full reference.
 ```bash
 docker run --pull always \
   -p 127.0.0.1:8000:8000 \
-  -e DATABASE_DSN=data.db \
+  -e DATABASE_DSN=/data/buggregator.db \
   -e METRICS_ENABLED=true \
   -v ./data:/data \
   ghcr.io/buggregator/server:latest
@@ -195,8 +205,9 @@ docker run --pull always \
 | Tag | Description |
 |-----|-------------|
 | `latest` | Latest stable release. **Recommended.** |
-| `dev` | Latest development build. May be less stable. |
-| `X.Y` (e.g., `2.0`) | A specific release version, pinned. |
+| `X` (e.g., `2`) | Latest release of a major version. Published since v2.6.0. |
+| `X.Y` (e.g., `2.6`) | Latest patch of a minor version. |
+| `X.Y.Z` (e.g., `2.6.0`) | One exact release, pinned. |
 
 ## Security
 

@@ -12,6 +12,9 @@ webhook.site — it's built into the same Buggregator where you already see your
 > **Need to see responses too?** Use the [HTTP Proxy](/config/http-proxy) — it captures both request and response
 > by acting as a forward proxy between your app and external services.
 
+> **Need to answer the request too?** Use the [Mock Server](/config/mock-server) — requests to `/mock/...` get a
+> response you define, and each one is captured here as an HTTP dump.
+
 ![http dumps](https://github.com/buggregator/server/assets/773481/fc823390-b490-4bbb-a787-44471eca9fb6)
 
 ## Use cases

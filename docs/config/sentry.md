@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript, Python, and any Sentry SDK. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules."
+llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript, Python, and any Sentry SDK. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or X-Buggregator-Project header; numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
 ---
 
 # Sentry — Exceptions
@@ -113,4 +113,92 @@ Any [Sentry SDK](https://docs.sentry.io/platforms/) works. Just set the DSN:
 ```dotenv
 SENTRY_DSN=http://sentry@127.0.0.1:8000/1
 ```
+
+## Projects
+
+Send each app to its own [project](/config/projects), and the Sentry page shows only that project's data.
+Without a project, everything goes to `default`.
+
+Put the project key in the DSN path instead of the number:
+
+```dotenv
+SENTRY_DSN=http://sentry@127.0.0.1:8000/shop
+```
+
+A number in the path (`/1`, `/42`) is the SDK's own project id, not a Buggregator project. Such events go to
+`default`. Some SDKs accept only a number there: the Sentry JavaScript SDK, for example. Then keep the number
+and send the project in a header, if your SDK lets you add HTTP headers:
+
+| How | Example |
+|-----|---------|
+| DSN path (wins over the header) | `http://sentry@127.0.0.1:8000/shop` |
+| Header | `X-Buggregator-Project: shop` |
+
+A project that does not exist yet is created when its first event arrives.
+
+Errors, traces, logs and metrics all land in the same project, however you set it.
+
+> **Upgrading to v2.6.0:** Sentry errors sent with a numeric DSN, and traces, logs and metrics stored by
+> earlier versions, had no project. On first start, v2.6.0 moves them to `default`. Nothing is deleted.
+
+## Traces, logs and metrics
+
+Besides errors, Buggregator stores what the Sentry SDK sends as traces (transactions and spans), logs and
+metrics. The **Sentry** page has a tab for each:
+
+- **Exceptions** — errors, as a list or grouped by fingerprint.
+- **Traces** — transactions with their spans.
+- **Logs** — Sentry structured logs.
+- **Metrics** — Sentry metrics.
+
+### Filters
+
+Every tab shows the current project and the chosen period (last hour, last 24 hours, last 7 days, all time, …).
+Filtering happens on the server, so a filter does not miss rows past the first page.
+
+The REST API accepts more filters than the page shows:
+
+| Endpoint | Filters |
+|----------|---------|
+| `GET /api/sentry/exceptions` | `project`, `environment`, `level`, `handled`, `grouped=true`, `from`, `to`, `window` |
+| `GET /api/sentry/traces` | `project`, `environment`, `release`, `from`, `to`, `window` |
+| `GET /api/sentry/logs` | `project`, `level` (several, comma-separated), `trace_id`, `from`, `to`, `window` |
+| `GET /api/sentry/metrics` | `project`, `search` (part of the name) |
+| `GET /api/sentry/counts` | `project`, `from`, `to`, `window` |
+
+`window` is a period like `15m`, `24h` or `7d`. `from` and `to` take unix seconds or ISO 8601.
+
+### Live updates
+
+The tabs refresh by themselves when new rows arrive. Example: your app writes a Sentry log, and the open
+**Logs** tab shows it without a reload. Each tab reloads only for its own kind of data.
+
+For clients of the WebSocket: when a request stored logs, metrics or traces, the server sends one
+`sentry.stored` notice on the project's channel `events.project.<key>`:
+
+```json
+{"project": "default", "kinds": ["log", "metric"]}
+```
+
+Kinds are `log`, `metric` and `trace`. An error alone sends the usual `event.received`.
+
+## Clearing data
+
+**Clear** on the Sentry page deletes the Sentry data of the current project only: errors, traces, logs and
+metrics. Pinned errors stay. Other projects are not touched.
+
+The same through the API:
+
+| Call | Deletes |
+|------|---------|
+| `DELETE /api/sentry/all?project=shop` | everything Sentry stored for `shop` |
+| `DELETE /api/sentry/all?project=shop&keep_pinned=1` | the same, but pinned errors stay |
+| `DELETE /api/sentry/all` | Sentry data of **every** project |
+
+A trace can hold spans of several projects. After a project is cleared, a trace with no spans left is deleted;
+a trace with spans of other projects stays.
+
+`DELETE /api/sentry/all` clears the Sentry tables (traces, logs, metrics, error details). The error cards in the
+event feed are events: clear them with `DELETE /api/events` and the body
+`{"type": "sentry", "project": "shop", "keep_pinned": true}`.
 

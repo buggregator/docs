@@ -1,5 +1,5 @@
 ---
-llms_description: "Database configuration: SQLite with in-memory (default, data lost on restart) or file-based persistence. Environment variable DATABASE_DSN. Storage modes for attachments: memory or filesystem. Docker volume examples for persistent data."
+llms_description: "Database configuration: SQLite with in-memory (default, data lost on restart) or file-based persistence. Environment variable DATABASE_DSN. Connection pool database.max_open_conns / DATABASE_MAX_OPEN_CONNS (default 4 for file databases, always 1 in memory). Storage modes for attachments: memory or filesystem. Docker volume examples for persistent data."
 ---
 
 # Configuration — Database
@@ -36,7 +36,7 @@ Or via environment variable:
 DATABASE_DSN=data.db
 ```
 
-The database file will be created next to the binary (or at the specified path). In Docker, make sure to
+A relative path like `data.db` is resolved from the directory you start Buggregator in. Use an absolute path to be sure. In Docker, make sure to
 mount a volume:
 
 ```bash
@@ -67,6 +67,30 @@ services:
 
 volumes:
   buggregator-data:
+```
+
+## Connection Pool
+
+Since v2.6.0, a file database opens up to 4 SQLite connections. Reading the event list then no longer waits
+behind incoming events, and incoming events no longer wait behind a long list.
+
+```yaml
+database:
+  dsn: /data/buggregator.db
+  max_open_conns: 4      # default
+```
+
+Or `DATABASE_MAX_OPEN_CONNS=4`.
+
+- Set it to `1` for the behaviour before v2.6.0: one connection for everything.
+- An in-memory database (`:memory:`) always uses one connection, whatever you set.
+- With more than one connection, Buggregator adds `_pragma=busy_timeout(10000)` and `_txlock=immediate` to
+  the DSN when they are missing, so two writes wait for each other instead of failing.
+- The pool pays off in SQLite's WAL mode, where reads and the write do not block each other. Buggregator does
+  not turn WAL on for a file database; add it to the DSN yourself:
+
+```bash
+DATABASE_DSN='file:/data/buggregator.db?_pragma=journal_mode(WAL)'
 ```
 
 ## Attachment Storage

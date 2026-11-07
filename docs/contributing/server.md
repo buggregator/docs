@@ -51,6 +51,7 @@ automatically on startup.
 
 - Go 1.26+
 - Make (for build commands)
+- PHP and Composer, for the first `make build` (it compiles the VarDumper parser from `php/vardumper`)
 
 ## Build & Development
 

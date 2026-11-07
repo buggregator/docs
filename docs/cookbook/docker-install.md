@@ -1,6 +1,6 @@
 ---
 llms: "optional"
-llms_description: "Docker Compose dev environment setup: git clone, make build, make run. Starts Buggregator Go server with example services. Access at localhost:8000. Requires Go 1.26+, Make."
+llms_description: "Docker Compose dev environment setup: git clone, docker compose up --build. Starts Buggregator Go server with a Laravel example app (port 8080). Access at localhost:8000. Requires Go 1.26+, Make."
 ---
 
 # Cookbook — Dev environment using Docker Compose
@@ -18,34 +18,31 @@ cd server
 
 > **Note:** If you don't have access, fork the repository and clone your fork instead.
 
-## 2. Build and Start
+## 2. Start with Docker Compose
 
-The repository includes a Docker Compose setup for a local development environment, including the Buggregator server
-and example services.
-
-### Build
+The repository has a `docker-compose.yaml` with the Buggregator server and a Laravel example app that sends
+every kind of event.
 
 ```bash
-make build
-```
-
-### Start the Server
-
-```bash
-make run
+docker compose up --build
 ```
 
 This will:
 
-- Build the Buggregator Go binary
+- Build the Buggregator image from the `Dockerfile`
 - Start the Buggregator server
-- Launch example services for testing features
+- Start the example app for testing features
+
+> The compose file mounts `../frontend/dist` and sets `FRONTEND_DIR`, so the server serves a frontend build
+> from a `frontend` checkout next to `server`. Build it there first (`yarn install && yarn build:prod`), or remove
+> those two lines to use the embedded UI.
 
 ## 3. Access the Application
 
 Once the server is up:
 
 - **Buggregator:** http://localhost:8000
+- **Example app:** http://localhost:8080
 
 ## 4. Development without Docker
 
@@ -53,6 +50,8 @@ If you prefer to develop without Docker, you need:
 
 - **Go 1.26+**
 - **Make**
+- **PHP and Composer** — `make build` compiles the VarDumper parser from `php/vardumper` the first time.
+  The server itself does not need PHP to run.
 
 ```bash
 # Build and run
@@ -75,20 +74,22 @@ the frontend separately:
 git clone git@github.com:buggregator/frontend.git
 cd frontend
 yarn install
-yarn dev
+yarn build:prod      # writes the build to dist/
 ```
 
-Then point Buggregator at the frontend dev server:
+Then let Buggregator serve that build instead of the embedded one:
 
 ```bash
 FRONTEND_DIR=/path/to/frontend/dist ./buggregator
 ```
 
+For live reload while you work on the UI, see [Contributing → Frontend](/contributing/frontend).
+
 ## 5. Stop the Server
 
 ```bash
 # If using Docker Compose
-make down
+docker compose down
 
 # If running directly
 Ctrl+C

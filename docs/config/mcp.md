@@ -1,5 +1,5 @@
 ---
-llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph. Integration with Claude Code, Cursor, and other MCP-compatible clients."
+llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only). Integration with Claude Code, Cursor, and other MCP-compatible clients."
 ---
 
 # Configuration — MCP (Model Context Protocol)
@@ -150,6 +150,12 @@ MCP clients can use the following tools to query Buggregator data:
 | `profiler_summary` | Quick overview: total CPU/wall time/memory, slowest function, biggest memory consumer, most called function. |
 | `profiler_top` | Top functions sorted by metric (cpu, wt, mu, pmu, ct, and their exclusive variants). Returns inclusive and exclusive metrics with percentages. |
 | `profiler_call_graph` | Filtered call graph showing function relationships. Use `threshold` and `percentage` to control which nodes are shown. |
+
+### Xdebug
+
+With the [Xdebug proxy](/config/xdebug) on, MCP clients also get read-only tools for a paused debug session:
+`xdebug_sessions`, `xdebug_location`, `xdebug_stack`, `xdebug_variables`, `xdebug_property`, and
+`xdebug_eval` (only with `xdebug.allow_eval: true`). See [Xdebug → MCP tools](/config/xdebug#mcp-tools).
 
 ### Example Usage in Claude Code
 
