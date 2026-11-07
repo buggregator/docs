@@ -1,5 +1,5 @@
 ---
-llms_description: "Installation via standalone binary (~30 MB, curl one-liner), Docker run, Docker Compose, and Kubernetes. Port mapping: 8000 (HTTP/Sentry/Ray/Inspector/XHProf/SMS/HTTP Dumps), 1025 (SMTP), 9912 (VarDumper TCP), 9913 (Monolog TCP). Configuration via buggregator.yaml, environment variables, or CLI flags. Optional ports: 8080 (HTTP proxy), 9003 (Xdebug proxy, off by default). Mock server under /mock/ on 8000. Binaries for Linux, macOS and Windows (no VarDumper on Windows). Image tags: latest, 2, 2.6, 2.6.0."
+llms_description: "Installation via standalone binary (curl one-liner; all OS: /install), Docker run, Docker Compose, and Kubernetes. Port mapping: 8000 (HTTP/Sentry/Ray/Inspector/XHProf/SMS/HTTP Dumps), 1025 (SMTP), 9912 (VarDumper TCP), 9913 (Monolog TCP). Configuration via buggregator.yaml, environment variables, or CLI flags. Optional ports: 8080 (HTTP proxy), 9003 (Xdebug proxy, off by default). Mock server under /mock/ on 8000. Binaries for Linux, macOS and Windows (no VarDumper on Windows). Image tags: latest, 2, 2.6, 2.6.0."
 ---
 
 # Getting Started
@@ -12,9 +12,16 @@ llms_description: "Installation via standalone binary (~30 MB, curl one-liner), 
 
 ## Quick Start
 
-### Standalone Binary (Recommended)
+Two ways to run it. Both give the same Buggregator.
 
-Buggregator is a single ~30 MB binary with no dependencies. Download and run:
+- **Binary**: one file, no Docker. Good on your own machine.
+- **Docker**: one container. Good when your app already runs in Docker Compose.
+
+Setting it up with an AI agent? Give it [the agent setup page](/agent-setup).
+
+### Binary
+
+Buggregator is a single binary with no dependencies. Download and run:
 
 ```bash
 # Linux (amd64)
@@ -49,6 +56,8 @@ Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download
 </details>
 
 Open http://127.0.0.1:8000 in your browser. Done.
+
+All systems, ports, keeping events after a restart: [Install the binary](/install).
 
 ### Docker
 
