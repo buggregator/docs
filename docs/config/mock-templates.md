@@ -358,6 +358,7 @@ Generators left out on purpose: `sql`, `csv`, `json`, `xml`, `regex`, `template`
 | Loop items in one response (`repeat`, `range` over `queryAll` and `body`, nested loops added up) | 10000 | `repeat: more than 10000 loop items in one response` |
 | Steps in one response: each loop item costs the number of steps (helper calls, text pieces) inside the loop | 1,000,000 | `template does more than 1000000 steps in one response (fewer or smaller loops)` |
 | Text made by helpers in one response (`fake`, `json`…), written out or not | 4 MB | `helpers made more than 4194304 bytes in one response` |
+| Time to build one response | 2 seconds | `template took longer than 2s` |
 | Count-like `fake` parameters (`wordcount`, `length`, `count`…) | 1000 | `fake "loremipsumsentence": wordcount must be at most 1000` |
 | `body` and `bodyRaw` | read the first 1 MB of the request body | — |
 
@@ -371,23 +372,30 @@ and `errors.project`: `at most 500 rules per project; delete unused ones first`.
 
 ## Errors
 
-**When you save a rule** (create, update, or a rule in `buggregator.yaml`), the template is parsed. A syntax error,
+**When you save a rule** (create or update), the template is parsed. A syntax error,
 an unknown helper name, `define`, or `range` over something else gives `422` with the place of the error:
 
 ```json
-{"code": 422, "errors": {"body": "template: template: body:1: unexpected \"}\" in operand"}, "message": "invalid mock rule: body: template: template: body:1: unexpected \"}\" in operand"}
+{"code":422,"errors":{"body":"template: template: body:1: unexpected \"}\" in operand"},"message":"invalid mock rule: body: template: template: body:1: unexpected \"}\" in operand"}
 ```
 
-The field is `errors.body`, or `errors.headers` for a header value. `body:1:30` means line 1, column 30.
+The field is `errors.body`, or `errors.headers` for a header value. `body:1:` means line 1.
+
+A rule in `buggregator.yaml` with such an error is not refused but skipped at startup, see [Rules in `buggregator.yaml`](#rules-in-buggregator-yaml).
 
 **When a request comes in**, a template can still fail: a wrong argument type, an unknown generator, a limit. The
 mock then answers `500`:
 
 ```json
-{"error":"mock template: template: body:1:9: executing \"body\" at <fake \"nosuch\">: error calling fake: fake: unknown generator \"nosuch\" (list: GET /api/mocks/helpers)"}
+{"error":"mock template: template: body:1:9: executing \"body\" at \u003cfake \"nosuch\"\u003e: error calling fake: fake: unknown generator \"nosuch\" (list: GET /api/mocks/helpers)"}
 ```
 
-The captured request shows the same text in `mock.template_error`, so you find it on the **Mock server** page.
+`body:1:9` means line 1, column 9. The captured request shows the same text without the `mock template: ` prefix
+in `mock.template_error`, so you find it on the **Mock server** page:
+
+```
+template: body:1:9: executing "body" at <fake "nosuch">: error calling fake: fake: unknown generator "nosuch" (list: GET /api/mocks/helpers)
+```
 
 Errors you will meet most:
 
@@ -431,7 +439,7 @@ Answer:
 - `error`: `null`, or the template error. With an error, `status` is `500` and `body` is empty:
 
 ```json
-{"body":"","error":"mock template: template: body:1:9: executing \"body\" at <fake \"nosuch\">: error calling fake: fake: unknown generator \"nosuch\" (list: GET /api/mocks/helpers)","headers":{},"matched":true,"status":500}
+{"body":"","error":"mock template: template: body:1:9: executing \"body\" at \u003cfake \"nosuch\"\u003e: error calling fake: fake: unknown generator \"nosuch\" (list: GET /api/mocks/helpers)","headers":{},"matched":true,"status":500}
 ```
 
 A syntax error gives `422`, as on save.

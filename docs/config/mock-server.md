@@ -164,7 +164,7 @@ Have an OpenAPI 3.0 or 3.1 spec? Import it, and every operation becomes a rule. 
 How a rule is built:
 
 - **One rule per operation**, all in one group. The rule's name is the `operationId`, else the `summary`, else
-  `GET /users/{id}`.
+  the method and the full path, base path included: `GET /v1/users/{id}`.
 - **Status**: the lowest `2xx` response of the operation.
 - **Body**: the spec's `example`, as is. No example: a [template](/config/mock-templates) built from the schema,
   with fake data. A root field named like a path parameter echoes it (`id` for the last one).
@@ -251,7 +251,11 @@ Request fields:
 | `base_path` | The prefix for every path; default: the path of `servers[0].url`; `""` = none |
 
 Answer fields: `group`, `title`, `rules` (the created rules), `skipped` (a list of `method`, `path`, `reason`).
-An operation is skipped, for example, when the project would go over 500 rules (`reason`: `over 500 rules`).
+An operation is skipped, for example, when one import builds more than 500 rules (`reason`: `over 500 rules`).
+
+A project holds at most 500 stored rules. When the import would take it over, the whole import is refused and
+nothing is added: `422`, `errors.project`: `the import adds 2 rules, the project has 499; at most 500 rules per
+project`.
 
 Errors are `422`, the field in `errors`:
 
