@@ -288,8 +288,8 @@ volumes:
 
 ### Memory Limits
 
-Give the container a memory limit. Buggregator then keeps its memory use under it: it sets the Go runtime's soft
-memory limit to 90% of the container's limit. Example: a 512 MB container gets a 460 MiB limit.
+Give the container a memory limit. Buggregator then tries to stay under it: it sets the Go runtime's soft memory
+limit to 90% of the container's limit. Example: a 512 MB container gets a 460 MiB limit.
 
 > Since server [version: to fill]. Older versions ignore the container's limit.
 
@@ -313,20 +313,24 @@ With the [Helm chart](/config/helm-chart): `resources.limits.memory` in `values.
 The startup log shows the limit in use:
 
 ```
-level=INFO msg="go memory limit" mib=460 source=cgroup
+time=2026-11-07T09:24:58.483Z level=INFO msg="go memory limit" mib=460 source=cgroup
 ```
 
-With no container limit, there is no such line, and memory is not limited.
+The binary without Docker gets the same: a systemd service or slice with `MemoryMax` is a memory limit too. When
+several levels have one, the smallest counts. With no memory limit on the container or service, there is no such
+line, and Go sets no soft limit.
 
 **Set the limit yourself** with `GOMEMLIMIT`. It wins over the container's limit:
 
 ```bash
 docker run --memory=512m -e GOMEMLIMIT=400MiB -p 127.0.0.1:8000:8000 ghcr.io/buggregator/server:latest
-# level=INFO msg="go memory limit" mib=400 source=GOMEMLIMIT
+# time=… level=INFO msg="go memory limit" mib=400 source=GOMEMLIMIT
 ```
 
+`GOMEMLIMIT=off` turns the soft limit off; the log then has no such line.
+
 It is a soft limit. Near it, the garbage collector (the part of Go that frees unused memory) works harder; memory
-can still go above it. A large upload, e.g. a big profiler snapshot, needs room on top of what Buggregator
+can still go above it. The VarDumper parser runs as its own process, and its memory is not counted. A large upload, e.g. a big profiler snapshot, needs room on top of what Buggregator
 normally uses, so leave headroom in the container's limit.
 
 ## Disabling Modules
