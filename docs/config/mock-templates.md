@@ -175,7 +175,7 @@ Request body `{"customer":{"email":"alice@example.com"},"items":[{"sku":"A-1","q
 | `{{ fake "bool" }}` | `false` |
 | `{{ fake "httpstatuscode" }}` | `504` |
 
-There are about 350 generators. The full list with each one's parameters: [`GET /api/mocks/helpers`](#list-of-helpers-and-generators).
+These are a few of many. The full list with each one's parameters: [`GET /api/mocks/helpers`](#list-of-helpers-and-generators).
 
 **Arguments** fill the generator's parameters in the order the list gives them. `number` has `min` and `max`, so
 `{{ fake "number" 18 90 }}` is a whole number from 18 to 90. A parameter you leave out takes its default. A

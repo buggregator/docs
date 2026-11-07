@@ -246,7 +246,7 @@ Request fields:
 |-------|--------------|
 | `spec` | The spec text, YAML or JSON |
 | `url` | Or the spec's address: `http`/`https`, at most 5 MB, downloaded within 10 s |
-| `project` | The rules' project; empty = every project |
+| `project` | The rules' project; empty = every project. A project that does not exist yet is fine: it is created by its first event |
 | `group` | The group name; default `openapi:<info.title>` |
 | `base_path` | The prefix for every path; default: the path of `servers[0].url`; `""` = none |
 
