@@ -1,5 +1,5 @@
 ---
-llms_description: "Server configuration via buggregator.yaml, environment variables, and CLI flags. Covers HTTP address, CORS, database (SQLite), storage modes, TCP ports (SMTP, Monolog, VarDumper, HTTP proxy), module enable/disable, metrics, auth, MCP, webhooks, projects, UI list limits (UI_DEFAULT_LIMIT, UI_MAX_LIMIT, UI_DEFAULT_WINDOW), DATABASE_MAX_OPEN_CONNS, Xdebug proxy (XDEBUG_PROXY_*), mock rules (mocks:). Priority: CLI flags > env vars > config file > defaults."
+llms_description: "Server configuration via buggregator.yaml, environment variables, and CLI flags. Covers HTTP address, CORS, database (SQLite), storage modes, TCP ports (SMTP, Monolog, VarDumper, HTTP proxy), module enable/disable, metrics, auth, MCP, webhooks, projects, memory limits (90% of the container limit, GOMEMLIMIT override), UI list limits (UI_DEFAULT_LIMIT, UI_MAX_LIMIT, UI_DEFAULT_WINDOW), DATABASE_MAX_OPEN_CONNS, Xdebug proxy (XDEBUG_PROXY_*), mock rules (mocks:). Priority: CLI flags > env vars > config file > defaults."
 ---
 
 # Configuration — Server
@@ -141,6 +141,7 @@ metrics:
 |----------|---------|-------------|
 | `HTTP_ADDR` | `:8000` | HTTP server listen address |
 | `CORS_ORIGINS` | `*` | Comma-separated list of allowed CORS origins |
+| `GOMEMLIMIT` | 90% of the container's memory limit | Go soft memory limit, e.g. `400MiB`. See [Memory Limits](#memory-limits) |
 
 ### Database
 
@@ -284,6 +285,49 @@ services:
 volumes:
   buggregator-data:
 ```
+
+### Memory Limits
+
+Give the container a memory limit. Buggregator then keeps its memory use under it: it sets the Go runtime's soft
+memory limit to 90% of the container's limit. Example: a 512 MB container gets a 460 MiB limit.
+
+> Since server [version: to fill]. Older versions ignore the container's limit.
+
+Set the limit with Docker:
+
+```bash
+docker run --memory=512m -p 127.0.0.1:8000:8000 ghcr.io/buggregator/server:latest
+```
+
+With Docker Compose:
+
+```yaml
+services:
+  buggregator:
+    image: ghcr.io/buggregator/server:latest
+    mem_limit: 512m
+```
+
+With the [Helm chart](/config/helm-chart): `resources.limits.memory` in `values.yaml`.
+
+The startup log shows the limit in use:
+
+```
+level=INFO msg="go memory limit" mib=460 source=cgroup
+```
+
+With no container limit, there is no such line, and memory is not limited.
+
+**Set the limit yourself** with `GOMEMLIMIT`. It wins over the container's limit:
+
+```bash
+docker run --memory=512m -e GOMEMLIMIT=400MiB -p 127.0.0.1:8000:8000 ghcr.io/buggregator/server:latest
+# level=INFO msg="go memory limit" mib=400 source=GOMEMLIMIT
+```
+
+It is a soft limit. Near it, the garbage collector (the part of Go that frees unused memory) works harder; memory
+can still go above it. A large upload, e.g. a big profiler snapshot, needs room on top of what Buggregator
+normally uses, so leave headroom in the container's limit.
 
 ## Disabling Modules
 
