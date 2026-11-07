@@ -1,5 +1,5 @@
 ---
-llms_description: "Xdebug proxy (since v2.6.0, off by default): Buggregator sits between PHP/Xdebug and the IDE (DBGp). With an IDE it forwards the session unchanged and only reads it. Without an IDE (xdebug.mode auto, the default, or standalone) Buggregator drives the session: continue, step into/over/out, stop, release from the Xdebug page or REST POST /api/xdebug/sessions/{id}/run|step-into|step-over|step-out|stop|detach (JSON; 409 ide_attached/not_paused). Modes: proxy, auto, standalone (env XDEBUG_PROXY_MODE). pause_on_first_line (XDEBUG_PROXY_PAUSE_ON_FIRST_LINE, false): stop at the first line, else run to xdebug_break(). idle_timeout (XDEBUG_PROXY_IDLE_TIMEOUT, 10m, 0 = never): a session paused here with no command is released. PUT /api/xdebug/settings {mode, pause_on_first_line} for new sessions, not saved. Page shows stack, variables, source, breakpoints, watches, agent activity; MCP tools xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (eval only with allow_eval); xdebug_breakpoints (always); control tools xdebug_wait, xdebug_step, xdebug_continue, xdebug_stop, xdebug_breakpoint_set, xdebug_breakpoint_remove (allow_control, default true, env XDEBUG_PROXY_ALLOW_CONTROL; refused while an IDE drives). Config xdebug.enabled/addr/ide_addr/allow_eval/allow_control/mode/pause_on_first_line/idle_timeout, env XDEBUG_PROXY_ENABLED, XDEBUG_PROXY_ADDR (127.0.0.1:9003), XDEBUG_PROXY_IDE_ADDR (127.0.0.1:9004), XDEBUG_PROXY_ALLOW_EVAL (false). Saved breakpoints (line file:line, exception class, * = every exception; condition needs allow_eval) go to every session Buggregator drives; REST /api/xdebug/breakpoints, /api/xdebug/files. HTTP API /api/xdebug/*, WebSocket channel xdebug."
+llms_description: "Xdebug proxy (since v2.6.0, off by default): Buggregator sits between PHP/Xdebug and the IDE (DBGp). With an IDE it forwards the session unchanged and only reads it. Without an IDE (xdebug.mode auto, the default, or standalone) Buggregator drives the session: continue, step into/over/out, stop, release from the Xdebug page or REST POST /api/xdebug/sessions/{id}/run|step-into|step-over|step-out|stop|detach (JSON; 409 ide_attached/not_paused). Modes: proxy, auto, standalone (env XDEBUG_PROXY_MODE). pause_on_first_line (XDEBUG_PROXY_PAUSE_ON_FIRST_LINE, false): stop at the first line, else run to a breakpoint or xdebug_break(). idle_timeout (XDEBUG_PROXY_IDLE_TIMEOUT, 10m, 0 = never): a session paused here with no command is released. PUT /api/xdebug/settings {mode, pause_on_first_line} for new sessions, not saved. Page shows stack, variables, source, breakpoints, watches, agent activity; MCP tools xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (eval only with allow_eval); xdebug_breakpoints (always); control tools xdebug_wait, xdebug_step, xdebug_continue, xdebug_stop, xdebug_breakpoint_set, xdebug_breakpoint_remove (allow_control, default true, env XDEBUG_PROXY_ALLOW_CONTROL; step/continue/stop refused while an IDE drives). Config xdebug.enabled/addr/ide_addr/allow_eval/allow_control/mode/pause_on_first_line/idle_timeout, env XDEBUG_PROXY_ENABLED, XDEBUG_PROXY_ADDR (127.0.0.1:9003), XDEBUG_PROXY_IDE_ADDR (127.0.0.1:9004), XDEBUG_PROXY_ALLOW_EVAL (false). Saved breakpoints (line file:line, exception class, * = every exception; condition needs allow_eval) go to every session Buggregator drives; REST /api/xdebug/breakpoints, /api/xdebug/files. HTTP API /api/xdebug/*, WebSocket channel xdebug."
 ---
 
 # Xdebug Proxy — Debug PHP With or Without an IDE
@@ -59,8 +59,8 @@ Or with environment variables:
 | `XDEBUG_PROXY_IDE_ADDR` | `127.0.0.1:9004` | Where the IDE listens for debug connections |
 | `XDEBUG_PROXY_ALLOW_EVAL` | `false` | Allow evaluating PHP expressions (see [Eval](#eval)) |
 | `XDEBUG_PROXY_MODE` | `auto` | `proxy`, `auto` or `standalone` (see [Modes](#modes)). An unknown value falls back to `auto`, with a warning in the log |
-| `XDEBUG_PROXY_PAUSE_ON_FIRST_LINE` | `false` | A session driven by Buggregator stops at the first line. Otherwise it runs to `xdebug_break()` |
-| `XDEBUG_PROXY_ALLOW_CONTROL` | `true` | Let MCP clients drive a session Buggregator drives (see [MCP tools](#mcp-tools)); `false` = Xdebug tools only read |
+| `XDEBUG_PROXY_PAUSE_ON_FIRST_LINE` | `false` | A session driven by Buggregator stops at the first line. Otherwise it runs to a breakpoint or `xdebug_break()` |
+| `XDEBUG_PROXY_ALLOW_CONTROL` | `true` | Let MCP clients drive a session Buggregator drives (see [MCP tools](#mcp-tools)); `false` = Xdebug tools only read (except `xdebug_eval` with `allow_eval`) |
 | `XDEBUG_PROXY_IDLE_TIMEOUT` | `10m` | A session paused by Buggregator with no command this long is released, and the script runs to the end. A Go duration (`90s`, `10m`); `0` = never. A bad value keeps `10m`, with a warning |
 
 For the MCP tools, also turn on [MCP](/config/mcp) (`mcp.enabled: true`).
@@ -176,7 +176,8 @@ What the buttons do:
 | **Release** | Lets the script run to the end without stopping again |
 | **Stop** | Ends the request now. The rest of the script does not run, so work can stay half done. Asks first: **Stop this request?**, with **Stop request**, **Release instead** and **Cancel** |
 
-On narrow screens the step buttons show only icons; hover one for its name. While an IDE drives the session, the
+Step over, Step into and Step out are icons; hover one for its name. Below 1180 px wide, Continue, Release and
+Stop lose their labels too. While an IDE drives the session, the
 buttons are hidden and the page says «Driven by your IDE».
 
 ### Stop or release?
@@ -189,9 +190,9 @@ buttons are hidden and the page says «Driven by your IDE».
 
 A paused script holds resources: a PHP-FPM worker, the session lock, open database transactions. A session that
 Buggregator paused and nobody touched for `idle_timeout` (10 minutes by default) is released: the script runs to
-the end. The bar above the code counts down: «auto-release in 9:12». The session then closes with
-`closed_reason` `idle_detached`, and the page says «Released after 10 minutes without a command». Every command from
-the page or an agent starts the timer again. Set `idle_timeout: 0` to turn the guard off.
+the end. The bar above the code counts down: «auto-release in 9:12» (on narrower screens only the clock and `9:12`). The session then closes with
+`closed_reason` `idle_detached`, and the page says «Released after 10 minutes without a command». Every step, and every
+read that reaches Xdebug, starts the timer again. Set `idle_timeout: 0` to turn the guard off.
 
 ### Who can step
 
@@ -233,8 +234,10 @@ read-only.
 
 - Each PHP request with Xdebug is one session. Several requests at once each get their own session.
 - The IDE gets the session unchanged. It does not see what the page or the MCP tools read.
-- **No IDE listening**, or the IDE goes away: depends on the [mode](#modes). In `proxy` mode Buggregator detaches,
+- **No IDE answers when the session starts**: depends on the [mode](#modes). In `proxy` mode Buggregator detaches,
   and the script runs on as if there were no debugger. In `auto` and `standalone` Buggregator drives the session.
+- **The IDE goes away later**: Buggregator detaches in every mode (`closed_reason` `ide_closed`), and the script
+  runs on.
 - A closed session stays in the list for 10 minutes with its reason, unless you dismiss it. At most the 50
   newest closed sessions are kept.
 
@@ -245,7 +248,7 @@ The **Xdebug** item appears in the sidebar only when the proxy is on.
 - **Sessions** — state (Paused, Running, Released, Detached, Stopped…), the request (`GET /checkout?step=2`, or the
   CLI command), file and line, and who drives it: `here` (Buggregator), `IDE`, or `no IDE`.
 - **Controls** — Continue, Step over, Step into, Step out, Release and Stop, for a session driven by Buggregator (see
-  [Debug without an IDE](#debug-without-an-ide)). While an IDE drives, the page says so and the buttons are off.
+  [Debug without an IDE](#debug-without-an-ide)). While an IDE drives, the page says so and the buttons are hidden.
 - **Code** — the source around the paused line, with breakpoints in the gutter.
 - **Breakpoints** — the saved breakpoints, see [Breakpoints](#breakpoints).
 - **Variables** — locals, superglobals and user constants. Objects and arrays load when you expand them.
@@ -257,7 +260,8 @@ Values can be read only while the script is paused. While it runs, the page show
 
 ## MCP tools
 
-With `mcp.enabled: true`, MCP clients get these tools. These read a paused session:
+With `mcp.enabled: true`, MCP clients get these tools. These read; `xdebug_sessions` and `xdebug_breakpoints` work
+without a pause, the others need a paused session:
 
 | Tool | What it returns |
 |------|-----------------|
@@ -269,9 +273,11 @@ With `mcp.enabled: true`, MCP clients get these tools. These read a paused sessi
 | `xdebug_eval` | The value of a PHP expression in the current frame. Present only with `allow_eval: true` |
 | `xdebug_breakpoints` | The saved breakpoints; with `session_id`, each one's state in that session (e.g. resolved, skipped), resolved line and hit count |
 
-These drive a session, like the buttons on the page. They work only on a session Buggregator drives; while an
-IDE drives, they are refused. On by default; `xdebug.allow_control: false` (env `XDEBUG_PROXY_ALLOW_CONTROL=false`)
-removes them, and the Xdebug tools are read-only again.
+These drive a session, like the buttons on the page. `xdebug_step`, `xdebug_continue` and `xdebug_stop` work only
+on a session Buggregator drives; while an IDE drives, they are refused. `xdebug_wait` also returns a session paused
+in the IDE. `xdebug_breakpoint_set` and `xdebug_breakpoint_remove` always save, but saved breakpoints never reach a
+session an IDE drives. On by default; `xdebug.allow_control: false` (env `XDEBUG_PROXY_ALLOW_CONTROL=false`)
+removes them, and the Xdebug tools only read again (except `xdebug_eval` with `allow_eval`).
 
 | Tool | What it does |
 |------|--------------|
@@ -318,7 +324,7 @@ Errors are `{"code", "error", "state"?}`.
 | `GET` | `/api/xdebug/sessions/{id}/variables?frame=0&context=0` | variables |
 | `GET` | `/api/xdebug/sessions/{id}/property?name=$user&frame=0&context=0&page=0` | one variable with children |
 | `GET` | `/api/xdebug/sessions/{id}/source?file=…&begin=1&end=120` | source lines, at most 2000 |
-| `GET` | `/api/xdebug/sessions/{id}/breakpoints` | the IDE's breakpoints |
+| `GET` | `/api/xdebug/sessions/{id}/breakpoints` | an IDE session: the IDE's breakpoints. A session driven here: the saved breakpoints with `state`, `resolved_line`, `hit_count` |
 | `POST` | `/api/xdebug/sessions/{id}/eval` | body `{"expression": "count($items)"}`, `Content-Type: application/json`; needs `allow_eval` |
 | `GET` | `/api/xdebug/sessions/{id}/agent-log` | the last 200 MCP calls of the session |
 | `GET` | `/api/xdebug/breakpoints` | saved breakpoints: `id`, `type` (`line` or `exception`), `file` (a `file://` URI), `line`, `exception`, `condition`, `enabled`, `source` (`ui` or `mcp`), `created_at` |
@@ -330,7 +336,7 @@ Errors are `{"code", "error", "state"?}`.
 
 While the script is not paused, reads and controls answer `409 not_paused`. A control on a session the IDE drives
 answers `409 ide_attached`. Other codes: `400 bad_request` (a missing or bad parameter, an unknown mode),
-`403 eval_disabled` (a breakpoint condition with eval off), `404 not_found`, `415 unsupported_media_type` (eval, a
+`403 eval_disabled` (a breakpoint condition with eval off), `403 cross_site` (a write sent from another site), `404 not_found`, `415 unsupported_media_type` (eval, a
 control, settings or a breakpoint without JSON), `422 xdebug_error`
 (Xdebug refused the read), `502 xdebug_failed`, `504 timeout`.
 

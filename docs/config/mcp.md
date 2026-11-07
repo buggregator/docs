@@ -234,7 +234,7 @@ the session, stepping and continuing stay in the IDE.
 | `xdebug_eval` | The value of a PHP expression in the current frame. Present only with `xdebug.allow_eval: true`: the code really runs inside the debugged request. |
 | `xdebug_wait` | Waits until a session pauses (up to 60 s). |
 | `xdebug_step` | One step (`mode` `over`, `into`, `out`); waits for the next pause and returns where the script stopped. |
-| `xdebug_continue` | Runs to the next `xdebug_break()`; same answer as `xdebug_step`. |
+| `xdebug_continue` | Runs to the next breakpoint or `xdebug_break()`; same answer as `xdebug_step`. |
 | `xdebug_stop` | `mode` `detach` (default, the script runs to the end) or `stop` (ends the request now). |
 | `xdebug_breakpoints` | The saved breakpoints; with `session_id`, their state and hit count in that session. |
 | `xdebug_breakpoint_set` | Saves a breakpoint: `file` + `line`, or `exception`; `condition` only with `allow_eval`. |
