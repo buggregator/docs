@@ -24,7 +24,7 @@ While an IDE is attached, it drives. Buggregator then only reads where the scrip
 and source.
 
 > The proxy is available since server v2.6.0, off by default. Driving a session without an IDE is available since
-> server v2.7.0 (bundles frontend 1.36.0, which has the controls and breakpoints).
+> server v2.7.0.
 
 ## Use cases
 
