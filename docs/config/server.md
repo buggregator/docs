@@ -291,7 +291,7 @@ volumes:
 Give the container a memory limit. Buggregator then tries to stay under it: it sets the Go runtime's soft memory
 limit to 90% of the container's limit. Example: a 512 MB container gets a 460 MiB limit.
 
-> Since server [version: to fill]. Older versions ignore the container's limit.
+> Since server v2.7.0. Older versions ignore the container's limit.
 
 Set the limit with Docker:
 
