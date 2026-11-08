@@ -248,7 +248,7 @@ They are left out with `xdebug.allow_control: false`; stepping is refused while 
 
 ### Xdebug Trace
 
-Uploaded function traces ([Xdebug Trace](/config/xdebug-trace)). Since server [version: to fill].
+Uploaded function traces ([Xdebug Trace](/config/xdebug-trace)). Since server v2.8.0.
 
 | Tool | Arguments | Returns |
 |------|-----------|---------|
