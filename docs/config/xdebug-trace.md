@@ -1,5 +1,5 @@
 ---
-llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit= (next page: from=next with the same parent), /search?q=&from=&limit= (results carry path = callers top-down); limit default 200, max 1000. A .xt.gz is decompressed from the start on every tree/search request (slow on big traces). Memory storage: files gone after a restart, events without a file dropped at start. MCP tools: [to fill with server PR 3]."
+llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit= (next page: from=next with the same parent), /search?q=&from=&limit= (results carry path = callers top-down); limit default 200, max 1000. A .xt.gz is decompressed from the start on every tree/search request (slow on big traces). Memory storage: files gone after a restart, events without a file dropped at start. MCP tools (mcp.enabled): xdebug_traces {project?, limit? 20/100}, xdebug_trace_summary {uuid}, xdebug_trace_calls {uuid, parent?, from?, query?, limit? 50/200; next → from=next, same parent; query hits carry path}, xdebug_trace_call {uuid, offset} (call + first 50 callees); args/returns cut to 512 bytes, 20 args."
 ---
 
 # Xdebug Trace — Record Every Function Call
@@ -177,3 +177,19 @@ A summary of a small trace (`top` and `slowest` cut to fit here). Times are seco
 
 `top` is by time spent in the function itself (`self`), `slowest` by time including callees (`incl`). `offset` is
 what you pass as `parent` to `tree`.
+
+## MCP tools
+
+With [MCP](/config/mcp) on (`mcp.enabled: true`), an AI assistant can read traces itself:
+
+| Tool | Arguments | Returns |
+|------|-----------|---------|
+| `xdebug_traces` | `project`, `limit` (20, max 100) | Traces, newest first: `uuid`, project, name, url, script, duration (s), peak memory (bytes), calls, depth, `truncated` |
+| `xdebug_trace_summary` | `uuid` | Totals, the 20 functions with the most self time, the 20 slowest calls with their `offset` |
+| `xdebug_trace_calls` | `uuid`, `parent`, `from`, `query`, `limit` (50, max 200) | No `parent`: top-level calls. `parent=<offset>`: its direct callees. A non-null `next`: call again with `from=next` and the same `parent`. `query`: calls whose function or file contains the text (case ignored), each with `path` (callers, top-down) |
+| `xdebug_trace_call` | `uuid`, `offset` | One call (arguments, return value, incl/self time, memory change) and its first 50 direct callees |
+
+Arguments and return values are cut to 512 bytes each, at most 20 arguments per call.
+
+A typical path: `xdebug_traces` → `xdebug_trace_summary` → `xdebug_trace_call` on the `offset` of a slow call →
+`xdebug_trace_calls` to go deeper. Example question to the assistant: «Why is the last trace slow?»
