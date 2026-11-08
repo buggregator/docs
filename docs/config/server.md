@@ -291,6 +291,10 @@ A failed check keeps the last good result.
 
 With the check off, `update` is `null`.
 
+**In the UI**, **Settings → About** shows «Buggregator 2.7.0 is available (you run 2.6.0)» with a **Release notes**
+link. When you run the newest release, the server version is marked **Up to date**. Before the first successful
+check, or with the check off, it shows neither.
+
 ## Docker Examples
 
 ### Using Environment Variables
