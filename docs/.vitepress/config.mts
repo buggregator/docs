@@ -186,6 +186,7 @@ export default defineConfig({
                     {text: 'Ray', link: '/config/ray'},
                     {text: 'Inspector', link: '/config/inspector'},
                     {text: 'Xdebug Proxy', link: '/config/xdebug'},
+                    {text: 'Xdebug Trace', link: '/config/xdebug-trace'},
                     {text: 'JetBrains IDE Plugin', link: '/config/phpstorm-plugin'},
                 ]
             },

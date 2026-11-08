@@ -1,5 +1,5 @@
 ---
-llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only), xdebug_breakpoints, and with allow_control (default true; a session without an IDE) xdebug_wait, xdebug_step, xdebug_continue, xdebug_stop, xdebug_breakpoint_set, xdebug_breakpoint_remove; mock server: mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, and (mcp.mock_write, default true, env MCP_MOCK_WRITE) mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request, mock_import_openapi, mock_group_delete. Integration with Claude Code, Cursor, and other MCP-compatible clients."
+llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only), xdebug_breakpoints, and with allow_control (default true; a session without an IDE) xdebug_wait, xdebug_step, xdebug_continue, xdebug_stop, xdebug_breakpoint_set, xdebug_breakpoint_remove; mock server: mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, and (mcp.mock_write, default true, env MCP_MOCK_WRITE) mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request, mock_import_openapi, mock_group_delete. Xdebug traces: xdebug_traces, xdebug_trace_summary, xdebug_trace_calls, xdebug_trace_call. Integration with Claude Code, Cursor, and other MCP-compatible clients."
 ---
 
 # Configuration — MCP (Model Context Protocol)
@@ -245,6 +245,17 @@ the session, stepping and continuing stay in the IDE.
 They are left out with `xdebug.allow_control: false`; stepping is refused while an IDE drives.
 
 `session_id` can be left out when exactly one session is paused. More in [Xdebug → MCP tools](/config/xdebug#mcp-tools).
+
+### Xdebug Trace
+
+Uploaded function traces ([Xdebug Trace](/config/xdebug-trace)). Since server v2.8.0.
+
+| Tool | Arguments | Returns |
+|------|-----------|---------|
+| `xdebug_traces` | `project`, `limit` (20, max 100) | Traces, newest first: `uuid`, project, name, url, script, duration (s), peak memory (bytes), calls, depth, `truncated` |
+| `xdebug_trace_summary` | `uuid` | Totals, the 20 functions with the most self time, the 20 slowest calls with their `offset` |
+| `xdebug_trace_calls` | `uuid`, `parent`, `from`, `query`, `limit` (50, max 200) | No `parent`: top-level calls. `parent=<offset>`: its direct callees. A non-null `next`: call again with `from=next` and the same `parent`. `query`: calls whose function or file contains the text (case ignored), each with `path` (callers, top-down) |
+| `xdebug_trace_call` | `uuid`, `offset` | One call (arguments, return value, incl/self time, memory change) and its first 50 direct callees. A non-null `from`: get the rest with `xdebug_trace_calls` and the `parent` and `from` of this answer |
 
 ### Example Usage in Claude Code
 
