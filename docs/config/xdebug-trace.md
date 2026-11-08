@@ -1,5 +1,5 @@
 ---
-llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit= (next page: from=next with the same parent), /search?q=&from=&limit= (results carry path = callers top-down); limit default 200, max 1000. A .xt.gz is decompressed from the start on every tree/search request (slow on big traces). Memory storage: files in $TMPDIR (Windows %TEMP%)/buggregator-xdebug-traces-<pid> (dirs of dead pids removed at start), gone after a restart, events without a file dropped at start; containers sharing one /tmp need their own TMPDIR. MCP tools (mcp.enabled): xdebug_traces {project?, limit? 20/100}, xdebug_trace_summary {uuid}, xdebug_trace_calls {uuid, parent?, from?, query?, limit? 50/200; next → from=next, same parent; query hits carry path}, xdebug_trace_call {uuid, offset} → {call, callees (first 50), parent, from, truncated}; more callees: xdebug_trace_calls with that parent and from; args/returns cut to 512 bytes, 20 args."
+llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. UI: sidebar «Xdebug traces», tabs «Call tree» (search, args) and «Slowest & top». HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit= (next page: from=next with the same parent), /search?q=&from=&limit= (results carry path = callers top-down); limit default 200, max 1000. A .xt.gz is decompressed from the start on every tree/search request (slow on big traces). Memory storage: files in $TMPDIR (Windows %TEMP%)/buggregator-xdebug-traces-<pid> (dirs of dead pids removed at start), gone after a restart, events without a file dropped at start; containers sharing one /tmp need their own TMPDIR. MCP tools (mcp.enabled): xdebug_traces {project?, limit? 20/100}, xdebug_trace_summary {uuid}, xdebug_trace_calls {uuid, parent?, from?, query?, limit? 50/200; next → from=next, same parent; query hits carry path}, xdebug_trace_call {uuid, offset} → {call, callees (first 50), parent, from, truncated}; more callees: xdebug_trace_calls with that parent and from; args/returns cut to 512 bytes, 20 args."
 ---
 
 # Xdebug Trace — Record Every Function Call
@@ -87,6 +87,19 @@ Errors come back as `400` with a plain-text reason. No file is left behind.
 |--------|-----|
 | `not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1` | Record again with `xdebug.trace_format=1` |
 | `xdebug-trace: upload is larger than 104857600 bytes (xdebug_trace.max_upload)` (the number is your limit) | Raise `max_upload`, or send the `.gz` file |
+
+## In the UI
+
+Traces have their own page: **Xdebug traces** in the sidebar. Each card shows the duration, peak memory, number of
+calls and depth. A **cut** badge means the trace hit the size limit or has no end.
+
+Open a trace to see two tabs:
+
+- **Call tree.** The calls, one level at a time: click a call to see the calls it made. A long level ends with
+  **Show more calls**. The **args** button on a call shows its arguments and return value. Search with **Find a
+  function or file**, e.g. `PDO->query`; click a hit and the tree opens down to it.
+- **Slowest & top.** **Top self-time** lists functions by the time spent in their own code, callees left out.
+  **Slowest calls** lists single calls by their time with callees.
 
 ## Limits and storage
 
