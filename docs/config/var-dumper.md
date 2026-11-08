@@ -1,5 +1,5 @@
 ---
-llms_description: "Symfony VarDumper integration via TCP port 9912: VAR_DUMPER_FORMAT=server, VAR_DUMPER_SERVER=host:9912. UI shows dumped values as interactive tree, source location with IDE click-to-open, variable labels. VAR_DUMPER_PREVIEW_MAX_DEPTH env for performance. Syntax highlighting via trap() context(language:). Buggregator Trap alternative with trap()/tr()/td() helpers."
+llms_description: "Symfony VarDumper integration via TCP port 9912: VAR_DUMPER_FORMAT=server, VAR_DUMPER_SERVER=host:9912. UI shows dumped values as interactive tree, source location with IDE click-to-open (link order: Settings editor/path mapping if set > app's context.source.file_link if an editor scheme like phpstorm:// or vscode://, file:// and http(s) skipped > VS Code default; app link via SYMFONY_IDE, xdebug.file_link_format or framework.ide, path map suffix &/container/>/local/), variable labels. VAR_DUMPER_PREVIEW_MAX_DEPTH env for performance. Syntax highlighting via trap() context(language:). Buggregator Trap alternative with trap()/tr()/td() helpers."
 ---
 
 # VarDumper — Variable Dumps
@@ -21,9 +21,52 @@ processes.
 ## What you see in the UI
 
 - **Dumped value** — full variable content with type information, rendered as an interactive expandable tree.
-- **Source location** — file and line where `dump()` was called. Clickable — opens in your IDE.
+- **Source location** — file and line where `dump()` was called. Clickable — opens in your IDE
+  (see [Open the source in your editor](#open-the-source-in-your-editor)).
 - **Variable name and label** — custom labels if provided.
 - **Syntax highlighting** — for text-only dumps (see below).
+
+## Open the source in your editor
+
+The source location of a dump is a link. Since server v2.8.0, Buggregator picks the link in this order:
+
+1. **Your Settings.** You picked an editor in **Settings → Editor Integration**, or turned on **Custom File Path
+   Mapping** with at least one mapping. Then Buggregator builds the link from these settings. Example: editor
+   PhpStorm, mapping `/var/www/` → `/home/me/project/`. A dump from `/var/www/src/Foo.php:12` opens
+   `/home/me/project/src/Foo.php` at line 12. When several mappings match, the longest one wins.
+2. **The link your app sends.** Otherwise Buggregator uses the link from the dump as is, if it opens an editor.
+   If your app's link template maps the path (see below), this works when the app runs in Docker.
+3. **The default.** Otherwise the link is built for VS Code (the Settings default) with the path as the app sees it.
+
+Buggregator uses the app's link only when it starts with an editor scheme: `phpstorm`, `idea`, `vscode`,
+`vscode-insiders`, `vscodium`, `cursor`, `windsurf`, `zed`, `subl`, `txmt`, `mvim`, `emacs`, `editor`, `atom`, `nova`,
+`fleet`, `netbeans`. Other links are skipped. Example: with no editor set, Symfony sends
+`file:///var/www/src/Foo.php#L12`. That path is inside the container, so Buggregator skips it.
+
+### Set the link in your app
+
+The app sends this link only when `symfony/error-handler` is installed. Symfony and Laravel apps have it; otherwise
+run `composer require --dev symfony/error-handler`.
+
+Symfony VarDumper builds the link from the first of these that is set:
+
+- **`SYMFONY_IDE`** env variable: an editor name (`phpstorm`, `vscode`, `sublime`, `textmate`, `macvim`, `emacs`,
+  `atom`) or a link template.
+- **`xdebug.file_link_format`** in `php.ini`: a link template.
+
+In a Symfony app, **`framework.ide`** in the config takes the place of `SYMFONY_IDE`. In debug mode it reads
+`SYMFONY_IDE` by default.
+
+A template uses `%f` for the file and `%l` for the line. To map a container path to your local one, add
+`&<container path>><local path>` at the end. Example for PhpStorm with the app in `/var/www/`:
+
+```dotenv
+SYMFONY_IDE="phpstorm://open?file=%f&line=%l&/var/www/>/home/me/project/"
+```
+
+An editor name alone maps no paths. Use a template when the app runs in Docker.
+
+The server needs no config for this. The Settings are kept in your browser, so each browser has its own.
 
 ## Setup
 
