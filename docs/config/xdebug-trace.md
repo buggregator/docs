@@ -95,8 +95,8 @@ calls and depth. A **cut** badge means the trace hit the size limit or has no en
 
 Open a trace to see two tabs:
 
-- **Call tree.** The calls, one level at a time: click a call to see the calls it made. A long level ends with
-  **Show more calls**. The **args** button on a call shows its arguments and return value. Search with **Find a
+- **Call tree.** The calls, one level at a time: click the arrow (▸) next to a call to see the calls it made. A long level ends with
+  **Show more calls**. The **args** button, on calls that have them, shows the arguments and return value. Search with **Find a
   function or file**, e.g. `PDO->query`; click a hit and the tree opens down to it.
 - **Slowest & top.** **Top self-time** lists functions by the time spent in their own code, callees left out.
   **Slowest calls** lists single calls by their time with callees.
