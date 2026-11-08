@@ -1,5 +1,5 @@
 ---
-llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit=, /search?q=&from=&limit= (limit default 200, max 1000)."
+llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit= (next page: from=next with the same parent), /search?q=&from=&limit= (results carry path = callers top-down); limit default 200, max 1000. A .xt.gz is decompressed from the start on every tree/search request (slow on big traces). Memory storage: files gone after a restart, events without a file dropped at start. MCP tools: [to fill with server PR 3]."
 ---
 
 # Xdebug Trace — Record Every Function Call
@@ -58,7 +58,7 @@ curl -H 'X-Buggregator-Event: xdebug-trace' \
      http://127.0.0.1:8000/
 ```
 
-Buggregator answers `{"status":true}` and stores the trace as an event.
+Buggregator answers `200` with `{"status":true}` and stores the trace as an event. The answer has no event id.
 
 Instead of the header, you can put the type in the address: `http://xdebug-trace@127.0.0.1:8000/`.
 
@@ -81,12 +81,12 @@ curl -H 'X-Buggregator-Event: xdebug-trace' \
      http://127.0.0.1:8000/
 ```
 
-Errors come back as `400` with a plain-text reason:
+Errors come back as `400` with a plain-text reason. No file is left behind.
 
 | Reason | Fix |
 |--------|-----|
 | `not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1` | Record again with `xdebug.trace_format=1` |
-| `xdebug-trace: upload is larger than … bytes (xdebug_trace.max_upload)` | Raise `max_upload`, or send the `.gz` file |
+| `xdebug-trace: upload is larger than 104857600 bytes (xdebug_trace.max_upload)` (the number is your limit) | Raise `max_upload`, or send the `.gz` file |
 
 ## Limits and storage
 
@@ -110,9 +110,14 @@ to the default and logs a warning.
 
 - `storage.mode: filesystem`: in `xdebug-traces/` under `storage.path` (default `./storage/xdebug-traces`). They
   stay after a restart, as long as the database does.
-- Otherwise (the default, `memory`): in a temporary folder, removed when Buggregator exits.
+- Otherwise (the default, `memory`): in a temporary folder. The files are gone after a restart. If the database is
+  a file (`DATABASE_DSN`), Buggregator drops those trace events at start, because their files are gone.
 
 Deleting the trace event deletes its files.
+
+**Gzip or plain.** Buggregator reads a `.xt.gz` file from its start on every tree or search request. On a big gzip
+trace, opening a deep call can take seconds. If that matters, send the trace unpacked (`xdebug.use_compression=0`),
+or keep traces small.
 
 **Turn the module off:**
 
@@ -128,7 +133,47 @@ For scripts and agents. Same auth as the rest of `/api`.
 | Route | Returns |
 |-------|---------|
 | `GET /api/xdebug-traces/{uuid}/summary` | File info and the summary: calls, user calls, depth, duration, peak memory, top functions by own time, slowest calls, `truncated` |
-| `GET /api/xdebug-traces/{uuid}/tree?parent=&from=&limit=` | One level of calls: the top level without `parent`, or the calls made by the call at byte offset `parent`. `next` is the `from` of the next page |
-| `GET /api/xdebug-traces/{uuid}/search?q=&from=&limit=` | Calls that match `q` (at most 256 bytes) |
+| `GET /api/xdebug-traces/{uuid}/tree?parent=&from=&limit=` | One level of calls: the top level without `parent`, or the calls made by the call at byte offset `parent`. `next` is the `from` of the next page; send it with the same `parent` |
+| `GET /api/xdebug-traces/{uuid}/search?q=&from=&limit=` | Calls that match `q` (at most 256 bytes). Each result has `path`: its callers, top-down |
 
 `limit` is 200 by default, 1000 at most. A bad number gives `400`; an unknown trace gives `404`.
+
+A summary of a small trace (`top` and `slowest` cut to fit here). Times are seconds, memory is bytes:
+
+```json
+{
+  "compressed": true,
+  "file": "90494b42-e565-4f2e-889f-ea1245ac2916.xt.gz",
+  "name": "",
+  "size": 251,
+  "summary": {
+    "xdebug_version": "3.4.5",
+    "file_format": 4,
+    "start": "2026-11-08 10:00:00.000001",
+    "end": "2026-11-08 10:00:00.010201",
+    "end_time": 0.0102,
+    "end_memory": 419000,
+    "calls": 3,
+    "user_calls": 2,
+    "max_depth": 3,
+    "duration": 0.0102,
+    "peak_memory": 452000,
+    "assignments": 0,
+    "returns": false,
+    "truncated": false,
+    "main": "/app/index.php",
+    "top": [
+      {"func": "PDO->query", "user": false, "count": 1, "self": 0.0094, "incl": 0.0094}
+    ],
+    "slowest": [
+      {"nr": 0, "func": "{main}", "file": "/app/index.php", "line": 0, "level": 1, "start": 0.0001, "incl": 0.01,
+       "self": 0.00020000000000000052, "memory": 20000, "offset": 71}
+    ],
+    "index": [{"nr": 0, "offset": 71, "level": 1}]
+  },
+  "url": ""
+}
+```
+
+`top` is by time spent in the function itself (`self`), `slowest` by time including callees (`incl`). `offset` is
+what you pass as `parent` to `tree`.
