@@ -1,5 +1,5 @@
 ---
-llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit= (next page: from=next with the same parent), /search?q=&from=&limit= (results carry path = callers top-down); limit default 200, max 1000. A .xt.gz is decompressed from the start on every tree/search request (slow on big traces). Memory storage: files gone after a restart, events without a file dropped at start. MCP tools (mcp.enabled): xdebug_traces {project?, limit? 20/100}, xdebug_trace_summary {uuid}, xdebug_trace_calls {uuid, parent?, from?, query?, limit? 50/200; next → from=next, same parent; query hits carry path}, xdebug_trace_call {uuid, offset} (call + first 50 callees); args/returns cut to 512 bytes, 20 args."
+llms_description: "Xdebug function traces (since server [version: to fill]): record with xdebug.mode=trace and xdebug.trace_format=1 (required; other formats → 400 «not an Xdebug trace in the computer-readable format: set xdebug.trace_format=1»), upload the file over HTTP: POST / with header X-Buggregator-Event: xdebug-trace (or DSN user xdebug-trace@host), body = the .xt or .xt.gz file as is; optional headers X-Buggregator-Project, X-Buggregator-Trace-Url, X-Buggregator-Trace-Name; answer {\"status\":true}. Config xdebug_trace.max_upload (XDEBUG_TRACE_MAX_UPLOAD, 100MB, request body; larger → 400), max_size (XDEBUG_TRACE_MAX_SIZE, 256MB uncompressed read; rest not read, summary.truncated true), keep (XDEBUG_TRACE_KEEP, 20; oldest unpinned deleted first), modules.xdebug-trace (default on). Files: storage.path/xdebug-traces in filesystem mode, a temp dir otherwise; deleted with the event. HTTP API GET /api/xdebug-traces/{uuid}/summary, /tree?parent=&from=&limit= (next page: from=next with the same parent), /search?q=&from=&limit= (results carry path = callers top-down); limit default 200, max 1000. A .xt.gz is decompressed from the start on every tree/search request (slow on big traces). Memory storage: files gone after a restart, events without a file dropped at start. MCP tools (mcp.enabled): xdebug_traces {project?, limit? 20/100}, xdebug_trace_summary {uuid}, xdebug_trace_calls {uuid, parent?, from?, query?, limit? 50/200; next → from=next, same parent; query hits carry path}, xdebug_trace_call {uuid, offset} → {call, callees (first 50), parent, from, truncated}; more callees: xdebug_trace_calls with that parent and from; args/returns cut to 512 bytes, 20 args."
 ---
 
 # Xdebug Trace — Record Every Function Call
@@ -27,7 +27,7 @@ xdebug.output_dir=/tmp/traces
 
 - **`xdebug.mode=trace`** turns tracing on. You can combine it with other modes, e.g. `xdebug.mode=debug,trace`.
 - **`xdebug.trace_format=1`** is required. It is the computer-readable format. Buggregator refuses the other formats
-  (`0`, `2`) with `400`.
+  (`0`, `2`, `3`, `4`) with `400`.
 - **`xdebug.start_with_request`** says which requests are traced. `trigger` traces only a request with the
   `XDEBUG_TRIGGER` cookie, query or POST parameter (or env variable for a CLI script). `yes` traces every request.
 - **`xdebug.output_dir`** is where Xdebug writes the files. The default is `/tmp`.
@@ -39,7 +39,7 @@ Optional:
 - **`xdebug.use_compression`** (Xdebug 3.1+, on when Xdebug has gzip support) writes `.xt.gz` files. Send them as they
   are: Buggregator reads gzip itself.
 
-Arguments of each call are always in the trace in Xdebug 3. There is no setting for it.
+Arguments are in the trace by default; `xdebug.collect_params=0` leaves them out. Buggregator reads both.
 
 For one CLI script, pass the settings as flags:
 
@@ -187,7 +187,7 @@ With [MCP](/config/mcp) on (`mcp.enabled: true`), an AI assistant can read trace
 | `xdebug_traces` | `project`, `limit` (20, max 100) | Traces, newest first: `uuid`, project, name, url, script, duration (s), peak memory (bytes), calls, depth, `truncated` |
 | `xdebug_trace_summary` | `uuid` | Totals, the 20 functions with the most self time, the 20 slowest calls with their `offset` |
 | `xdebug_trace_calls` | `uuid`, `parent`, `from`, `query`, `limit` (50, max 200) | No `parent`: top-level calls. `parent=<offset>`: its direct callees. A non-null `next`: call again with `from=next` and the same `parent`. `query`: calls whose function or file contains the text (case ignored), each with `path` (callers, top-down) |
-| `xdebug_trace_call` | `uuid`, `offset` | One call (arguments, return value, incl/self time, memory change) and its first 50 direct callees |
+| `xdebug_trace_call` | `uuid`, `offset` | One call (arguments, return value, incl/self time, memory change) and its first 50 direct callees. A non-null `from`: get the rest with `xdebug_trace_calls` and the `parent` and `from` of this answer |
 
 Arguments and return values are cut to 512 bytes each, at most 20 arguments per call.
 

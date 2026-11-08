@@ -255,7 +255,7 @@ Uploaded function traces ([Xdebug Trace](/config/xdebug-trace)). Since server [v
 | `xdebug_traces` | `project`, `limit` (20, max 100) | Traces, newest first: `uuid`, project, name, url, script, duration (s), peak memory (bytes), calls, depth, `truncated` |
 | `xdebug_trace_summary` | `uuid` | Totals, the 20 functions with the most self time, the 20 slowest calls with their `offset` |
 | `xdebug_trace_calls` | `uuid`, `parent`, `from`, `query`, `limit` (50, max 200) | No `parent`: top-level calls. `parent=<offset>`: its direct callees. A non-null `next`: call again with `from=next` and the same `parent`. `query`: calls whose function or file contains the text (case ignored), each with `path` (callers, top-down) |
-| `xdebug_trace_call` | `uuid`, `offset` | One call (arguments, return value, incl/self time, memory change) and its first 50 direct callees |
+| `xdebug_trace_call` | `uuid`, `offset` | One call (arguments, return value, incl/self time, memory change) and its first 50 direct callees. A non-null `from`: get the rest with `xdebug_trace_calls` and the `parent` and `from` of this answer |
 
 ### Example Usage in Claude Code
 
