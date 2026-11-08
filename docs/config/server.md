@@ -253,7 +253,7 @@ or through the API. See [Mock Server](/config/mock-server).
 
 ## New-Version Check
 
-Since server [version: to fill], Buggregator asks GitHub whether a newer server release is out. It sends one
+Since server v2.8.0, Buggregator asks GitHub whether a newer server release is out. It sends one
 request to `https://api.github.com/repos/buggregator/server/releases/latest` at start and then every 12 hours. Besides your IP
 address, the request carries only your server version (`User-Agent: buggregator/2.6.0`); nothing about your events or projects is sent.
 
