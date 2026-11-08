@@ -28,7 +28,7 @@ processes.
 
 ## Open the source in your editor
 
-The source location of a dump is a link. Since server [version: to fill], Buggregator picks the link in this order:
+The source location of a dump is a link. Since server v2.8.0, Buggregator picks the link in this order:
 
 1. **Your Settings.** You picked an editor in **Settings → Editor Integration**, or turned on **Custom File Path
    Mapping** with at least one mapping. Then Buggregator builds the link from these settings. Example: editor
