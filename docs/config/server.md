@@ -254,8 +254,8 @@ or through the API. See [Mock Server](/config/mock-server).
 ## New-Version Check
 
 Since server [version: to fill], Buggregator asks GitHub whether a newer server release is out. It sends one
-request to `https://api.github.com/repos/buggregator/server/releases/latest` at start and then every 12 hours. The request
-carries only your server version (`User-Agent: buggregator/2.6.0`); nothing about your events or projects is sent.
+request to `https://api.github.com/repos/buggregator/server/releases/latest` at start and then every 12 hours. Besides your IP
+address, the request carries only your server version (`User-Agent: buggregator/2.6.0`); nothing about your events or projects is sent.
 
 **Turn it off** where the server must not call out, e.g. a locked-down CI runner or a machine without internet:
 
@@ -270,7 +270,7 @@ update_check:
 
 With `false`, Buggregator makes no network call for this at all.
 
-- `interval` changes how often it asks: a Go duration, at least `1h`. A smaller value is raised to `1h`; a value that is not a duration falls back to `12h`. Both log a warning.
+- `interval` changes how often it asks: a Go duration, at least `1h`. A smaller value is raised to `1h`; a value that is not a positive duration falls back to `12h`. Both log a warning.
 - A failed check is tried again after an hour. It never stops the server from starting.
 - A development build (version `dev`) never checks.
 
