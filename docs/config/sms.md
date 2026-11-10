@@ -1,5 +1,5 @@
 ---
-llms_description: "SMS gateway interceptor: /sms endpoint with auto-detection for 40+ providers (Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, etc.). Explicit provider URLs (/sms/twilio) for field validation with 422 responses. Symfony Notifier DSN config, Laravel HTTP example, generic curl. Supports JSON and form-urlencoded payloads, project URL segments."
+llms_description: "SMS gateway interceptor: /sms endpoint with auto-detection for 40+ providers (Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, etc.). Explicit provider URLs (/sms/twilio) for field validation (missing fields → warnings on the stored event, HTTP 200). Symfony Notifier DSNs do not work (bridges call the provider's own HTTPS API path), Laravel HTTP example, generic curl. Supports JSON and form-urlencoded payloads, project URL segments."
 ---
 
 # SMS Gateway Interceptor
@@ -35,11 +35,9 @@ POST /sms/vonage       → forces Vonage field mapping + validates required fiel
 POST /sms              → auto-detects provider from payload
 ```
 
-When using an explicit provider URL, Buggregator validates that all required fields are present. If something is missing:
-- The HTTP response returns **422** with a JSON error listing missing fields.
-- The event is **still captured** in the UI with validation warnings highlighted in red.
-
-This way your app sees the error (like it would from a real provider), and you can inspect the full payload in Buggregator.
+When using an explicit provider URL, Buggregator checks that the provider's required fields are present. If something
+is missing, the event is still stored and the UI shows the missing fields as warnings. The HTTP answer is `200` either
+way, so your app does not see an error: check the warnings in Buggregator.
 
 ### Project support
 
@@ -76,33 +74,9 @@ Full list: Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, Bandwidth
 
 ### Symfony Notifier
 
-Symfony's Notifier component uses DSN-based transport configuration. Every SMS bridge has a configurable host — change it to point at Buggregator.
-
-```dotenv
-# Default (sends to real Twilio):
-TWILIO_DSN=twilio://SID:TOKEN@default?from=+1234567890
-
-# Point to Buggregator (explicit provider URL for validation):
-TWILIO_DSN=twilio://SID:TOKEN@127.0.0.1:8000/sms/twilio?from=+1234567890
-
-# Or use auto-detect:
-TWILIO_DSN=twilio://SID:TOKEN@127.0.0.1:8000/sms?from=+1234567890
-```
-
-Same pattern for any Symfony SMS bridge:
-
-```dotenv
-# Vonage
-VONAGE_DSN=vonage://KEY:SECRET@127.0.0.1:8000/sms/vonage?from=MyApp
-
-# Plivo
-PLIVO_DSN=plivo://AUTH_ID:AUTH_TOKEN@127.0.0.1:8000/sms/plivo?from=+1234567890
-
-# Sinch
-SINCH_DSN=sinch://ACCOUNT_ID:AUTH_TOKEN@127.0.0.1:8000/sms/sinch?from=+1234567890
-```
-
-> In Docker Compose, replace `127.0.0.1:8000` with the Buggregator service name (e.g., `buggregator:8000`).
+Pointing a Symfony Notifier DSN at Buggregator does not work. Each SMS bridge calls its provider's own API path over
+HTTPS (Twilio: `/2010-04-01/Accounts/{SID}/Messages.json`) and expects the provider's answer (Twilio: `201` with a
+`sid`). Buggregator answers neither. Send the SMS payload to Buggregator over HTTP instead, as in the examples below.
 
 ### Laravel
 
@@ -137,8 +111,7 @@ curl -X POST http://127.0.0.1:8000/sms \
 curl -X POST http://127.0.0.1:8000/sms/twilio \
   -H "Content-Type: application/json" \
   -d '{"From":"+1234","To":"+5678"}'
-# Returns 422: {"error":"validation_failed","gateway":"twilio","missing_fields":["MessageSid","Body"]}
-# But the event is still visible in Buggregator UI with warnings!
+# Returns 200; the event shows the missing fields as warnings in the UI
 ```
 
 Both `application/json` and `application/x-www-form-urlencoded` are accepted.
