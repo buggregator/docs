@@ -12,8 +12,21 @@ request. It can copy values from the request and add fake data.
 Example: the rule `GET /users/{id}` answers `/mock/users/42` with `{"id": 42, …}` and `/mock/users/7` with
 `{"id": 7, …}`, each with a made-up name.
 
-> Available since server v2.6.0. The **Mock server** page does not show the template fields yet: set them through
-> the [REST API](/config/mock-server#rest-api) or in [`buggregator.yaml`](#rules-in-buggregator-yaml).
+> Available since server v2.6.0 through the [REST API](/config/mock-server#rest-api) and
+> [`buggregator.yaml`](#rules-in-buggregator-yaml). Since server v2.7.0 the **Mock server** page edits them too.
+
+## In the UI
+
+Open a rule on the **Mock server** page and switch **Template** on. Then:
+
+- **Seed** appears next to the switch. `0` gives new fake data on every request.
+- **Template helpers** lists the functions (tab **Functions**) and the fake data generators (tab **Fake data**,
+  with search and categories). **Insert** puts one into the body at the cursor.
+- **Preview** runs the rule on a sample request (method, path with query, headers, body) and shows the answer.
+  It saves nothing. A syntax error shows up here before you save.
+
+Example: rule path `/users/{id}`, body `{"id": {{ path "id" }}}`, sample path `/users/42`, **Run preview**:
+the answer is `{"id": 42}`.
 
 Every example on this page was run on a real server. The output is pasted as it came back. With fake data and
 no `seed`, your values will differ.

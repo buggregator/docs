@@ -1,5 +1,5 @@
 ---
-llms_description: "XHProf profiling integration: Call Graph, Flame Graph, Top Functions table, profile comparison. Setup: pecl install xhprof, packages for Laravel (maantje/xhprof-buggregator-laravel), Spiral (spiral/profiler), generic PHP (spiral-packages/profiler). PROFILER_ENDPOINT config, custom client via HTTP auth, X-Buggregator-Event header, or /api/profiler/store endpoint."
+llms_description: "XHProf profiling integration: Call Graph, Flame Graph, Top Functions table, profile comparison. Setup: pecl install xhprof, packages for Laravel (maantje/xhprof-buggregator-laravel), Spiral (spiral/profiler), generic PHP (spiral-packages/profiler). XHPROF_ENABLED=true (Laravel package, off by default), PROFILER_ENDPOINT (default path /api/profiler/store), Symfony bundle enabled: true, custom client via HTTP auth, X-Buggregator-Event header, or /api/profiler/store endpoint."
 ---
 
 # XHProf — Performance Profiling
@@ -95,7 +95,7 @@ use Symfony\Component\HttpClient\NativeHttpClient;
 
 $storage = new WebStorage(
     new NativeHttpClient(),
-    'http://127.0.0.1/api/profiler/store',
+    'http://127.0.0.1:8000/api/profiler/store',
 );
 
 $profiler = new Profiler(
@@ -112,12 +112,46 @@ $profiler->start();
 $profiler->end();
 ```
 
-### 3. Configure the endpoint
+### 3. Turn profiling on and set the endpoint
+
+The packages differ here. The Laravel package and the Symfony bundle send nothing until you turn them on.
+
+#### Laravel
+
+Profiling is off by default (`XHPROF_ENABLED` defaults to `false`). Turn it on and set the endpoint:
 
 ```dotenv
-PROFILER_ENDPOINT=http://profiler@127.0.0.1:8000
+XHPROF_ENABLED=true
+PROFILER_ENDPOINT=http://127.0.0.1:8000/api/profiler/store
+```
+
+The profile is named after your app's `APP_NAME`. Turn profiling off when you do not need it: it slows every
+request down. The package can also switch it per request with the `X-Xhprof-Enabled` header, see its
+[documentation](https://github.com/maantje/xhprof-buggregator-laravel).
+
+#### Spiral Framework
+
+Profiling is on by default (`PROFILER_ENABLE=true`). Set the endpoint and the app name:
+
+```dotenv
+PROFILER_ENDPOINT=http://127.0.0.1:8000/api/profiler/store
 PROFILER_APP_NAME="My app"
 ```
+
+#### Symfony Framework
+
+The bundle is off by default. Turn it on in `config/packages/buggregator_profiler.yaml`:
+
+```yaml
+buggregator_profiler:
+    enabled: true
+    application_name: 'My app'
+    profiler_url: 'http://127.0.0.1:8000'
+```
+
+#### Any PHP project
+
+The endpoint is the second argument of `WebStorage` in the example above.
 
 > In Docker Compose, replace `127.0.0.1` with the Buggregator service name.
 
