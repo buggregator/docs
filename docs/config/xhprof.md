@@ -95,7 +95,7 @@ use Symfony\Component\HttpClient\NativeHttpClient;
 
 $storage = new WebStorage(
     new NativeHttpClient(),
-    'http://127.0.0.1/api/profiler/store',
+    'http://127.0.0.1:8000/api/profiler/store',
 );
 
 $profiler = new Profiler(
