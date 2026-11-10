@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server [version: to fill] with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
+llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
 ---
 
 # Sentry — Exceptions
@@ -98,7 +98,7 @@ if (defined('WP_ENVIRONMENT_TYPE') && 'local' === WP_ENVIRONMENT_TYPE) {
 
 ### JavaScript, Python, Go
 
-Since server [version: to fill], Buggregator accepts events from the official JavaScript, Python and Go SDKs. They
+Since server v2.9.0, Buggregator accepts events from the official JavaScript, Python and Go SDKs. They
 were tested with real requests from these versions:
 
 | SDK | Tested version |
