@@ -91,7 +91,8 @@ These messages go to the `default` project.
 
 ```bash
 curl -X POST http://127.0.0.1:8000/2010-04-01/Accounts/AC123/Messages.json \
-  -d To=+15550002222 -d From=+15550001111 -d Body="Your code is 1234"
+  --data-urlencode 'To=+15550002222' --data-urlencode 'From=+15550001111' \
+  --data-urlencode 'Body=Your code is 1234'
 ```
 
 ### Symfony Notifier
