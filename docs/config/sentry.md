@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript, Python, and any Sentry SDK. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
+llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
 ---
 
 # Sentry — Exceptions
@@ -96,19 +96,108 @@ if (defined('WP_ENVIRONMENT_TYPE') && 'local' === WP_ENVIRONMENT_TYPE) {
 }
 ```
 
-### JavaScript
+### JavaScript, Python, Go
 
-Use the official [Sentry JavaScript SDK](https://docs.sentry.io/platforms/javascript/) and point the DSN at Buggregator:
+Since server v2.9.0, Buggregator accepts events from the official JavaScript, Python and Go SDKs. They
+were tested with real requests from these versions:
+
+| SDK | Tested version |
+|-----|----------------|
+| `@sentry/browser` | 11.11 |
+| `@sentry/node` | 11.11 |
+| `sentry-python` | 2.74 (also with Brotli-compressed bodies) |
+| `sentry-go` | 0.50 |
+
+What Buggregator stores and shows from them: errors, messages, transactions and traces with their spans, and logs.
+What it does not store: sessions, client reports, cron check-ins, profiles, replays, attachments and minidumps.
+
+Two settings matter in every SDK:
+
+- **The DSN.** Any key before `@` works, e.g. `http://sentry@127.0.0.1:8000/1`. A number at the end puts the event
+  into the `default` project; a name such as `/shop` puts it into that project (see [Projects](#projects)).
+- **The trace sample rate.** Set it to `1.0`, or traces are sampled away and never sent.
+
+In Docker, replace `127.0.0.1` with the Buggregator host or service name, e.g. `http://sentry@buggregator:8000/1`.
+
+#### Browser JavaScript
+
+```javascript
+import * as Sentry from "@sentry/browser";
+
+Sentry.init({
+  dsn: "http://sentry@127.0.0.1:8000/1",
+  integrations: [Sentry.browserTracingIntegration()],
+  tracesSampleRate: 1.0,
+  enableLogs: true,
+});
+```
+
+No CORS setup is needed: Buggregator accepts requests from any origin by default.
+
+#### Node.js
+
+```javascript
+const Sentry = require("@sentry/node");
+
+Sentry.init({
+  dsn: "http://sentry@127.0.0.1:8000/1",
+  tracesSampleRate: 1.0,
+  enableLogs: true,
+});
+```
+
+#### Next.js
+
+`@sentry/nextjs` is built on the Node.js and browser SDKs above. Set the same DSN and options in each `Sentry.init`
+call of its setup ([Next.js SDK docs](https://docs.sentry.io/platforms/javascript/guides/nextjs/)):
 
 ```javascript
 Sentry.init({
   dsn: "http://sentry@127.0.0.1:8000/1",
+  tracesSampleRate: 1.0,
+  enableLogs: true,
 });
 ```
 
+`@sentry/nextjs` itself was not run against Buggregator; the SDKs it wraps were.
+
+#### Python
+
+```python
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="http://sentry@127.0.0.1:8000/1",
+    traces_sample_rate=1.0,
+    enable_logs=True,
+)
+```
+
+#### Django
+
+Django uses the same `sentry-python` SDK. Call `sentry_sdk.init(...)` as above in `settings.py`; the SDK turns on its
+Django integration by itself. The Django integration itself was not run against Buggregator; the SDK was.
+
+#### Go
+
+```go
+err := sentry.Init(sentry.ClientOptions{
+    Dsn:              "http://sentry@127.0.0.1:8000/1",
+    EnableTracing:    true,
+    TracesSampleRate: 1.0,
+})
+if err != nil {
+    log.Fatal(err)
+}
+defer sentry.Flush(2 * time.Second)
+```
+
+In `sentry-go` 0.50, logs from `sentry.NewLogger(ctx)` are sent without any extra option.
+
 ### Other platforms
 
-Any [Sentry SDK](https://docs.sentry.io/platforms/) works. Just set the DSN:
+Other Sentry SDKs (Ruby, .NET, Java and others) are not verified yet. Set the DSN as above and try; if an event does
+not show up, please [open an issue](https://github.com/buggregator/server/issues) with the SDK name and version.
 
 ```dotenv
 SENTRY_DSN=http://sentry@127.0.0.1:8000/1
