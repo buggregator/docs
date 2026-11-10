@@ -24,7 +24,7 @@ No registration. No limits. No heavy infrastructure.
 
 - **Exception** — frame-by-frame stack trace with file paths, line numbers, and code context. Click to open in your IDE.
 - **Breadcrumbs** — timeline of user actions and system events leading up to the error.
-- **Request** — HTTP method, URI, headers, cookies, POST data.
+- **Request** — HTTP method, URL and headers.
 - **Device** — browser, OS, device type.
 - **App** — application name, version, build.
 - **Tags & Extra** — custom key-value data attached to the event.

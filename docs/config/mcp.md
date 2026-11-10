@@ -136,10 +136,31 @@ Without the header, the server answers `401`.
 
 ### Cursor
 
-In Cursor settings, add the MCP server:
+Add the server to `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` for all projects):
 
-- **Command:** `buggregator mcp`
-- Or use the HTTP URL: `http://localhost:8001/mcp`
+```json
+{
+  "mcpServers": {
+    "buggregator": {
+      "command": "buggregator",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Over HTTP (e.g. Buggregator in Docker), use `url` instead; add `headers` when `MCP_AUTH_TOKEN` is set:
+
+```json
+{
+  "mcpServers": {
+    "buggregator": {
+      "url": "http://localhost:8001/mcp",
+      "headers": { "Authorization": "Bearer my-secret-token" }
+    }
+  }
+}
+```
 
 ### Docker Setup
 
