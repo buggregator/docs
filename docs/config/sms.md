@@ -1,5 +1,5 @@
 ---
-llms_description: "SMS gateway interceptor: /sms endpoint with auto-detection for 40+ providers (Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, etc.). Explicit provider URLs (/sms/twilio) for field validation (missing fields → warnings on the stored event, HTTP 200). Symfony Notifier DSNs do not work (bridges call the provider's own HTTPS API path), Laravel HTTP example, generic curl. Supports JSON and form-urlencoded payloads, project URL segments."
+llms_description: "SMS gateway interceptor: /sms endpoint with auto-detection for 40+ providers (Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, etc.). Explicit provider URLs (/sms/twilio) for field validation (missing fields → warnings on the stored event, HTTP 200). Twilio send API POST /2010-04-01/Accounts/{SID}/Messages.json (since server [version: to fill]; 201 + sid SM…, status queued; missing To/From/Body → 400 Twilio 21604/21603/21602, still stored; project default). Symfony: only the Twilio bridge works, via a TLS proxy (bridge always uses https; socat recipe; DSN + as %2B; dev verify_peer/verify_host false); other bridges cannot reach Buggregator. Laravel HTTP example, generic curl. Supports JSON and form-urlencoded payloads, project URL segments."
 ---
 
 # SMS Gateway Interceptor
@@ -30,7 +30,7 @@ If the payload doesn't match any known provider, the generic fallback tries comm
 You can also specify the provider in the URL for stricter validation:
 
 ```
-POST /sms/twilio       → forces Twilio field mapping + validates required fields
+POST /sms/twilio       → forces Twilio field mapping + validates required fields (From, To, Body)
 POST /sms/vonage       → forces Vonage field mapping + validates required fields
 POST /sms              → auto-detects provider from payload
 ```
@@ -72,11 +72,60 @@ Full list: Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, Bandwidth
 
 ## Configuration
 
+### Twilio API
+
+Since server [version: to fill], Buggregator also answers Twilio's own send API, so a Twilio client can talk to it
+unchanged:
+
+```
+POST /2010-04-01/Accounts/{AccountSid}/Messages.json
+```
+
+It takes a form or JSON body with `To`, `From` (or `MessagingServiceSid`) and `Body`, and answers like Twilio:
+
+- **All fields present:** `201` with a Twilio message: `sid` (`SM…`), `status: "queued"`, `to`, `from`, `body`, `uri`.
+- **A field missing:** `400` with a Twilio error: `21604` (no `To`), `21603` (no `From`), `21602` (no `Body`). The
+  message is still stored, with a warning.
+
+These messages go to the `default` project.
+
+```bash
+curl -X POST http://127.0.0.1:8000/2010-04-01/Accounts/AC123/Messages.json \
+  --data-urlencode 'To=+15550002222' --data-urlencode 'From=+15550001111' \
+  --data-urlencode 'Body=Your code is 1234'
+```
+
 ### Symfony Notifier
 
-Pointing a Symfony Notifier DSN at Buggregator does not work. Each SMS bridge calls its provider's own API path over
-HTTPS (Twilio: `/2010-04-01/Accounts/{SID}/Messages.json`) and expects the provider's answer (Twilio: `201` with a
-`sid`). Buggregator answers neither. Send the SMS payload to Buggregator over HTTP instead, as in the examples below.
+Only the Twilio bridge can reach Buggregator, through the Twilio API above. The other bridges (Vonage, Plivo, Sinch, …)
+call their provider's own API path, so a DSN pointed at Buggregator does not work for them.
+
+The Twilio bridge always uses HTTPS. A DSN pointing at plain `127.0.0.1:8000` fails at the TLS handshake. Put a TLS
+proxy in front of Buggregator, e.g. with `socat` and a self-signed certificate:
+
+```bash
+openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365 -subj /CN=localhost
+socat OPENSSL-LISTEN:8443,cert=cert.pem,key=key.pem,verify=0,fork,reuseaddr TCP:127.0.0.1:8000
+```
+
+Point the DSN at the proxy. Write `+` in the number as `%2B`, or Symfony rejects it:
+
+```dotenv
+TWILIO_DSN=twilio://ACxxx:token@localhost:8443?from=%2B15550001111
+```
+
+In dev, let the HTTP client accept the self-signed certificate:
+
+```yaml
+# config/packages/dev/framework.yaml
+framework:
+  http_client:
+    default_options:
+      verify_peer: false
+      verify_host: false
+```
+
+Tested with `symfony/twilio-notifier` 8.1.7.
 
 ### Laravel
 
