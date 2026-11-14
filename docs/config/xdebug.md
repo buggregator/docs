@@ -89,6 +89,7 @@ A typical `php.ini` for setup A:
 xdebug.mode=debug
 xdebug.client_host=127.0.0.1
 xdebug.client_port=9003
+xdebug.discover_client_host=0
 xdebug.start_with_request=trigger
 ```
 
@@ -132,6 +133,26 @@ Publish 9003 and move the IDE to 9004:
 ```
 
 Set the IDE's Xdebug debug port to `9004`, and keep `xdebug.client_host=127.0.0.1`, `xdebug.client_port=9003`.
+
+**No session on the Xdebug page?** PHP must connect to Buggregator, not to the IDE. Buggregator passes the
+session on to the IDE at `XDEBUG_PROXY_IDE_ADDR`. With PHP in a container, its `php.ini`:
+
+```ini
+xdebug.mode=debug
+xdebug.client_host=buggregator      ; Buggregator's service name
+xdebug.client_port=9003             ; the port of XDEBUG_PROXY_ADDR
+xdebug.discover_client_host=0
+xdebug.start_with_request=yes
+```
+
+Check three things:
+
+- `xdebug.discover_client_host=0`. With `1`, Xdebug connects to the address the request came from. That is often
+  your machine, where the IDE listens, so the session skips Buggregator.
+- `XDEBUG_PROXY_ADDR: 0.0.0.0:9003` in the Buggregator container. The default `127.0.0.1:9003` cannot be reached
+  from other containers.
+- With `xdebug.start_with_request=trigger`, the request needs `XDEBUG_TRIGGER`: a cookie, a query parameter or an
+  environment variable. Example: `curl 'http://app.local/?XDEBUG_TRIGGER=1'`.
 
 > The proxy has no login of its own. Anyone who can reach its port can start a session. Keep it on
 > `127.0.0.1` or inside your Docker network.
