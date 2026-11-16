@@ -244,10 +244,6 @@ projects:
 A project also exists once an event has created it, for example an error sent earlier to
 `http://sentry@127.0.0.1:8000/billing`.
 
-<!-- Remove this note if server#433 is released together with this page. -->
-> **Note:** In this release a project listed only in `buggregator.yaml` is not added on a fresh database,
-> for example the default in-memory one. Until it appears in the project list, its events go to `default`.
-
 What happens with other keys:
 
 - `sentry` (the key in our examples) never names a project. Such events go to `default`, as before.
