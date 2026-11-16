@@ -1,5 +1,5 @@
 ---
-llms_description: "Django / Python guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.10.0, only port 8000 published); Django settings EMAIL_BACKEND smtp, EMAIL_HOST=buggregator, EMAIL_PORT=1025; sentry-sdk init with dsn http://sentry@buggregator:8000/1, traces_sample_rate=1.0, enable_logs=True: Python logging records at INFO and above go to the Sentry Logs tab (no separate log integration). Plain Python: smtplib to port 1025. Checked with Django 6.1, sentry-sdk 2.75, Python 3.12, server 2.10.0."
+llms_description: "Django / Python guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.10.0, only port 8000 published); Django settings EMAIL_BACKEND smtp, EMAIL_HOST=buggregator, EMAIL_PORT=1025; sentry-sdk init with dsn http://sentry@buggregator:8000/1, traces_sample_rate=1.0, enable_logs=True: Python logging records at INFO and above go to the Sentry Logs tab (no separate log integration), but only those that pass the logger's level: WARNING by default, set LOGGING root level INFO to send info(). Plain Python: smtplib to port 1025. Checked with Django 6.1, sentry-sdk 2.75, Python 3.12, server 2.10.0."
 ---
 
 # Django and Python
@@ -52,9 +52,19 @@ sentry_sdk.init(
 
 The SDK turns on its Django integration by itself.
 
-With `enable_logs=True`, records from Python's standard `logging` at INFO and above go to Buggregator too. For
-example, `logging.getLogger("app").info("Order paid")` shows up on the Sentry page, **Logs** tab. You need no other
-log handler.
+With `enable_logs=True`, records from Python's standard `logging` go to Buggregator too, at INFO and above. You need
+no other log handler. But the logger's own level comes first: without a `LOGGING` setting, Python drops INFO
+records before the SDK sees them (the default level is WARNING). To send INFO, set the level in `settings.py`:
+
+```python
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "root": {"level": "INFO"},
+}
+```
+
+Then `logging.getLogger("app").info("Order paid")` shows up on the Sentry page, **Logs** tab.
 
 ## 3. Check it
 

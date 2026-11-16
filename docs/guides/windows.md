@@ -46,7 +46,8 @@ Containers in the same compose file reach it as `buggregator`. Stack guides:
 [Node.js](/guides/node), [Spring Boot](/guides/spring-boot).
 
 A container that must reach a Buggregator running as a Windows program uses `host.docker.internal` instead of
-`127.0.0.1`, e.g. `MAIL_HOST=host.docker.internal`.
+`127.0.0.1`, e.g. `MAIL_HOST=host.docker.internal`. Windows Firewall must let `buggregator.exe` in: allow it when
+Windows asks on the first start. If you clicked «Cancel», containers cannot reach it.
 
 ## Inside WSL
 

@@ -32,7 +32,8 @@ name. So:
 | On the server, in a container (Nuxt and Next.js server side) | `http://sentry@buggregator:8000/1` |
 | On the server, on your machine (`npm run dev`) | `http://sentry@127.0.0.1:8000/1` |
 
-No CORS setup is needed: Buggregator accepts requests from any origin.
+No CORS setup is needed: by default Buggregator accepts requests from any origin. If you set `CORS_ORIGINS`,
+include your app's origin.
 
 ## 3. Set up the SDK
 
@@ -63,8 +64,9 @@ An error thrown in a component now shows up as a Sentry error. The page load sho
 
 ### Nuxt and Next.js
 
-`@sentry/nuxt` and `@sentry/nextjs` have a client config and a server config. Set the same options in both, with
-the DSN from the table above:
+`@sentry/nuxt` and `@sentry/nextjs` have a client config and a server config; Next.js also has an edge config,
+and its client file is `instrumentation-client.ts`. Set the same options in each, with the DSN from the table
+above:
 
 ```javascript
 Sentry.init({

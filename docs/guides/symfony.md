@@ -1,5 +1,5 @@
 ---
-llms_description: "Symfony guide: buggregator service in compose.yaml (ghcr.io/buggregator/server:2.10.0, only port 8000 published); .env.local MAILER_DSN=smtp://buggregator:1025, SENTRY_DSN=http://sentry@buggregator:8000/1 (sentry/sentry-symfony, register SentryBundle and config/packages/sentry.yaml when the contrib recipe is not applied), VAR_DUMPER_SERVER=buggregator:9912 (debug-bundle recipe dump_destination tcp://%env(VAR_DUMPER_SERVER)%, no server:dump needed), Monolog socket handler with monolog.formatter.json, MONOLOG_SOCKET_HOST=buggregator:9913. Checked with Symfony 8.1, sentry-symfony 5.16, monolog-bundle 4.1, server 2.10.0."
+llms_description: "Symfony guide: buggregator service in compose.yaml (ghcr.io/buggregator/server:2.10.0, only port 8000 published); .env.local MAILER_DSN=smtp://buggregator:1025, SENTRY_DSN=http://sentry@buggregator:8000/1 (sentry/sentry-symfony: its contrib recipe enables the bundle and DSN for prod only; enable SentryBundle for dev and add a when@dev sentry: block with dsn + traces_sample_rate), VAR_DUMPER_SERVER=buggregator:9912 (debug-bundle recipe dump_destination tcp://%env(VAR_DUMPER_SERVER)%, no server:dump needed), Monolog socket handler with monolog.formatter.json, MONOLOG_SOCKET_HOST=buggregator:9913. Checked with Symfony 8.1, sentry-symfony 5.16, monolog-bundle 4.1, server 2.10.0."
 ---
 
 # Symfony
@@ -86,20 +86,24 @@ The `monolog.formatter.json` formatter is required: without it, Buggregator cann
 
 ### Errors (Sentry)
 
-Install the SDK: `composer require sentry/sentry-symfony`. Its recipe is a contrib recipe. If Composer did not
-apply it, register the bundle in `config/bundles.php`:
+Install the SDK: `composer require sentry/sentry-symfony`. Its contrib recipe turns Sentry on for `prod` only:
+the bundle is registered for `prod`, and the DSN sits under `when@prod:`. In dev nothing reaches Buggregator until
+you change two things, whether the recipe ran or not.
+
+In `config/bundles.php`, turn the bundle on for dev too:
 
 ```php
-Sentry\SentryBundle\SentryBundle::class => ['all' => true],
+Sentry\SentryBundle\SentryBundle::class => ['dev' => true, 'prod' => true],
 ```
 
-and create `config/packages/sentry.yaml`:
+In `config/packages/sentry.yaml`, add a `when@dev:` block (create the file if the recipe did not):
 
 ```yaml
-sentry:
-    dsn: '%env(SENTRY_DSN)%'
-    options:
-        traces_sample_rate: 1.0
+when@dev:
+    sentry:
+        dsn: '%env(SENTRY_DSN)%'
+        options:
+            traces_sample_rate: 1.0
 ```
 
 ```dotenv
