@@ -149,6 +149,18 @@ export default defineConfig({
             },
 
             {
+                text: 'Guides',
+                items: [
+                    {text: 'Laravel Sail', link: '/guides/laravel-sail'},
+                    {text: 'Symfony', link: '/guides/symfony'},
+                    {text: 'Django and Python', link: '/guides/django'},
+                    {text: 'Node.js', link: '/guides/node'},
+                    {text: 'Vue, Nuxt, Next.js', link: '/guides/frontend'},
+                    {text: 'Spring Boot', link: '/guides/spring-boot'},
+                    {text: 'Windows and WSL', link: '/guides/windows'},
+                ]
+            },
+            {
                 text: 'Trap',
                 items: [
                     {
