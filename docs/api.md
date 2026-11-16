@@ -52,6 +52,9 @@ curl -X DELETE http://127.0.0.1:8000/api/events \
   -H 'Content-Type: application/json' -d '{"type": "smtp"}'
 ```
 
+It deletes events. Sentry logs, metrics and trace spans without an event card stay: clear them with
+`DELETE /api/sentry/all` (see [Sentry → Clearing data](/config/sentry#clearing-data)).
+
 The JSON body narrows what is deleted: `type`, `project`, `uuids` (a list of event IDs), `keep_pinned: true`.
 Since server [version: to fill], a body that is not valid JSON, or a field of the wrong type, gets `400` and deletes
 nothing. In 2.10.0 the same
