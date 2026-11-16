@@ -136,6 +136,9 @@ Details: [Database](/config/database).
 `DELETE /api/events`, or restart a server that keeps them in memory. With a database file, the file grows until you
 clear it.
 
+Clearing events does not remove Sentry logs, metrics and trace spans that have no event card. Remove those with
+**Clear** on the Sentry page or `DELETE /api/sentry/all` (see [Sentry → Clearing data](/config/sentry#clearing-data)).
+
 ## Versions
 
 Releases are numbered `major.minor.patch` (e.g. `2.10.0`). A minor release may still change behaviour, so read
