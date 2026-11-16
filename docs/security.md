@@ -1,5 +1,5 @@
 ---
-llms_description: "Security and data (server 2.10.0): what leaves the machine — server: update check GET api.github.com/repos/buggregator/server/releases/latest at start and every 12h (User-Agent buggregator/<version>; UPDATE_CHECK_ENABLED=false turns it off), Sentry JS source context: server GETs http(s) URLs from JS stack-frame filenames (3 s, 2 MiB, TLS not verified, any host in 2.10.0; since server [version: to fill] loopback/private only by default, sentry.source_fetch / SENTRY_SOURCE_FETCH / --sentry-source-fetch = private|any|off); browser: the UI loads Google Fonts (fonts.googleapis.com, fonts.gstatic.com) on every open, no switch; images and styles inside captured HTML emails and HTML dumps load from their hosts when opened (scripts do not run), no switch; only when you turn them on: SSO provider, webhooks, OpenAPI import, HTTP proxy upstreams, Xdebug IDE. No analytics or usage reporting. Listening: binary on all interfaces (:8000, :1025, :9912, :9913, HTTP proxy :8080 = open forward proxy with HTTPS MITM, no auth); opt-in: MCP over HTTP :8001 all interfaces, no auth without MCP_AUTH_TOKEN (MCP_ADDR to bind), METRICS_ADDR; bind with -http-addr/-smtp-addr/-vardumper-addr/-monolog-addr and PROXY_ADDR=127.0.0.1:8080; Docker: publish as 127.0.0.1:port:port. SSO protects UI and UI APIs only: ingestion, TCP ports, HTTP proxy, /mock/, /api/version, /api/settings, attachment links, MCP HTTP, /metrics stay open. Data: in memory by default (lost on restart), DATABASE_DSN file, attachments STORAGE_MODE; no automatic cleanup in 2.10.0. Versions: semver, minor may change behaviour, pin ghcr.io/buggregator/server:2.10.0 (no v), tags latest, 2, 2.10, 2.10.0; fixes only for the latest release line."
+llms_description: "Security and data (server 2.10.0): what leaves the machine — server: update check GET api.github.com/repos/buggregator/server/releases/latest at start and every 12h (User-Agent buggregator/<version>; UPDATE_CHECK_ENABLED=false turns it off), Sentry JS source context: server GETs http(s) URLs from JS stack-frame filenames (3 s, 2 MiB, TLS not verified, any host in 2.10.0; since server [version: to fill] loopback/private only by default, sentry.source_fetch / SENTRY_SOURCE_FETCH / --sentry-source-fetch = private|any|off); browser: the UI loads Google Fonts (fonts.googleapis.com, fonts.gstatic.com) on every open, no switch; images and styles inside captured HTML emails and HTML dumps load from their hosts when opened (scripts do not run), no switch; only when you turn them on: SSO provider, webhooks, OpenAPI import, HTTP proxy upstreams, Xdebug IDE. No analytics or usage reporting. Listening: binary on all interfaces (:8000, :1025, :9912, :9913, HTTP proxy :8080 = open forward proxy with HTTPS MITM, no auth); opt-in: MCP over HTTP :8001 all interfaces, no auth without MCP_AUTH_TOKEN (MCP_ADDR to bind), METRICS_ADDR; bind with -http-addr/-smtp-addr/-vardumper-addr/-monolog-addr and PROXY_ADDR=127.0.0.1:8080; Docker: publish as 127.0.0.1:port:port. SSO protects UI and UI APIs only: ingestion, TCP ports, HTTP proxy, /mock/, /api/version, /api/settings, attachment links, MCP HTTP, /metrics stay open. Data: in memory by default (lost on restart), DATABASE_DSN file, attachments STORAGE_MODE; no automatic cleanup in 2.10.0; since server [version: to fill] retention.max_age / RETENTION_MAX_AGE / --retention-max-age (30m, 24h, 7d) and retention.max_events / RETENTION_MAX_EVENTS / --retention-max-events, default keep all, every minute, pinned kept and not counted, attachments go too; Sentry logs/metrics/spans without an event card are not removed. Versions: semver, minor may change behaviour, pin ghcr.io/buggregator/server:2.10.0 (no v), tags latest, 2, 2.10, 2.10.0; fixes only for the latest release line."
 ---
 
 # Security and data
@@ -136,7 +136,21 @@ Details: [Database](/config/database).
 `DELETE /api/events`, or restart a server that keeps them in memory. With a database file, the file grows until you
 clear it.
 
-Clearing events does not remove Sentry logs, metrics and trace spans that have no event card. Remove those with
+Since server [version: to fill], you can let it delete old events by itself:
+
+```bash
+RETENTION_MAX_AGE=7d RETENTION_MAX_EVENTS=5000 ./buggregator
+```
+
+- `RETENTION_MAX_AGE` (`retention.max_age`, `--retention-max-age`): delete events older than this, e.g. `30m`,
+  `24h`, `7d`. Empty or `0`: keep.
+- `RETENTION_MAX_EVENTS` (`retention.max_events`, `--retention-max-events`): keep at most this many events, the
+  newest. `0`: no cap.
+
+Nothing is deleted unless you set one of them. The cleanup runs at start and then every minute. Attachments go
+with their events. Pinned events are never deleted and do not count towards the cap.
+
+Clearing or retention removes events. Sentry logs, metrics and trace spans that have no event card stay. Remove those with
 **Clear** on the Sentry page or `DELETE /api/sentry/all` (see [Sentry → Clearing data](/config/sentry#clearing-data)).
 
 ## Versions

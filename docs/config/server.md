@@ -125,6 +125,12 @@ metrics:
 #     body: '{"id": 1}'
 #     delay: 150ms
 
+# Retention (since server [version: to fill]): delete old events every minute.
+# Unset keeps everything. Pinned events are never deleted and do not count.
+retention:
+  max_age: ${RETENTION_MAX_AGE:}          # e.g. "24h", "7d"; empty or 0 = keep
+  max_events: ${RETENTION_MAX_EVENTS:0}   # keep at most this many events; 0 = no cap
+
 # Sentry: where the server may fetch JavaScript sources for stack frames
 # (since server [version: to fill]): private (default) | any | off
 sentry:
@@ -247,6 +253,19 @@ or through the API. See [Mock Server](/config/mock-server).
 |----------|---------|-------------|
 | `UPDATE_CHECK_ENABLED` | `true` | Ask GitHub for the newest server release. `false` = no network call at all. See [New-version check](#new-version-check) |
 | `UPDATE_CHECK_INTERVAL` | `12h` | Time between checks, a Go duration (`6h`, `24h`); at least `1h` |
+
+### Retention
+
+Since server [version: to fill]. Nothing is deleted unless you set one of these. The cleanup runs at start and then
+every minute; attachments go with their events; pinned events are never deleted and do not count towards the cap.
+It removes events: Sentry logs, metrics and trace spans without an event card stay.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RETENTION_MAX_AGE` | empty | Delete events older than this: `30m`, `24h`, `7d`. Empty or `0` = keep. Also `retention.max_age`, `--retention-max-age` |
+| `RETENTION_MAX_EVENTS` | `0` | Keep at most this many events, the newest; `0` = no cap. Also `retention.max_events`, `--retention-max-events` |
+
+A value it cannot read is logged as a warning, and everything is kept.
 
 ### Sentry Source Fetch
 
