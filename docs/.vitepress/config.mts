@@ -158,6 +158,7 @@ export default defineConfig({
                     {text: 'Vue, Nuxt, Next.js', link: '/guides/frontend'},
                     {text: 'Spring Boot', link: '/guides/spring-boot'},
                     {text: 'Windows and WSL', link: '/guides/windows'},
+                    {text: 'Use in CI', link: '/guides/ci'},
                 ]
             },
             {
@@ -209,6 +210,7 @@ export default defineConfig({
                     {text: 'Server', link: '/config/server'},
                     {text: 'Database', link: '/config/database'},
                     {text: 'Projects', link: '/config/projects'},
+                    {text: 'API Reference', link: '/api'},
                     {text: 'Webhooks', link: '/config/webhooks'},
                     {text: 'Single Sign On (SSO)', link: '/config/sso'},
                     {text: 'MCP (AI Assistants)', link: '/config/mcp'},
