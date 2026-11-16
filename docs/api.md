@@ -1,5 +1,5 @@
 ---
-llms_description: "HTTP API reference: full OpenAPI 3.1 spec api/openapi.yaml in buggregator/server (78 paths of v2.10.0: Server, Events, Projects, Auth, Metrics, Sentry, SMTP, Attachments, Mocks, Xdebug, Xdebug traces, Profiler, Ingestion; ingestion paths marked x-ingestion: true). Calls for tests: GET /api/version (health, no auth); DELETE /api/events (no body = all; JSON {type, project, uuids, keep_pinned} narrows); DELETE /api/smtp/messages?project=; GET /api/smtp/messages/wait?subject=&to=&timeout=10s → 200 message or 408 (max 60s); GET /api/events?type=sentry → {data:[…]}. Auth only with SSO on: header X-Auth-Token."
+llms_description: "HTTP API reference: full OpenAPI 3.1 spec api/openapi.yaml in buggregator/server (78 paths of v2.10.0: Server, Events, Projects, Auth, Metrics, Sentry, SMTP, Attachments, Mocks, Xdebug, Xdebug traces, Profiler, Ingestion; ingestion paths marked x-ingestion: true). Calls for tests: GET /api/version (health, no auth); DELETE /api/events (no body = all; JSON {type, project, uuids, keep_pinned} narrows; since server [version: to fill] a malformed body or wrong field type → 400, nothing deleted); DELETE /api/smtp/messages?project=; GET /api/smtp/messages/wait?subject=&to=&timeout=10s → 200 message or 408 (max 60s); GET /api/events?type=sentry → {data:[…]}. Auth only with SSO on: header X-Auth-Token."
 ---
 
 # API reference
@@ -53,6 +53,8 @@ curl -X DELETE http://127.0.0.1:8000/api/events \
 ```
 
 The JSON body narrows what is deleted: `type`, `project`, `uuids` (a list of event IDs), `keep_pinned: true`.
+Since server [version: to fill], a body that is not valid JSON, or a field of the wrong type, gets `400` and deletes
+nothing. In 2.10.0 check your body: an empty body deletes everything.
 
 ### Wait for an email
 
