@@ -1,0 +1,144 @@
+---
+llms_description: "Security and data (server 2.10.0): what leaves the machine — server: update check GET api.github.com/repos/buggregator/server/releases/latest at start and every 12h (User-Agent buggregator/<version>; UPDATE_CHECK_ENABLED=false turns it off), Sentry JS source context: server GETs http(s) URLs from JS stack-frame filenames (3 s, 2 MiB, TLS not verified, any host, no switch); browser: the UI loads Google Fonts (fonts.googleapis.com, fonts.gstatic.com) on every open, no switch; only when you turn them on: SSO provider, webhooks, OpenAPI import, HTTP proxy upstreams, Xdebug IDE. No analytics or usage reporting. Listening: binary on all interfaces (:8000, :1025, :9912, :9913, HTTP proxy :8080 = open forward proxy with HTTPS MITM, no auth); bind with -http-addr/-smtp-addr/-vardumper-addr/-monolog-addr and PROXY_ADDR=127.0.0.1:8080; Docker: publish as 127.0.0.1:port:port. SSO protects UI and UI APIs only: ingestion, TCP ports, HTTP proxy, /mock/, /api/version, /api/settings, attachment links stay open. Data: in memory by default (lost on restart), DATABASE_DSN file, attachments STORAGE_MODE; no automatic cleanup in 2.10.0. Versions: semver, minor may change behaviour, pin ghcr.io/buggregator/server:2.10.0 (no v), tags latest, 2, 2.10, 2.10.0; fixes only for the latest release line."
+---
+
+# Security and data
+
+Buggregator is a debugging tool for your own machine or a trusted dev network. It has no accounts, sends no
+analytics and reports no usage. This page lists, without gaps, what it does send, who can reach it, and where
+your events are kept. Everything here is true for server **2.10.0**.
+
+## What leaves your machine
+
+### Always on
+
+| What | Who sends | Where to | When | How to turn it off |
+|------|-----------|----------|------|--------------------|
+| New-version check | the server | `https://api.github.com/repos/buggregator/server/releases/latest` | at start, then every 12 hours | `UPDATE_CHECK_ENABLED=false` |
+| UI fonts | your browser | `fonts.googleapis.com`, `fonts.gstatic.com` (Google Fonts) | each time you open the UI | no switch in 2.10.0 |
+| Source of JavaScript errors | the server | the URL of each file in a JavaScript stack trace | each Sentry error from a browser or JS app | no switch in 2.10.0 |
+
+**New-version check.** One GET request. Besides your IP address, it carries only the server version
+(`User-Agent: buggregator/2.10.0`). Nothing about your events or projects is sent. With
+`UPDATE_CHECK_ENABLED=false` the server makes no such call at all. Details:
+[Server → New-Version Check](/config/server#new-version-check).
+
+**UI fonts.** The web UI loads its fonts (DM Sans, JetBrains Mono) from Google Fonts. Google sees the IP address of
+the browser that opens the UI. No event data goes there.
+
+**Source of JavaScript errors.** Browser SDKs send stack frames with a file URL but no code, e.g.
+`http://localhost:5173/src/App.vue`. To show the code, the server downloads that file: up to 2 MiB, 3-second
+timeout, TLS certificates not checked. It does this for any `http://` or `https://` URL in a frame, not only for
+local ones. So whoever can send a Sentry event to your Buggregator can make it request a URL from inside your
+network. Keep the server where only your apps can reach it (see below).
+
+### Only when you turn it on
+
+| Feature | Where it connects |
+|---------|-------------------|
+| [SSO](/config/sso) | your login provider (GitHub, Google, Auth0, Keycloak, GitLab, OIDC) |
+| [Webhooks](/config/webhooks) | the URLs you configure |
+| [Mock server](/config/mock-server) OpenAPI import from a URL | the URL you enter |
+| [HTTP proxy](/config/http-proxy) | the hosts your app sends through it |
+| [Xdebug proxy](/config/xdebug) | your IDE's address |
+
+Nothing else makes outgoing connections.
+
+## Who can reach it
+
+### The binary
+
+Every port listens on **all network interfaces** by default. Anyone on your network who can reach your machine can
+open the UI, read your events and send new ones.
+
+| Port | What | Default |
+|------|------|---------|
+| `8000` | web UI, API, HTTP events | `:8000`, all interfaces |
+| `1025` | SMTP | `:1025`, all interfaces |
+| `9912` | VarDumper | `:9912`, all interfaces |
+| `9913` | Monolog | `:9913`, all interfaces |
+| `8080` | HTTP proxy | `:8080`, all interfaces |
+| `9003` | Xdebug proxy (off by default) | `127.0.0.1:9003` |
+
+The HTTP proxy deserves a note. It forwards requests to **any host**, also HTTPS, and asks for no password. On all
+interfaces, it is an open proxy for everyone on your network.
+
+To keep everything on your machine:
+
+```bash
+PROXY_ADDR=127.0.0.1:8080 ./buggregator \
+  -http-addr 127.0.0.1:8000 \
+  -smtp-addr 127.0.0.1:1025 \
+  -vardumper-addr 127.0.0.1:9912 \
+  -monolog-addr 127.0.0.1:9913
+```
+
+The same with environment variables: `HTTP_ADDR`, `SMTP_ADDR`, `VAR_DUMPER_ADDR`, `MONOLOG_ADDR`, `PROXY_ADDR`.
+
+### Docker
+
+Inside the container the server listens on all interfaces; that is fine. What matters is how you publish the
+ports. Always put `127.0.0.1:` in front:
+
+```yaml
+ports:
+  - "127.0.0.1:8000:8000"   # only this machine
+  # - "8000:8000"           # every machine that can reach yours
+```
+
+Containers on the same compose network reach Buggregator by its service name. They need no published ports at all.
+Publish only what you open from your machine: usually just `8000`.
+
+### What SSO protects
+
+[SSO](/config/sso) puts a login in front of the UI and the APIs the UI uses. These stay **open**, also with SSO on:
+
+- event ingestion (Sentry, Ray, Inspector, profiler, SMS, HTTP dumps) and the SMTP, VarDumper and Monolog ports;
+- the HTTP proxy;
+- the mock server under `/mock/`;
+- `/api/version`, `/api/settings` and attachment links.
+
+So SSO keeps strangers from **reading** your events, but not from **sending** them. On a shared server, also limit
+who can reach the ports, e.g. with a firewall or a private network.
+
+Scripts call the protected API with the token the UI gets after login (30 days). See
+[SSO → Calling the API from Scripts](/config/sso#calling-the-api-from-scripts).
+
+## Where your data is kept
+
+| What | Default | To keep it on disk |
+|------|---------|--------------------|
+| Events | in memory: gone when the server stops | `DATABASE_DSN=/data/buggregator.db` (SQLite file) |
+| Email attachments, HTTP dump files | in memory | `STORAGE_MODE=filesystem`, `STORAGE_PATH=…` |
+
+Details: [Database](/config/database).
+
+**How long.** Server 2.10.0 deletes nothing by itself. Events stay until you clear them in the UI, call
+`DELETE /api/events`, or restart a server that keeps them in memory. With a database file, the file grows until you
+clear it.
+
+## Versions
+
+Releases are numbered `major.minor.patch` (e.g. `2.10.0`). A minor release may still change behaviour, so read
+the [release notes](https://github.com/buggregator/server/releases) before you upgrade.
+
+Pin the version and upgrade on purpose:
+
+```yaml
+image: ghcr.io/buggregator/server:2.10.0
+```
+
+| Tag | What you get |
+|-----|--------------|
+| `2.10.0` | exactly this release, never changes |
+| `2.10` | the newest `2.10.x` patch |
+| `2` | the newest `2.x` release |
+| `latest` | the newest release, whatever it is |
+
+The image tags have no `v`: `2.10.0`, not `v2.10.0`. Release pages and binaries use `v2.10.0`.
+
+Security fixes go into the newest release only. To get a fix, upgrade.
+
+## Report a vulnerability
+
+See [SECURITY.md](https://github.com/buggregator/server/blob/master/SECURITY.md) in the server repository.

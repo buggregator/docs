@@ -53,8 +53,8 @@ services:
   buggregator:
     image: ghcr.io/buggregator/server:latest
     ports:
-      - "8000:8000"   # UI + API
-      - "8080:8080"   # HTTP Proxy
+      - "127.0.0.1:8000:8000"   # UI + API
+      - "127.0.0.1:8080:8080"   # HTTP Proxy, only this machine: it forwards to any host
 ```
 
 ## Client setup

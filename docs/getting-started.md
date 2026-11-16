@@ -109,7 +109,7 @@ Add Buggregator to your `docker-compose.yml` alongside your other services:
 ```yaml
 services:
   buggregator:
-    image: ghcr.io/buggregator/server:latest
+    image: ghcr.io/buggregator/server:2.10.0
     ports:
       - 127.0.0.1:8000:8000
       - 127.0.0.1:1025:1025
@@ -118,6 +118,9 @@ services:
 ```
 
 No environment configuration needed. Works out of the box.
+
+The tag `2.10.0` pins one release, so a new version never arrives by surprise. Change it when you decide to upgrade;
+see [Image Tags](#image-tags).
 
 ## Just change the address
 
@@ -198,7 +201,7 @@ spec:
     spec:
       containers:
         - name: buggregator
-          image: ghcr.io/buggregator/server:latest
+          image: ghcr.io/buggregator/server:2.10.0
           ports:
             - containerPort: 8000
             - containerPort: 1025
@@ -245,17 +248,22 @@ docker run --pull always \
 
 | Tag | Description |
 |-----|-------------|
-| `latest` | Latest stable release. **Recommended.** |
+| `latest` | Latest stable release. Good for a quick try. |
 | `X` (e.g., `2`) | Latest release of a major version. Published since v2.6.0. |
 | `X.Y` (e.g., `2.6`) | Latest patch of a minor version. |
-| `X.Y.Z` (e.g., `2.6.0`) | One exact release, pinned. |
+| `X.Y.Z` (e.g., `2.10.0`) | One exact release, pinned. **Recommended** for a team, CI and compose files. |
+
+Image tags have no `v` (`2.10.0`); release pages and binaries do (`v2.10.0`). A minor release may change behaviour:
+read the [release notes](https://github.com/buggregator/server/releases) before you move the pin.
 
 ## Security
 
-By default, all ports are bound to `127.0.0.1` (localhost only). This prevents external access.
-Your debug data never leaves your machine.
+The examples on this page publish every port as `127.0.0.1:…`, so only your machine can reach them. Your events
+are not sent anywhere unless you set up [webhooks](/config/webhooks). A few things do go out, such as the new-version check and the UI fonts: see
+[Security and data](/security) for the full list and how to turn them off.
 
 > **Warning:** If you remove the `127.0.0.1:` prefix (e.g., `-p 8000:8000`), the port becomes accessible from
 > outside your machine. Only do this if you understand the implications.
 
-For team environments, consider enabling [SSO authentication](./config/sso.md) to restrict access to the UI.
+For team environments, consider enabling [SSO authentication](./config/sso.md) to restrict access to the UI. SSO
+does not close the ports that receive events: see [Security and data → What SSO protects](/security#what-sso-protects).
