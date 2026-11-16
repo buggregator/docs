@@ -260,7 +260,7 @@ read the [release notes](https://github.com/buggregator/server/releases) before 
 
 The examples on this page publish every port as `127.0.0.1:…`, so only your machine can reach them. Your events
 are not sent anywhere unless you set up [webhooks](/config/webhooks). A few things do go out, such as the new-version check and the UI fonts: see
-[Security and data](/security) for the full list and how to turn them off.
+[Security and data](/security) for the full list and which ones you can turn off.
 
 > **Warning:** If you remove the `127.0.0.1:` prefix (e.g., `-p 8000:8000`), the port becomes accessible from
 > outside your machine. Only do this if you understand the implications.

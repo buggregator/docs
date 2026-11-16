@@ -1,5 +1,5 @@
 ---
-llms_description: "Security and data (server 2.10.0): what leaves the machine — server: update check GET api.github.com/repos/buggregator/server/releases/latest at start and every 12h (User-Agent buggregator/<version>; UPDATE_CHECK_ENABLED=false turns it off), Sentry JS source context: server GETs http(s) URLs from JS stack-frame filenames (3 s, 2 MiB, TLS not verified, any host, no switch); browser: the UI loads Google Fonts (fonts.googleapis.com, fonts.gstatic.com) on every open, no switch; only when you turn them on: SSO provider, webhooks, OpenAPI import, HTTP proxy upstreams, Xdebug IDE. No analytics or usage reporting. Listening: binary on all interfaces (:8000, :1025, :9912, :9913, HTTP proxy :8080 = open forward proxy with HTTPS MITM, no auth); bind with -http-addr/-smtp-addr/-vardumper-addr/-monolog-addr and PROXY_ADDR=127.0.0.1:8080; Docker: publish as 127.0.0.1:port:port. SSO protects UI and UI APIs only: ingestion, TCP ports, HTTP proxy, /mock/, /api/version, /api/settings, attachment links stay open. Data: in memory by default (lost on restart), DATABASE_DSN file, attachments STORAGE_MODE; no automatic cleanup in 2.10.0. Versions: semver, minor may change behaviour, pin ghcr.io/buggregator/server:2.10.0 (no v), tags latest, 2, 2.10, 2.10.0; fixes only for the latest release line."
+llms_description: "Security and data (server 2.10.0): what leaves the machine — server: update check GET api.github.com/repos/buggregator/server/releases/latest at start and every 12h (User-Agent buggregator/<version>; UPDATE_CHECK_ENABLED=false turns it off), Sentry JS source context: server GETs http(s) URLs from JS stack-frame filenames (3 s, 2 MiB, TLS not verified, any host in 2.10.0; since server [version: to fill] loopback/private only by default, sentry.source_fetch / SENTRY_SOURCE_FETCH / --sentry-source-fetch = private|any|off); browser: the UI loads Google Fonts (fonts.googleapis.com, fonts.gstatic.com) on every open, no switch; images and styles inside captured HTML emails and HTML dumps load from their hosts when opened (scripts do not run), no switch; only when you turn them on: SSO provider, webhooks, OpenAPI import, HTTP proxy upstreams, Xdebug IDE. No analytics or usage reporting. Listening: binary on all interfaces (:8000, :1025, :9912, :9913, HTTP proxy :8080 = open forward proxy with HTTPS MITM, no auth); opt-in: MCP over HTTP :8001 all interfaces, no auth without MCP_AUTH_TOKEN (MCP_ADDR to bind), METRICS_ADDR; bind with -http-addr/-smtp-addr/-vardumper-addr/-monolog-addr and PROXY_ADDR=127.0.0.1:8080; Docker: publish as 127.0.0.1:port:port. SSO protects UI and UI APIs only: ingestion, TCP ports, HTTP proxy, /mock/, /api/version, /api/settings, attachment links, MCP HTTP, /metrics stay open. Data: in memory by default (lost on restart), DATABASE_DSN file, attachments STORAGE_MODE; no automatic cleanup in 2.10.0. Versions: semver, minor may change behaviour, pin ghcr.io/buggregator/server:2.10.0 (no v), tags latest, 2, 2.10, 2.10.0; fixes only for the latest release line."
 ---
 
 # Security and data
@@ -16,7 +16,8 @@ your events are kept. Everything here is true for server **2.10.0**.
 |------|-----------|----------|------|--------------------|
 | New-version check | the server | `https://api.github.com/repos/buggregator/server/releases/latest` | at start, then every 12 hours | `UPDATE_CHECK_ENABLED=false` |
 | UI fonts | your browser | `fonts.googleapis.com`, `fonts.gstatic.com` (Google Fonts) | each time you open the UI | no switch in 2.10.0 |
-| Source of JavaScript errors | the server | the URL of each file in a JavaScript stack trace | each Sentry error from a browser or JS app | no switch in 2.10.0 |
+| Source of JavaScript errors | the server | the URL of each file in a JavaScript stack trace | each Sentry error from a browser or JS app | no switch in 2.10.0; since server [version: to fill]: `SENTRY_SOURCE_FETCH=off` |
+| Images and styles inside captured HTML | your browser | the hosts named in that HTML (e.g. a tracking pixel) | when you open an HTML email or an HTML HTTP dump | no switch in 2.10.0 |
 
 **New-version check.** One GET request. Besides your IP address, it carries only the server version
 (`User-Agent: buggregator/2.10.0`). Nothing about your events or projects is sent. With
@@ -31,6 +32,15 @@ the browser that opens the UI. No event data goes there.
 timeout, TLS certificates not checked. It does this for any `http://` or `https://` URL in a frame, not only for
 local ones. So whoever can send a Sentry event to your Buggregator can make it request a URL from inside your
 network. Keep the server where only your apps can reach it (see below).
+
+Since server [version: to fill], the server fetches only from loopback and private addresses by default
+(`127.0.0.0/8`, `::1`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`): your dev server, a Docker
+service. One setting changes it: `sentry.source_fetch` in `buggregator.yaml`, `SENTRY_SOURCE_FETCH` or
+`--sentry-source-fetch`, with `private` (default), `any` (every host, as in 2.10.0) or `off` (never fetch).
+
+**Images and styles inside captured HTML.** An HTML email or an HTML HTTP dump is shown as it is. Scripts in it
+do not run, but its images and stylesheets load from wherever they point. So when you open a captured email, your
+browser requests its images, tracking pixels included, and the sender may see that the email was opened.
 
 ### Only when you turn it on
 
@@ -59,6 +69,11 @@ open the UI, read your events and send new ones.
 | `9913` | Monolog | `:9913`, all interfaces |
 | `8080` | HTTP proxy | `:8080`, all interfaces |
 | `9003` | Xdebug proxy (off by default) | `127.0.0.1:9003` |
+| `8001` | MCP over HTTP (only with `MCP_ENABLED=true` and `MCP_TRANSPORT=http`) | `:8001`, all interfaces |
+| `METRICS_ADDR` | Prometheus metrics on their own port (only when you set it) | the address you set |
+
+MCP over HTTP asks for no token unless you set `MCP_AUTH_TOKEN`. Bind it with `MCP_ADDR=127.0.0.1:8001`. The
+default MCP transport is a local socket file, which opens no port.
 
 The HTTP proxy deserves a note. It forwards requests to **any host**, also HTTPS, and asks for no password. On all
 interfaces, it is an open proxy for everyone on your network.
@@ -96,7 +111,9 @@ Publish only what you open from your machine: usually just `8000`.
 - event ingestion (Sentry, Ray, Inspector, profiler, SMS, HTTP dumps) and the SMTP, VarDumper and Monolog ports;
 - the HTTP proxy;
 - the mock server under `/mock/`;
-- `/api/version`, `/api/settings` and attachment links.
+- `/api/version`, `/api/settings` and attachment links;
+- MCP over HTTP on `:8001`: it has its own token, `MCP_AUTH_TOKEN`;
+- Prometheus `GET /metrics`, when metrics are on: on port `8000`, or on `METRICS_ADDR` if set.
 
 So SSO keeps strangers from **reading** your events, but not from **sending** them. On a shared server, also limit
 who can reach the ports, e.g. with a firewall or a private network.
