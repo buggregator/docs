@@ -125,6 +125,11 @@ metrics:
 #     body: '{"id": 1}'
 #     delay: 150ms
 
+# Sentry: where the server may fetch JavaScript sources for stack frames
+# (since server [version: to fill]): private (default) | any | off
+sentry:
+  source_fetch: ${SENTRY_SOURCE_FETCH:private}
+
 # New-version check (GitHub releases/latest); false = no network call
 update_check:
   enabled: ${UPDATE_CHECK_ENABLED:true}
@@ -242,6 +247,15 @@ or through the API. See [Mock Server](/config/mock-server).
 |----------|---------|-------------|
 | `UPDATE_CHECK_ENABLED` | `true` | Ask GitHub for the newest server release. `false` = no network call at all. See [New-version check](#new-version-check) |
 | `UPDATE_CHECK_INTERVAL` | `12h` | Time between checks, a Go duration (`6h`, `24h`); at least `1h` |
+
+### Sentry Source Fetch
+
+Since server [version: to fill]. JavaScript stack frames carry only a file URL; the server downloads that file to
+show the code. See [Security and data](/security#what-leaves-your-machine).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SENTRY_SOURCE_FETCH` | `private` | `private`: only loopback and private addresses (`127.0.0.0/8`, `::1`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`), e.g. a dev server, a Docker service, `host.docker.internal`; cloud metadata addresses are refused, redirects only to the same host. `any`: every host, e.g. a dev server on a Tailscale address (`100.64.0.0/10`). `off`: never fetch. Also `sentry.source_fetch` in the config file and the flag `--sentry-source-fetch` |
 
 ### Other
 

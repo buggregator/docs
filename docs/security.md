@@ -37,6 +37,8 @@ Since server [version: to fill], the server fetches only from loopback and priva
 (`127.0.0.0/8`, `::1`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`): your dev server, a Docker
 service. One setting changes it: `sentry.source_fetch` in `buggregator.yaml`, `SENTRY_SOURCE_FETCH` or
 `--sentry-source-fetch`, with `private` (default), `any` (every host, as in 2.10.0) or `off` (never fetch).
+The check is made on the resolved IP address, cloud metadata addresses are refused, and redirects go only to the
+same host. Details: [Server → Sentry Source Fetch](/config/server#sentry-source-fetch).
 
 **Images and styles inside captured HTML.** An HTML email or an HTML HTTP dump is shown as it is. Scripts in it
 do not run, but its images and stylesheets load from wherever they point. So when you open a captured email, your
