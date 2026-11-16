@@ -265,7 +265,7 @@ It removes events: Sentry logs, metrics and trace spans without an event card st
 | `RETENTION_MAX_AGE` | empty | Delete events older than this: `30m`, `24h`, `7d`. Empty or `0` = keep. Also `retention.max_age`, `--retention-max-age` |
 | `RETENTION_MAX_EVENTS` | `0` | Keep at most this many events, the newest; `0` = no cap. Also `retention.max_events`, `--retention-max-events` |
 
-A value it cannot read is logged as a warning, and everything is kept.
+A value it cannot read is logged as a warning, and that setting is off; the other one still works.
 
 ### Sentry Source Fetch
 
