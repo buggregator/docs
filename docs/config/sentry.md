@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default'. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
+llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default', unless (since server [version: to fill]) its public key names an existing project (http://billing@host:8000/1 → billing; key from sentry_key query or X-Sentry-Auth; key 'sentry' reserved; unknown key → default, no project created). Order: DSN path > X-Buggregator-Project / Basic Auth > public key > default. Sentry page tabs Exceptions, Traces, Logs, Metrics, filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
 ---
 
 # Sentry — Exceptions
@@ -114,7 +114,8 @@ What it does not store: sessions, client reports, cron check-ins, profiles, repl
 Two settings matter in every SDK:
 
 - **The DSN.** Any key before `@` works, e.g. `http://sentry@127.0.0.1:8000/1`. A number at the end puts the event
-  into the `default` project; a name such as `/shop` puts it into that project (see [Projects](#projects)).
+  into the `default` project; a name such as `/shop` puts it into that project. The key before `@` can also pick
+  an existing project (see [Projects](#projects)).
 - **The trace sample rate.** Set it to `1.0`, or traces are sampled away and never sent.
 
 In Docker, replace `127.0.0.1` with the Buggregator host or service name, e.g. `http://sentry@buggregator:8000/1`.
@@ -215,8 +216,47 @@ SENTRY_DSN=http://sentry@127.0.0.1:8000/shop
 ```
 
 A number in the path (`/1`, `/42`) is the SDK's own project id, not a Buggregator project. Such events go to
-`default`. Some SDKs accept only a number there: the Sentry JavaScript SDK, for example. Then keep the number
-and, if your SDK lets you add HTTP headers, send two headers together:
+`default`, unless the key before `@` or the headers below name a project.
+
+### Project per service with a numeric DSN
+
+Some SDKs accept only a number at the end of the DSN: the Sentry JavaScript SDK, for example. Since server
+[version: to fill], you can keep the number and put the project key before `@` instead:
+
+```dotenv
+# PHP backend
+SENTRY_DSN=http://billing@127.0.0.1:8000/1
+# JavaScript frontend
+SENTRY_DSN=http://storefront@127.0.0.1:8000/1
+```
+
+The key before `@` is the DSN's public key. The SDK sends it with every event, and Buggregator uses it as the
+project key, but only when that project already exists. List the projects in `buggregator.yaml`:
+
+```yaml
+projects:
+  - key: billing
+    name: Billing
+  - key: storefront
+    name: Storefront
+```
+
+A project also exists once an event has created it, for example an error sent earlier to
+`http://sentry@127.0.0.1:8000/billing`.
+
+<!-- Remove this note if server#433 is released together with this page. -->
+> **Note:** In this release a project listed only in `buggregator.yaml` is not added on a fresh database,
+> for example the default in-memory one. Until it appears in the project list, its events go to `default`.
+
+What happens with other keys:
+
+- `sentry` (the key in our examples) never names a project. Such events go to `default`, as before.
+- A key with no such project, such as a random key copied from a real Sentry DSN, sends events to `default`.
+  Buggregator does not create a project from a key.
+
+### Project by headers
+
+If your SDK lets you add HTTP headers, you can send two headers together:
 
 ```
 X-Buggregator-Event: sentry
@@ -226,10 +266,16 @@ X-Buggregator-Project: shop
 `X-Buggregator-Project` alone is not enough: a Sentry SDK request is recognized by its `X-Sentry-Auth` header,
 and that path ignores `X-Buggregator-Project`.
 
-| How | Example |
-|-----|---------|
-| DSN path (wins over the headers) | `http://sentry@127.0.0.1:8000/shop` |
-| Headers | `X-Buggregator-Event: sentry` + `X-Buggregator-Project: shop` |
+### Which one wins
+
+When a request carries more than one, the first match in this list wins:
+
+| Order | How | Example |
+|-------|-----|---------|
+| 1 | DSN path | `http://sentry@127.0.0.1:8000/shop` |
+| 2 | Headers | `X-Buggregator-Event: sentry` + `X-Buggregator-Project: shop` |
+| 3 | DSN public key, existing project only | `http://billing@127.0.0.1:8000/1` |
+| 4 | Nothing of the above | `default` |
 
 A project that does not exist yet is added to the project list when its first error arrives. A project that
 receives only traces, logs or metrics is not added: put it in `buggregator.yaml` (see [Projects](/config/projects)).
