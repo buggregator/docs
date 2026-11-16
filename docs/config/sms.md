@@ -1,5 +1,5 @@
 ---
-llms_description: "SMS gateway interceptor: /sms endpoint with auto-detection for 40+ providers (Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, etc.). Explicit provider URLs (/sms/twilio) for field validation (missing fields → warnings on the stored event, HTTP 200). Twilio send API POST /2010-04-01/Accounts/{SID}/Messages.json (since server [version: to fill]; 201 + sid SM…, status queued; missing To/From/Body → 400 Twilio 21604/21603/21602, still stored; project default). Symfony: only the Twilio bridge works, via a TLS proxy (bridge always uses https; socat recipe; DSN + as %2B; dev verify_peer/verify_host false); other bridges cannot reach Buggregator. Laravel HTTP example, generic curl. Supports JSON and form-urlencoded payloads, project URL segments."
+llms_description: "SMS gateway interceptor: /sms endpoint with auto-detection for 40+ providers (Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, etc.). Explicit provider URLs (/sms/twilio) for field validation (missing fields → warnings on the stored event, HTTP 200). Twilio send API POST /2010-04-01/Accounts/{SID}/Messages.json (since server v2.10.0; 201 + sid SM…, status queued; missing To/From/Body → 400 Twilio 21604/21603/21602, still stored; project default). Symfony: only the Twilio bridge works, via a TLS proxy (bridge always uses https; socat recipe; DSN + as %2B; dev verify_peer/verify_host false); other bridges cannot reach Buggregator. Laravel HTTP example, generic curl. Supports JSON and form-urlencoded payloads, project URL segments."
 ---
 
 # SMS Gateway Interceptor
@@ -74,7 +74,7 @@ Full list: Twilio, Vonage, Plivo, Sinch, Infobip, MessageBird, Telnyx, Bandwidth
 
 ### Twilio API
 
-Since server [version: to fill], Buggregator also answers Twilio's own send API, so a Twilio client can talk to it
+Since server v2.10.0, Buggregator also answers Twilio's own send API, so a Twilio client can talk to it
 unchanged:
 
 ```
