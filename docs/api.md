@@ -54,7 +54,8 @@ curl -X DELETE http://127.0.0.1:8000/api/events \
 
 The JSON body narrows what is deleted: `type`, `project`, `uuids` (a list of event IDs), `keep_pinned: true`.
 Since server [version: to fill], a body that is not valid JSON, or a field of the wrong type, gets `400` and deletes
-nothing. In 2.10.0 check your body: an empty body deletes everything.
+nothing. In 2.10.0 the same
+mistake deletes **every** event: e.g. `{"type": smtp}` (no quotes) clears all types.
 
 ### Wait for an email
 
