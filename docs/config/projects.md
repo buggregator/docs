@@ -1,5 +1,5 @@
 ---
-llms_description: "Multi-project support: configured in buggregator.yaml with key/name pairs. Default project key 'default'. Per-project DSN formats for Sentry (http://sentry@host/project_key; numeric path: public key of an existing project http://project_key@host/1 since server v2.10.0; order: path > X-Buggregator-Project/Basic Auth > public key > default), Inspector: no project yet, events land in default. SMTP: the AUTH user name (since v2.5.0). XHProf (profiler:project_key@host), Ray (ray:project_key@host). Monolog and VarDumper: a 'project' key in the record or dump context. Mock server: X-Buggregator-Project header or Basic Auth mock:project_key. Unknown project keys are added on the first event card (not by Sentry traces/logs/metrics alone)."
+llms_description: "Multi-project support: configured in buggregator.yaml with key/name pairs. Default project key 'default'. Per-project DSN formats for Sentry (http://sentry@host/project_key; numeric path: public key of an existing project http://project_key@host/1 since server v2.10.0, a key with _ also finds the project with - since [version: to fill]; order: path > X-Buggregator-Project/Basic Auth > public key > default), Inspector (inspector:project_key@host, since [version: to fill]; older servers: default). SMTP: the AUTH user name (since v2.5.0). XHProf (profiler:project_key@host), Ray (ray:project_key@host). Monolog and VarDumper: a 'project' key in the record or dump context. Mock server: X-Buggregator-Project header or Basic Auth mock:project_key. Unknown project keys are added on the first event card (not by Sentry traces/logs/metrics alone)."
 ---
 
 # Configuration — Projects
@@ -93,8 +93,13 @@ in `buggregator.yaml`.
 
 ## Inspector Configuration
 
-Inspector events cannot choose a project yet: they all land in `default`. A key in the URL, like
-`INSPECTOR_URL=http://inspector:shop@127.0.0.1:8000`, is ignored for now.
+Since server [version: to fill], put the project key in the URL:
+
+```dotenv
+INSPECTOR_URL=http://inspector:<project_key>@127.0.0.1:8000
+```
+
+On older servers, Inspector events all land in `default`.
 
 > **Note:** Read more about Inspector configuration [here](/config/inspector.html).
 
