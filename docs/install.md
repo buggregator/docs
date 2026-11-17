@@ -1,5 +1,5 @@
 ---
-llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup. Update: since server 2.11.0 from the UI (Settings › About & updates, «Update to X»): binary on Linux/macOS downloads, checks ed25519-signed checksums.txt + sha256, probes --version, copies the DB (<file>.pre-<old>.bak), swaps (old kept as <name>.old), restarts; Docker/Kubernetes/read-only folder get the command; with auth off only when listening on 127.0.0.1 only (UPDATE_SELF=auto|on|off); in-memory DB loses events; Linux/macOS: DB copy, restart, rollback at once if the new version fails to start, on the next start after a crash; Windows: steps download/check/probe/swap only, no DB copy, no restart, no automatic rollback (put <name>.old back). By hand: rerun install.sh/install.ps1 (BUGGREGATOR_INSTALL_DIR), docker pull / compose pull, helm upgrade --set image.tag."
+llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); verify a download by hand (since v2.11.0): ed25519 public key MCowBQYDK2VwAyEAbFthyZgjx8k7TUu4ZekM3sa0zSxSRzOTaX2BfxaUH2I= (PEM), openssl pkeyutl -verify -pubin -inkey key.pem -rawin -in checksums.txt -sigfile checksums.txt.sig (OpenSSL 3+), then sha256sum -c; install scripts check sha256 only, not the signature; macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup. Update: since server 2.11.0 from the UI (Settings › About & updates, «Update to X»): binary on Linux/macOS downloads, checks ed25519-signed checksums.txt + sha256, probes --version, copies the DB (<file>.pre-<old>.bak), swaps (old kept as <name>.old), restarts; Docker/Kubernetes/read-only folder get the command; with auth off only when listening on 127.0.0.1 only (UPDATE_SELF=auto|on|off); in-memory DB loses events; Linux/macOS: DB copy, restart, rollback at once if the new version fails to start, on the next start after a crash; Windows: steps download/check/probe/swap only, no DB copy, no restart, no automatic rollback (put <name>.old back). By hand: rerun install.sh/install.ps1 (BUGGREGATOR_INSTALL_DIR), docker pull / compose pull, helm upgrade --set image.tag."
 ---
 
 # Install the binary
@@ -75,6 +75,60 @@ Windows:
 ```powershell
 Invoke-WebRequest https://github.com/buggregator/server/releases/latest/download/buggregator-windows-amd64.exe -OutFile buggregator.exe
 ```
+
+### Verify a download
+
+Since v2.11.0, every release has a signed list of checksums. You can check two things by hand:
+
+1. **The list is ours.** `checksums.txt.sig` is an ed25519 signature of `checksums.txt`, made with the Buggregator
+   release key.
+2. **Your file is the one in the list.** `checksums.txt` holds the SHA-256 of every file of the release.
+
+Save the public key as `buggregator-release.pem`:
+
+```text
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAbFthyZgjx8k7TUu4ZekM3sa0zSxSRzOTaX2BfxaUH2I=
+-----END PUBLIC KEY-----
+```
+
+It is the same key the server uses to check an [update from the UI](#from-the-ui)
+([`internal/selfupdate/verify.go`](https://github.com/buggregator/server/blob/master/internal/selfupdate/verify.go)).
+
+Linux, e.g. x86-64 (needs OpenSSL 3.0 or newer):
+
+```bash
+base=https://github.com/buggregator/server/releases/download/v2.11.0
+curl -fsSLO "$base/checksums.txt"
+curl -fsSLO "$base/checksums.txt.sig"
+curl -fsSLO "$base/buggregator-linux-amd64"
+
+openssl pkeyutl -verify -pubin -inkey buggregator-release.pem -rawin \
+  -in checksums.txt -sigfile checksums.txt.sig
+# Signature Verified Successfully
+
+grep ' buggregator-linux-amd64$' checksums.txt | sha256sum -c
+# buggregator-linux-amd64: OK
+```
+
+macOS: the `openssl` that comes with macOS is LibreSSL. Use OpenSSL 3 from Homebrew (`brew install openssl@3`,
+then `$(brew --prefix openssl@3)/bin/openssl` in place of `openssl`), and `shasum -a 256 -c` in place of
+`sha256sum -c`.
+
+Windows (PowerShell), for the checksum:
+
+```powershell
+$want = ((Select-String -Path checksums.txt -Pattern ' buggregator-windows-amd64.exe$').Line -split '\s+')[0]
+$got = (Get-FileHash buggregator-windows-amd64.exe -Algorithm SHA256).Hash.ToLower()
+if ($got -eq $want) { 'OK' } else { 'MISMATCH' }
+```
+
+The signature check on Windows needs OpenSSL 3 too; the command is the same.
+
+If `openssl` prints `Signature Verification Failure`, or the checksum does not match, do not run the file.
+
+The install scripts check the SHA-256 against `checksums.txt`, but not the signature of `checksums.txt`. Releases
+v2.10.0 and older have no `checksums.txt.sig`.
 
 ### If your system blocks it
 
