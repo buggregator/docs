@@ -146,8 +146,10 @@ resp, err := client.Get("https://api.example.com/users")
 
 ### JavaScript / Node.js — fetch
 
+Import `fetch` from `undici` too. Node's built-in `fetch` refuses an agent from the npm `undici` package.
+
 ```js
-import { ProxyAgent } from 'undici'
+import { fetch, ProxyAgent } from 'undici'
 
 const agent = new ProxyAgent({
   uri: 'http://127.0.0.1:8080',
@@ -165,13 +167,19 @@ const response = await fetch('https://api.example.com/users', {
 import axios from 'axios'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
-const agent = new HttpsProxyAgent('http://127.0.0.1:8080', {
-  rejectUnauthorized: false,
-})
+const agent = new HttpsProxyAgent('http://127.0.0.1:8080')
 
 const response = await axios.get('https://api.example.com/users', {
   httpsAgent: agent,
+  proxy: false,
 })
+```
+
+`https-proxy-agent` does not pass `rejectUnauthorized` on to the target site, so the certificate check still fails.
+Turn the check off for the whole process when you start it:
+
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0 node app.js
 ```
 
 ### Python — requests

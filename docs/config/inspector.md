@@ -1,5 +1,5 @@
 ---
-llms_description: "Inspector.dev SDK compatibility for local APM: transaction name, duration, memory peak, result status, HTTP details, timeline breakdown. Config: INSPECTOR_URL=http://inspector@host:8000, INSPECTOR_API_KEY, INSPECTOR_INGESTION_KEY. Laravel and generic PHP setup. INSPECTOR_SECRET_KEY env for access restriction."
+llms_description: "Inspector.dev SDK compatibility for local APM: transaction name, duration, memory peak, result status, HTTP details, timeline breakdown. Config: INSPECTOR_URL=http://inspector@host:8000, INSPECTOR_API_KEY, INSPECTOR_INGESTION_KEY. Laravel and generic PHP setup. No per-project routing yet: all events land in the default project. INSPECTOR_SECRET_KEY env for access restriction."
 ---
 
 # Inspector — Application Monitoring
@@ -56,6 +56,11 @@ $inspector = new Inspector($configuration);
 ```
 
 Other language SDKs: [docs.inspector.dev](https://docs.inspector.dev/)
+
+## Projects
+
+Inspector events cannot choose a [project](/config/projects) yet: they all land in `default`. A project key in
+`INSPECTOR_URL`, like `http://inspector:shop@127.0.0.1:8000`, is ignored for now.
 
 ## Secret key validation
 
