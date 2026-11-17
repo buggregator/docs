@@ -1,5 +1,5 @@
 ---
-llms_description: "HTTP API reference: full OpenAPI 3.1 spec api/openapi.yaml in buggregator/server (78 paths of v2.10.0: Server, Events, Projects, Auth, Metrics, Sentry, SMTP, Attachments, Mocks, Xdebug, Xdebug traces, Profiler, Ingestion; ingestion paths marked x-ingestion: true). Calls for tests: GET /api/version (health, no auth); DELETE /api/events (no body = all; JSON {type, project, uuids, keep_pinned} narrows; since server [version: to fill] a malformed body or wrong field type → 400, nothing deleted); DELETE /api/smtp/messages?project=; GET /api/smtp/messages/wait?subject=&to=&timeout=10s → 200 message or 408 (max 60s); GET /api/events?type=sentry → {data:[…]}. Auth only with SSO on: header X-Auth-Token."
+llms_description: "HTTP API reference: full OpenAPI 3.1 spec api/openapi.yaml in buggregator/server (80 paths of v2.11.0: Server, Events, Projects, Auth, Metrics, Sentry, SMTP, Attachments, Mocks, Xdebug, Xdebug traces, Profiler, Ingestion; ingestion paths marked x-ingestion: true). Calls for tests: GET /api/version (health, no auth); DELETE /api/events (no body = all; JSON {type, project, uuids, keep_pinned} narrows; since server [version: to fill] a malformed body or wrong field type → 400, nothing deleted); DELETE /api/smtp/messages?project=; GET /api/smtp/messages/wait?subject=&to=&timeout=10s → 200 message or 408 (max 60s); GET /api/events?type=sentry → {data:[…]}. Auth only with SSO on: header X-Auth-Token."
 ---
 
 # API reference
@@ -36,7 +36,7 @@ The ones you need most in a test suite or CI job. Examples use `http://127.0.0.1
 
 ```bash
 curl http://127.0.0.1:8000/api/version
-# {"version":"2.10.0"}
+# {"version":"2.11.0"}
 ```
 
 No login needed, also with SSO on. Use it as a health check.
@@ -56,8 +56,8 @@ It deletes events. Sentry logs, metrics and trace spans without an event card st
 `DELETE /api/sentry/all` (see [Sentry → Clearing data](/config/sentry#clearing-data)).
 
 The JSON body narrows what is deleted: `type`, `project`, `uuids` (a list of event IDs), `keep_pinned: true`.
-Since server [version: to fill], a body that is not valid JSON, or a field of the wrong type, gets `400` and deletes
-nothing. In 2.10.0 the same
+Since server 2.11.0, a body that is not valid JSON, or a field of the wrong type, gets `400` and deletes
+nothing. In 2.10.0 and older the same
 mistake deletes **every** event: e.g. `{"type": smtp}` (no quotes) clears all types.
 
 ### Wait for an email
