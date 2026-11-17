@@ -1,5 +1,5 @@
 ---
-llms_description: "Inspector.dev SDK compatibility for local APM: transaction name, duration, memory peak, result status, HTTP details, timeline breakdown. Config: INSPECTOR_URL=http://inspector@host:8000, INSPECTOR_API_KEY, INSPECTOR_INGESTION_KEY. Laravel and generic PHP setup. Project: INSPECTOR_URL=http://inspector:project_key@host (since [version: to fill]; older servers: default project). INSPECTOR_SECRET_KEY env for access restriction."
+llms_description: "Inspector.dev SDK compatibility for local APM: transaction name, duration, memory peak, result status, HTTP details, timeline breakdown. Config: INSPECTOR_URL=http://inspector@host:8000, INSPECTOR_API_KEY, INSPECTOR_INGESTION_KEY. Laravel and generic PHP setup. Project: INSPECTOR_URL=http://inspector:project_key@host (since 2.11.0; older servers: default project). INSPECTOR_SECRET_KEY env for access restriction."
 ---
 
 # Inspector — Application Monitoring
@@ -59,7 +59,7 @@ Other language SDKs: [docs.inspector.dev](https://docs.inspector.dev/)
 
 ## Projects
 
-Since server [version: to fill], the key after `inspector:` in `INSPECTOR_URL` chooses the [project](/config/projects). For
+Since server 2.11.0, the key after `inspector:` in `INSPECTOR_URL` chooses the [project](/config/projects). For
 example, with this URL events land in the project `shop`:
 
 ```dotenv
