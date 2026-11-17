@@ -1,5 +1,5 @@
 ---
-llms_description: "Windows / WSL guide: pick by where the app runs. App on Windows: native binary (install.ps1 with $env:BUGGREGATOR_VERSION='v2.10.0', or buggregator-windows-amd64.exe / -arm64.exe), app uses 127.0.0.1. App in Docker Desktop: compose service ghcr.io/buggregator/server:2.10.0, app uses the service name; a container reaching a Buggregator on the Windows host uses host.docker.internal. App inside WSL 2: install the Linux binary inside WSL (install.sh, BUGGREGATOR_VERSION=v2.10.0), app uses 127.0.0.1; the Windows browser opens http://localhost:8000 through WSL's localhost forwarding. Run one copy, next to the app."
+llms_description: "Windows / WSL guide: pick by where the app runs. App on Windows: native binary (install.ps1 with $env:BUGGREGATOR_VERSION='v2.11.0', or buggregator-windows-amd64.exe / -arm64.exe), app uses 127.0.0.1. App in Docker Desktop: compose service ghcr.io/buggregator/server:2.11.0, app uses the service name; a container reaching a Buggregator on the Windows host uses host.docker.internal. App inside WSL 2: install the Linux binary inside WSL (install.sh, BUGGREGATOR_VERSION=v2.11.0), app uses 127.0.0.1; the Windows browser opens http://localhost:8000 through WSL's localhost forwarding. Run one copy, next to the app."
 ---
 
 # Windows and WSL
@@ -20,13 +20,13 @@ In every case you open the UI in your Windows browser at [http://localhost:8000]
 In PowerShell, install a fixed version:
 
 ```powershell
-$env:BUGGREGATOR_VERSION = "v2.10.0"
+$env:BUGGREGATOR_VERSION = "v2.11.0"
 irm https://raw.githubusercontent.com/buggregator/server/master/scripts/install.ps1 | iex
 & "$env:LOCALAPPDATA\Programs\buggregator\buggregator.exe"
 ```
 
 Or download `buggregator-windows-amd64.exe` (ARM: `buggregator-windows-arm64.exe`) from the
-[v2.10.0 release](https://github.com/buggregator/server/releases/tag/v2.10.0). If Windows says «Windows protected
+[v2.11.0 release](https://github.com/buggregator/server/releases/tag/v2.11.0). If Windows says «Windows protected
 your PC», see [Install → If your system blocks it](/install#if-your-system-blocks-it).
 
 ## In Docker Desktop
@@ -36,7 +36,7 @@ Add the service to your `compose.yaml` or `docker-compose.yml`:
 ```yaml
 services:
   buggregator:
-    image: ghcr.io/buggregator/server:2.10.0
+    image: ghcr.io/buggregator/server:2.11.0
     ports:
       - "127.0.0.1:8000:8000"
 ```
@@ -55,7 +55,7 @@ Open your WSL terminal and install the Linux binary there:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/buggregator/server/master/scripts/install.sh \
-  | BUGGREGATOR_VERSION=v2.10.0 sh
+  | BUGGREGATOR_VERSION=v2.11.0 sh
 ~/.local/bin/buggregator
 ```
 
@@ -69,7 +69,7 @@ next to the app.
 
 ```bash
 curl http://127.0.0.1:8000/api/version
-# {"version":"2.10.0"}
+# {"version":"2.11.0"}
 ```
 
 In PowerShell, use `curl.exe` instead of `curl`. Then send something from your app; the stack guides say what you

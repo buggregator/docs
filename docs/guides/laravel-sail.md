@@ -1,5 +1,5 @@
 ---
-llms_description: "Laravel Sail guide: add a buggregator service (ghcr.io/buggregator/server:2.10.0, network sail, only port 8000 published) to compose.yaml; .env for mail (MAIL_HOST=buggregator, MAIL_PORT=1025), Sentry (SENTRY_LARAVEL_DSN=http://sentry@buggregator:8000/1, Laravel 11+ needs Integration::handles in bootstrap/app.php), logs (socket channel, LOG_SOCKET_URL=buggregator:9913), dumps (VAR_DUMPER_FORMAT=server, VAR_DUMPER_SERVER=buggregator:9912). Mailpit also uses port 1025 on the host. Socket log channel throws when Buggregator is down. Checked with Laravel 13.42, Sail 1.70, sentry-laravel 4.30, server 2.10.0."
+llms_description: "Laravel Sail guide: add a buggregator service (ghcr.io/buggregator/server:2.11.0, network sail, only port 8000 published) to compose.yaml; .env for mail (MAIL_HOST=buggregator, MAIL_PORT=1025), Sentry (SENTRY_LARAVEL_DSN=http://sentry@buggregator:8000/1, Laravel 11+ needs Integration::handles in bootstrap/app.php), logs (socket channel, LOG_SOCKET_URL=buggregator:9913), dumps (VAR_DUMPER_FORMAT=server, VAR_DUMPER_SERVER=buggregator:9912). Mailpit also uses port 1025 on the host. Socket log channel throws when Buggregator is down. Checked with Laravel 13.42, Sail 1.70, sentry-laravel 4.30, server 2.10.0."
 ---
 
 # Laravel Sail
@@ -15,14 +15,14 @@ Sail keeps its services in `compose.yaml` (older apps: `docker-compose.yml`). Ad
 
 ```yaml
     buggregator:
-        image: 'ghcr.io/buggregator/server:2.10.0'
+        image: 'ghcr.io/buggregator/server:2.11.0'
         ports:
             - '127.0.0.1:8000:8000'
         networks:
             - sail
 ```
 
-- The tag is pinned (`2.10.0`). Change it on purpose when you upgrade, not by surprise.
+- The tag is pinned (`2.11.0`). Change it on purpose when you upgrade, not by surprise.
 - Only the web UI port is published. Your app reaches mail, logs and dumps over the `sail` network by the
   service name `buggregator`, so ports 1025, 9912 and 9913 do not need to be open on your machine.
 - Sail's `mailpit` service also takes port 1025 on your machine. Both can run: Buggregator does not publish 1025.

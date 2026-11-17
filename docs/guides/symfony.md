@@ -1,5 +1,5 @@
 ---
-llms_description: "Symfony guide: buggregator service in compose.yaml (ghcr.io/buggregator/server:2.10.0, only port 8000 published); .env.local MAILER_DSN=smtp://buggregator:1025, SENTRY_DSN=http://sentry@buggregator:8000/1 (sentry/sentry-symfony: its contrib recipe enables the bundle and DSN for prod only; enable SentryBundle for dev and add a when@dev sentry: block with dsn + traces_sample_rate), VAR_DUMPER_SERVER=buggregator:9912 (debug-bundle recipe dump_destination tcp://%env(VAR_DUMPER_SERVER)%, no server:dump needed), Monolog socket handler with monolog.formatter.json, MONOLOG_SOCKET_HOST=buggregator:9913. Checked with Symfony 8.1, sentry-symfony 5.16, monolog-bundle 4.1, server 2.10.0."
+llms_description: "Symfony guide: buggregator service in compose.yaml (ghcr.io/buggregator/server:2.11.0, only port 8000 published); .env.local MAILER_DSN=smtp://buggregator:1025, SENTRY_DSN=http://sentry@buggregator:8000/1 (sentry/sentry-symfony: its contrib recipe enables the bundle and DSN for prod only; enable SentryBundle for dev and add a when@dev sentry: block with dsn + traces_sample_rate), VAR_DUMPER_SERVER=buggregator:9912 (debug-bundle recipe dump_destination tcp://%env(VAR_DUMPER_SERVER)%, no server:dump needed), Monolog socket handler with monolog.formatter.json, MONOLOG_SOCKET_HOST=buggregator:9913. Checked with Symfony 8.1, sentry-symfony 5.16, monolog-bundle 4.1, server 2.10.0."
 ---
 
 # Symfony
@@ -15,7 +15,7 @@ In `compose.yaml` (or `docker-compose.yml`), under `services:`:
 
 ```yaml
   buggregator:
-    image: ghcr.io/buggregator/server:2.10.0
+    image: ghcr.io/buggregator/server:2.11.0
     ports:
       - "127.0.0.1:8000:8000"
 ```

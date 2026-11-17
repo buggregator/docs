@@ -1,5 +1,5 @@
 ---
-llms_description: "Node.js / TypeScript guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.10.0, only port 8000 published); nodemailer createTransport host buggregator port 1025 secure false; @sentry/node init dsn http://sentry@buggregator:8000/1, tracesSampleRate 1.0, enableLogs true (Sentry.logger.* → Logs tab); webhooks from Stripe/GitHub: point them at Buggregator as HTTP dumps (any unmatched POST or PUT is stored). Checked with @sentry/node 11.13, nodemailer 10.6, Node 22, server 2.10.0."
+llms_description: "Node.js / TypeScript guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.11.0, only port 8000 published); nodemailer createTransport host buggregator port 1025 secure false; @sentry/node init dsn http://sentry@buggregator:8000/1, tracesSampleRate 1.0, enableLogs true (Sentry.logger.* → Logs tab); webhooks from Stripe/GitHub: point them at Buggregator as HTTP dumps (any unmatched POST or PUT is stored). Checked with @sentry/node 11.13, nodemailer 10.6, Node 22, server 2.10.0."
 ---
 
 # Node.js
@@ -15,7 +15,7 @@ In `docker-compose.yml`, under `services:`:
 
 ```yaml
   buggregator:
-    image: ghcr.io/buggregator/server:2.10.0
+    image: ghcr.io/buggregator/server:2.11.0
     ports:
       - "127.0.0.1:8000:8000"
 ```
