@@ -1,5 +1,5 @@
 ---
-llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup. Update: since server 2.11.0 from the UI (Settings › About & updates, «Update to X»): binary on Linux/macOS downloads, checks ed25519-signed checksums.txt + sha256, probes --version, copies the DB (<file>.pre-<old>.bak), swaps (old kept as <name>.old), restarts; Windows replaces, restart by hand; Docker/Kubernetes/read-only folder get the command; with auth off only when listening on 127.0.0.1 only (UPDATE_SELF=auto|on|off); in-memory DB loses events; rollback at once if the new version fails to start, on the next start after a crash. By hand: rerun install.sh/install.ps1 (BUGGREGATOR_INSTALL_DIR), docker pull / compose pull, helm upgrade --set image.tag."
+llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup. Update: since server 2.11.0 from the UI (Settings › About & updates, «Update to X»): binary on Linux/macOS downloads, checks ed25519-signed checksums.txt + sha256, probes --version, copies the DB (<file>.pre-<old>.bak), swaps (old kept as <name>.old), restarts; Docker/Kubernetes/read-only folder get the command; with auth off only when listening on 127.0.0.1 only (UPDATE_SELF=auto|on|off); in-memory DB loses events; Linux/macOS: DB copy, restart, rollback at once if the new version fails to start, on the next start after a crash; Windows: steps download/check/probe/swap only, no DB copy, no restart, no automatic rollback (put <name>.old back). By hand: rerun install.sh/install.ps1 (BUGGREGATOR_INSTALL_DIR), docker pull / compose pull, helm upgrade --set image.tag."
 ---
 
 # Install the binary
@@ -183,7 +183,7 @@ listens on this machine only, e.g. `-http-addr 127.0.0.1:8000`. The default, `:8
 interface, so by default you get the command instead. Then also open the UI as `http://127.0.0.1:8000` or
 `http://localhost:8000`, not by another name.
 
-What the button does, step by step:
+What the button does on Linux and macOS, step by step:
 
 1. Downloads the file for your system from the latest release.
 2. Checks it: the release's `checksums.txt` must carry a valid ed25519 signature (`checksums.txt.sig`), and the
@@ -196,13 +196,18 @@ What the button does, step by step:
 With the default in-memory database, all events are gone after the restart. The button then reads **Delete events
 and update**.
 
-**If the new version does not start**, Buggregator puts back the old program and the database copy at once. The UI
+**If the new version does not start** (Linux and macOS), Buggregator puts back the old program and the database copy at once. The UI
 then shows «Rolled back from &lt;version&gt;», the error and the start-up log (**Copy log**). One case is slower: if the
 new version crashes on its own before it is ready, the rollback happens on the **next** start. A supervisor that
 restarts the service (e.g. systemd with `Restart=on-failure`) does that by itself; without one, start Buggregator
 again by hand.
 
 When the new version serves, the database copy is deleted.
+
+**On Windows** the button does steps 1–3 and 5: it downloads, checks and tries the new version, then replaces the
+program and keeps the old one as `buggregator.exe.old` (or `<name>.old`). It makes no database copy, does not
+restart and has no automatic rollback. Restart Buggregator yourself. To go back, stop it and put the `.old` file
+back in place of the program.
 
 ### By hand
 
