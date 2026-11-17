@@ -209,7 +209,7 @@ SENTRY_DSN=http://sentry@127.0.0.1:8000/1
 Send each app to its own [project](/config/projects), and the Sentry page shows only that project's data.
 Without a project, everything goes to `default`.
 
-Put the project key in the DSN path instead of the number:
+With the Sentry PHP SDK, put the project key in the DSN path instead of the number:
 
 ```dotenv
 SENTRY_DSN=http://sentry@127.0.0.1:8000/shop
@@ -220,8 +220,9 @@ A number in the path (`/1`, `/42`) is the SDK's own project id, not a Buggregato
 
 ### Project per service with a numeric DSN
 
-Some SDKs accept only a number at the end of the DSN: the Sentry JavaScript SDK, for example. Since server
-v2.10.0, you can keep the number and put the project key before `@` instead:
+Other SDKs accept only a number at the end of the DSN. The Sentry JavaScript and Python SDKs, for example,
+refuse `http://sentry@127.0.0.1:8000/shop`. Since server v2.10.0, you can keep the number and put the project key
+before `@` instead:
 
 ```dotenv
 # PHP backend
@@ -229,6 +230,9 @@ SENTRY_DSN=http://billing@127.0.0.1:8000/1
 # JavaScript frontend
 SENTRY_DSN=http://storefront@127.0.0.1:8000/1
 ```
+
+The JavaScript SDK takes only letters, digits and `_` before `@`. A key with `-`, like `store-front`, makes the
+DSN invalid and the SDK sends nothing. Name such a project `store_front` or `storefront`.
 
 The key before `@` is the DSN's public key. The SDK sends it with every event, and Buggregator uses it as the
 project key, but only when that project already exists. List the projects in `buggregator.yaml`:
