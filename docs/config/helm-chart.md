@@ -334,7 +334,8 @@ kubectl delete pvc buggregator-data
 ```
 
 The name is `<release>-buggregator-data`, or `<release>-data` when the release name contains `buggregator`.
-`kubectl get pvc` lists it. To delete the PVC with the release, as before, set `storage.keepOnUninstall=false`.
+`kubectl get pvc` lists it. To delete the PVC with the release, as before, set `storage.keepOnUninstall=false` on install or with
+`helm upgrade` before you uninstall: `helm uninstall` takes no `--set`.
 
 Chart 3.0.0 deletes the PVC with the release. With the usual StorageClass setting (`reclaimPolicy: Delete`) the
 volume and the database go with it; with `Retain` the volume stays. Copy `/data/buggregator.db` first if you need it.
