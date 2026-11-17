@@ -1,5 +1,5 @@
 ---
-llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); verify a download by hand (since v2.11.0): ed25519 public key MCowBQYDK2VwAyEAbFthyZgjx8k7TUu4ZekM3sa0zSxSRzOTaX2BfxaUH2I= (PEM), openssl pkeyutl -verify -pubin -inkey key.pem -rawin -in checksums.txt -sigfile checksums.txt.sig (OpenSSL 3+), then sha256sum -c; install scripts check sha256 only, not the signature; macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup. Update: since server 2.11.0 from the UI (Settings › About & updates, «Update to X»): binary on Linux/macOS downloads, checks ed25519-signed checksums.txt + sha256, probes --version, copies the DB (<file>.pre-<old>.bak), swaps (old kept as <name>.old), restarts; Docker/Kubernetes/read-only folder get the command; with auth off only when listening on 127.0.0.1 only (UPDATE_SELF=auto|on|off); in-memory DB loses events; Linux/macOS: DB copy, restart, rollback at once if the new version fails to start, on the next start after a crash; Windows: steps download/check/probe/swap only, no DB copy, no restart, no automatic rollback (put <name>.old back). By hand: rerun install.sh/install.ps1 (BUGGREGATOR_INSTALL_DIR), docker pull / compose pull, helm upgrade --set image.tag."
+llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); verify a download by hand (since v2.11.0): ed25519 public key MCowBQYDK2VwAyEAbFthyZgjx8k7TUu4ZekM3sa0zSxSRzOTaX2BfxaUH2I= (PEM), openssl pkeyutl -verify -pubin -inkey key.pem -rawin -in checksums.txt -sigfile checksums.txt.sig (OpenSSL 3+), then sha256sum -c; install scripts check the signature (when OpenSSL 3 is present, else they say «Signature not checked») then sha256; bad or missing .sig stops the install for v2.11.0+, BUGGREGATOR_NO_SIGNATURE=1 skips it, BUGGREGATOR_NO_VERIFY=1 skips all checks; macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup. Update: since server 2.11.0 from the UI (Settings › About & updates, «Update to X»): binary on Linux/macOS downloads, checks ed25519-signed checksums.txt + sha256, probes --version, copies the DB (<file>.pre-<old>.bak), swaps (old kept as <name>.old), restarts; Docker/Kubernetes/read-only folder get the command; with auth off only when listening on 127.0.0.1 only (UPDATE_SELF=auto|on|off); in-memory DB loses events; Linux/macOS: DB copy, restart, rollback at once if the new version fails to start, on the next start after a crash; Windows: steps download/check/probe/swap only, no DB copy, no restart, no automatic rollback (put <name>.old back). By hand: rerun install.sh/install.ps1 (BUGGREGATOR_INSTALL_DIR), docker pull / compose pull, helm upgrade --set image.tag."
 ---
 
 # Install the binary
@@ -18,7 +18,8 @@ Buggregator is one file. Download it, make it executable, run it. No Docker, no 
 curl -fsSL https://raw.githubusercontent.com/buggregator/server/master/scripts/install.sh | sh
 ```
 
-It picks the file for your system and CPU, checks it against the release's `checksums.txt`, and puts it in
+It picks the file for your system and CPU, checks it against the release's signed `checksums.txt`
+([Verify a download](#verify-a-download)), and puts it in
 `~/.local/bin/buggregator`. No `sudo`. If `~/.local/bin` is not in your `PATH`, the script says so; then run
 `~/.local/bin/buggregator`.
 
@@ -36,7 +37,8 @@ Both scripts take these environment variables:
 |----------|--------------|
 | `BUGGREGATOR_VERSION` | a release tag, e.g. `v2.6.0`; default: the latest release |
 | `BUGGREGATOR_INSTALL_DIR` | another folder for the binary |
-| `BUGGREGATOR_NO_VERIFY=1` | skip the checksum; only for releases without `checksums.txt` (v2.5.0 and older) |
+| `BUGGREGATOR_NO_VERIFY=1` | skip all checks; only for releases without `checksums.txt` (v2.5.0 and older) |
+| `BUGGREGATOR_NO_SIGNATURE=1` | install without `checksums.txt.sig`; only for a mirror you trust that has none |
 
 Example — a fixed version into `~/bin`:
 
@@ -115,20 +117,31 @@ macOS: the `openssl` that comes with macOS is LibreSSL. Use OpenSSL 3 from Homeb
 then `$(brew --prefix openssl@3)/bin/openssl` in place of `openssl`), and `shasum -a 256 -c` in place of
 `sha256sum -c`.
 
-Windows (PowerShell), for the checksum:
+Windows (PowerShell), e.g. x86-64:
 
 ```powershell
+$base = 'https://github.com/buggregator/server/releases/download/v2.11.0'
+foreach ($f in 'checksums.txt', 'checksums.txt.sig', 'buggregator-windows-amd64.exe') {
+  Invoke-WebRequest -UseBasicParsing "$base/$f" -OutFile $f
+}
+
 $want = ((Select-String -Path checksums.txt -Pattern ' buggregator-windows-amd64.exe$').Line -split '\s+')[0]
 $got = (Get-FileHash buggregator-windows-amd64.exe -Algorithm SHA256).Hash.ToLower()
 if ($got -eq $want) { 'OK' } else { 'MISMATCH' }
+# OK
 ```
 
-The signature check on Windows needs OpenSSL 3 too; the command is the same.
+Windows has no ed25519 check of its own. With OpenSSL 3 on `PATH` (for example from Git for Windows), run the same
+`openssl pkeyutl` command as on Linux in that folder: it reads `buggregator-release.pem`, `checksums.txt` and
+`checksums.txt.sig`. Rename the file to `buggregator.exe` after the check.
 
 If `openssl` prints `Signature Verification Failure`, or the checksum does not match, do not run the file.
 
-The install scripts check the SHA-256 against `checksums.txt`, but not the signature of `checksums.txt`. Releases
-v2.10.0 and older have no `checksums.txt.sig`.
+The install scripts do both checks for you. They check the signature when OpenSSL 3 is present (on Windows: on
+`PATH`), then the SHA-256. Without OpenSSL 3 they print «Signature not checked: needs OpenSSL 3» and check only the
+SHA-256. A bad signature or a missing `checksums.txt.sig` stops the install. `BUGGREGATOR_NO_SIGNATURE=1` installs
+without the signature: use it only for a mirror you trust that has none. Releases v2.10.0 and older have no
+`checksums.txt.sig`; the scripts install them with the SHA-256 check only.
 
 ### If your system blocks it
 
