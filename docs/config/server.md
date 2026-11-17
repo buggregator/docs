@@ -258,7 +258,8 @@ or through the API. See [Mock Server](/config/mock-server).
 
 Since server [version: to fill]. Nothing is deleted unless you set one of these. The cleanup runs at start and then
 every minute; attachments go with their events; pinned events are never deleted and do not count towards the cap.
-It removes events: Sentry logs, metrics and trace spans without an event card stay.
+`RETENTION_MAX_AGE` also removes Sentry logs and metrics (by the time they arrived) and traces and spans (by their
+start time); `RETENTION_MAX_EVENTS` counts event cards only and leaves Sentry logs, metrics and traces alone.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
