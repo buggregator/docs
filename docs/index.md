@@ -93,6 +93,7 @@ Microservices, monorepos, multiple teams — one dashboard.
 - You want to **test emails** your app sends without a real mail server.
 - You want to **capture SMS messages** without sending real ones through Twilio or Vonage.
 - You have **multiple services** (microservices, Docker Compose) and want all debug data in one place.
+- Your team wants **one shared instance in Kubernetes**: `helm install` from the [official Helm chart](/config/helm-chart) — data on a persistent volume, SSO for the UI, Ingress, Prometheus metrics.
 - You want to **inspect HTTP requests** your app makes to external APIs.
 - You just need a better `dump()` — with syntax highlighting, IDE links, and no browser pollution.
 
