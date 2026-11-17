@@ -210,6 +210,7 @@ export default defineConfig({
                     {text: 'Database', link: '/config/database'},
                     {text: 'Projects', link: '/config/projects'},
                     {text: 'Webhooks', link: '/config/webhooks'},
+                    {text: 'Security and Data', link: '/security'},
                     {text: 'Single Sign On (SSO)', link: '/config/sso'},
                     {text: 'MCP (AI Assistants)', link: '/config/mcp'},
                     {text: 'Installable App (PWA)', link: '/config/pwa'},

@@ -1,5 +1,5 @@
 ---
-llms_description: "Django / Python guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.10.0, only port 8000 published); Django settings EMAIL_BACKEND smtp, EMAIL_HOST=buggregator, EMAIL_PORT=1025; sentry-sdk init with dsn http://sentry@buggregator:8000/1, traces_sample_rate=1.0, enable_logs=True: Python logging records at INFO and above go to the Sentry Logs tab (no separate log integration), but only those that pass the logger's level: WARNING by default, set LOGGING root level INFO to send info(). Plain Python: smtplib to port 1025. Checked with Django 6.1, sentry-sdk 2.75, Python 3.12, server 2.10.0."
+llms_description: "Django / Python guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.11.0, only port 8000 published); Django settings EMAIL_BACKEND smtp, EMAIL_HOST=buggregator, EMAIL_PORT=1025; sentry-sdk init with dsn http://sentry@buggregator:8000/1, traces_sample_rate=1.0, enable_logs=True: Python logging records at INFO and above go to the Sentry Logs tab (no separate log integration), but only those that pass the logger's level: WARNING by default, set LOGGING root level INFO to send info(). Plain Python: smtplib to port 1025. Checked with Django 6.1, sentry-sdk 2.75, Python 3.12, server 2.10.0."
 ---
 
 # Django and Python
@@ -14,7 +14,7 @@ In `docker-compose.yml`, under `services:`:
 
 ```yaml
   buggregator:
-    image: ghcr.io/buggregator/server:2.10.0
+    image: ghcr.io/buggregator/server:2.11.0
     ports:
       - "127.0.0.1:8000:8000"
 ```

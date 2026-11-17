@@ -125,6 +125,17 @@ metrics:
 #     body: '{"id": 1}'
 #     delay: 150ms
 
+# Retention (since server 2.11.0): delete old events every minute.
+# Unset keeps everything. Pinned events are never deleted and do not count.
+retention:
+  max_age: ${RETENTION_MAX_AGE:}          # e.g. "24h", "7d"; empty or 0 = keep
+  max_events: ${RETENTION_MAX_EVENTS:0}   # keep at most this many events; 0 = no cap
+
+# Sentry: where the server may fetch JavaScript sources for stack frames
+# (since server 2.11.0): private (default) | any | off
+sentry:
+  source_fetch: ${SENTRY_SOURCE_FETCH:private}
+
 # New-version check (GitHub releases/latest); false = no network call
 update_check:
   enabled: ${UPDATE_CHECK_ENABLED:true}
@@ -242,6 +253,29 @@ or through the API. See [Mock Server](/config/mock-server).
 |----------|---------|-------------|
 | `UPDATE_CHECK_ENABLED` | `true` | Ask GitHub for the newest server release. `false` = no network call at all. See [New-version check](#new-version-check) |
 | `UPDATE_CHECK_INTERVAL` | `12h` | Time between checks, a Go duration (`6h`, `24h`); at least `1h` |
+
+### Retention
+
+Since server 2.11.0. Nothing is deleted unless you set one of these. The cleanup runs at start and then
+every minute; attachments go with their events; pinned events are never deleted and do not count towards the cap.
+`RETENTION_MAX_AGE` also removes Sentry logs and metrics (by the time they arrived) and traces and spans (by their
+start time); `RETENTION_MAX_EVENTS` counts event cards only and leaves Sentry logs, metrics and traces alone.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RETENTION_MAX_AGE` | empty | Delete events older than this: `30m`, `24h`, `7d`. Empty or `0` = keep. Also `retention.max_age`, `--retention-max-age` |
+| `RETENTION_MAX_EVENTS` | `0` | Keep at most this many events, the newest; `0` = no cap. Also `retention.max_events`, `--retention-max-events` |
+
+A value it cannot read is logged as a warning, and that setting is off; the other one still works.
+
+### Sentry Source Fetch
+
+Since server 2.11.0. JavaScript stack frames carry only a file URL; the server downloads that file to
+show the code. See [Security and data](/security#what-leaves-your-machine).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SENTRY_SOURCE_FETCH` | `private` | `private`: only loopback and private addresses (`127.0.0.0/8`, `::1`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`), e.g. a dev server, a Docker service, `host.docker.internal`; cloud metadata addresses are refused, redirects only to the same host. `any`: every host, e.g. a dev server on a Tailscale address (`100.64.0.0/10`). `off`: never fetch. Also `sentry.source_fetch` in the config file and the flag `--sentry-source-fetch` |
 
 ### Other
 

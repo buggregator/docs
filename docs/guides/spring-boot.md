@@ -1,5 +1,5 @@
 ---
-llms_description: "Spring Boot / Java guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.10.0, only port 8000 published); application.properties spring.mail.host=buggregator, spring.mail.port=1025; Sentry starter (io.sentry:sentry-spring-boot-4-starter for Boot 4, sentry-spring-boot-starter-jakarta for Boot 3) with sentry.dsn=http://sentry@buggregator:8000/1, sentry.traces-sample-rate=1.0, sentry.logs.enabled=true. Sentry Java SDK io.sentry:sentry 8.64 checked against server 2.10.0 (error, transaction, log); the Spring Boot starter itself not run."
+llms_description: "Spring Boot / Java guide: buggregator service in docker-compose (ghcr.io/buggregator/server:2.11.0, only port 8000 published); application.properties spring.mail.host=buggregator, spring.mail.port=1025; Sentry starter (io.sentry:sentry-spring-boot-4-starter for Boot 4, sentry-spring-boot-starter-jakarta for Boot 3) with sentry.dsn=http://sentry@buggregator:8000/1, sentry.traces-sample-rate=1.0, sentry.logs.enabled=true. Sentry Java SDK io.sentry:sentry 8.64 checked against server 2.10.0 (error, transaction, log); the Spring Boot starter itself not run."
 ---
 
 # Spring Boot
@@ -16,7 +16,7 @@ In `docker-compose.yml` (or `compose.yaml`), under `services:`:
 
 ```yaml
   buggregator:
-    image: ghcr.io/buggregator/server:2.10.0
+    image: ghcr.io/buggregator/server:2.11.0
     ports:
       - "127.0.0.1:8000:8000"
 ```

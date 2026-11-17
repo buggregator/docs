@@ -1,5 +1,5 @@
 ---
-llms_description: "Vue / Nuxt / Next.js (browser) guide: buggregator service (ghcr.io/buggregator/server:2.10.0, port 8000 published to 127.0.0.1); browser code must use the published address http://sentry@127.0.0.1:8000/1, never the compose service name; server-side code in a container uses http://sentry@buggregator:8000/1. @sentry/vue init with app, browserTracingIntegration, tracesSampleRate 1.0, enableLogs — errors in components, Pageload trace and logs checked in headless Chrome (@sentry/vue 11.13, Vue 3.5); no CORS setup. @sentry/nuxt and @sentry/nextjs not run themselves (they wrap the browser and Node SDKs that were)."
+llms_description: "Vue / Nuxt / Next.js (browser) guide: buggregator service (ghcr.io/buggregator/server:2.11.0, port 8000 published to 127.0.0.1); browser code must use the published address http://sentry@127.0.0.1:8000/1, never the compose service name; server-side code in a container uses http://sentry@buggregator:8000/1. @sentry/vue init with app, browserTracingIntegration, tracesSampleRate 1.0, enableLogs — errors in components, Pageload trace and logs checked in headless Chrome (@sentry/vue 11.13, Vue 3.5); no CORS setup. @sentry/nuxt and @sentry/nextjs not run themselves (they wrap the browser and Node SDKs that were)."
 ---
 
 # Vue, Nuxt and Next.js
@@ -14,7 +14,7 @@ Checked with @sentry/vue 11.13 and Vue 3.5 in headless Chrome against Buggregato
 ```yaml
 services:
   buggregator:
-    image: ghcr.io/buggregator/server:2.10.0
+    image: ghcr.io/buggregator/server:2.11.0
     ports:
       - "127.0.0.1:8000:8000"
 ```
