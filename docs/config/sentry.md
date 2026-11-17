@@ -197,7 +197,8 @@ In `sentry-go` 0.50, logs from `sentry.NewLogger(ctx)` are sent without any extr
 
 ### Other platforms
 
-Other Sentry SDKs (Ruby, .NET, Java and others) are not verified yet. Set the DSN as above and try; if an event does
+The Java SDK was checked with Spring Boot: see the [Spring Boot guide](/guides/spring-boot). Other Sentry SDKs
+(Ruby, .NET and others) are not verified yet. Set the DSN as above and try; if an event does
 not show up, please [open an issue](https://github.com/buggregator/server/issues) with the SDK name and version.
 
 ```dotenv
