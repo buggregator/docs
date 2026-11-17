@@ -234,8 +234,10 @@ docker compose pull && docker compose up -d
 Kubernetes (Helm):
 
 ```bash
-helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator --reuse-values --set image.tag=<version>
+helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator --reset-then-reuse-values --set image.tag=<version>
 ```
+
+`--reset-then-reuse-values` needs Helm 3.14+. The update notice of server 2.11.0 shows `--reuse-values`, which also keeps the old chart's defaults: see [Helm chart › Upgrade](/config/helm-chart#upgrade).
 
 Which version runs now: `GET /api/version`, or, since server 2.11.0, `buggregator --version`.
 

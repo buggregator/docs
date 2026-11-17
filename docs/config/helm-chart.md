@@ -1,22 +1,22 @@
 ---
-llms_description: "Helm chart installation for Kubernetes. Standalone mode (embedded SQLite), SSO (Auth0, Google, GitHub, Keycloak, GitLab, OIDC). Configurable CORS, logging, Ingress, Prometheus ServiceMonitor, PVC storage. Service ports: 8000 HTTP, 1025 SMTP, 9912 VarDumper, 9913 Monolog."
+llms_description: "Helm chart 3.0.0 (server 2.11.0) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.*, jwtSecret generated and kept (lookup; set it for Argo CD/Flux). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall deletes the PVC."
 ---
 
 # Configuration — Helm Chart
 
-Deploy Buggregator on Kubernetes using the official Helm chart. The chart deploys a single Go binary
-with an embedded SQLite database — no external dependencies required.
+Deploy Buggregator on Kubernetes with the official Helm chart. The chart runs one Go binary with an embedded SQLite
+database: no other services are needed.
+
+This page describes chart **3.0.0** (server 2.11.0). Coming from chart 2.x? Read
+[Upgrade from chart 2.x](#upgrade-from-chart-2-x) first.
 
 ## Prerequisites
 
 - Kubernetes 1.23+
-- Helm 3.x
+- Helm 3.8+ (for OCI registries); Helm 3.14+ for `--reset-then-reuse-values` on upgrade
+- A default StorageClass, or set `storage.storageClassName`
 
-## Installation
-
-### Standalone (default)
-
-The simplest setup — uses embedded SQLite, no external dependencies:
+## Install
 
 ```bash
 helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator
@@ -28,40 +28,102 @@ Open the web UI:
 kubectl port-forward svc/buggregator 8000:8000
 ```
 
-Then navigate to http://localhost:8000.
+Then go to http://localhost:8000.
 
-### With SSO
+A specific chart version: add `--version 3.0.0`. A specific server image: `--set image.tag=2.11.0`. By default the
+chart uses the server version it was released with (its `appVersion`).
 
-Enable SSO to restrict access to the web UI. Supported providers: Auth0, Google, GitHub, Keycloak,
-GitLab, and generic OIDC.
+## Data
 
-```bash
-helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator \
-  --set auth.enabled=true \
-  --set auth.provider=auth0 \
-  --set auth.providerUrl=https://your-tenant.auth0.com \
-  --set auth.clientId=YOUR_CLIENT_ID \
-  --set auth.clientSecret=YOUR_CLIENT_SECRET \
-  --set auth.callbackUrl=https://buggregator.example.com/auth/sso/callback \
-  --set auth.jwtSecret=YOUR_JWT_SECRET
+By default the chart creates a PersistentVolumeClaim (a disk that outlives the pod) of 5Gi and mounts it at `/data`:
+
+- the database: `/data/buggregator.db`
+- attachments (SMTP attachments, HTTP dump files): `/data/storage`
+
+So events survive a pod restart or an upgrade. To change the size or the storage class:
+
+```yaml
+storage:
+  size: 10Gi
+  storageClassName: fast-ssd
 ```
 
-For detailed SSO configuration, see the [SSO guide](./sso.md).
+With `storage.enabled=false` everything is kept in memory. A restart then deletes all events.
 
-### With Ingress
+Buggregator runs as **one replica**. SQLite allows one writer, and the volume can be mounted by one pod
+(ReadWriteOnce). Any `replicaCount` other than `1` makes the chart fail to render.
 
-Expose the web UI via an Ingress controller:
+Old events can be deleted automatically. For example, keep one week and at most 10,000 events:
 
-```bash
-helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator \
-  --set ingress.enabled=true \
-  --set ingress.className=nginx \
-  --set 'ingress.hosts[0].host=buggregator.example.com' \
-  --set 'ingress.hosts[0].paths[0].path=/' \
-  --set 'ingress.hosts[0].paths[0].pathType=Prefix'
+```yaml
+retention:
+  maxAge: 7d
+  maxEvents: 10000
 ```
 
-With TLS (using cert-manager):
+Pinned events are never deleted.
+
+## Projects, webhooks and other file settings
+
+Some server settings have no value in the chart: projects, webhooks, mock rules. Put them under `config`. The chart
+writes its contents to `buggregator.yaml` (a ConfigMap) and starts the server with `--config`:
+
+```yaml
+config:
+  projects:
+    - key: shop
+      name: Shop backend
+  webhooks:
+    - event: sentry
+      url: https://hooks.example.com/buggregator
+```
+
+The keys are the same as in the [server configuration file](./server.md). When the chart also sets the same setting
+as an environment variable, the environment variable wins.
+
+Any other server variable: `extraEnv` (a list of `{name, value}` or `valueFrom`) or `envFrom`.
+
+## Connecting your application
+
+Inside the cluster, use the Service name. For a release `buggregator` in the namespace `default`:
+
+| What | Address |
+|---|---|
+| Sentry DSN | `http://sentry@buggregator.default.svc:8000/1` |
+| Ray | host `buggregator.default.svc`, port `8000` |
+| SMTP | `buggregator.default.svc:1025` |
+| VarDumper | `tcp://buggregator.default.svc:9912` |
+| Monolog (socket handler) | `buggregator.default.svc:9913` |
+| HTTP dumps, Inspector, profiler | `http://buggregator.default.svc:8000` |
+| HTTP proxy | `http://buggregator.default.svc:8080` |
+| Xdebug (with `xdebug.enabled=true`) | `buggregator.default.svc:9003` |
+
+For a Laravel app, the `.env` looks like this:
+
+```dotenv
+SENTRY_LARAVEL_DSN=http://sentry@buggregator.default.svc:8000/1
+
+RAY_HOST=buggregator.default.svc
+RAY_PORT=8000
+
+MAIL_MAILER=smtp
+MAIL_HOST=buggregator.default.svc
+MAIL_PORT=1025
+
+VAR_DUMPER_FORMAT=server
+VAR_DUMPER_SERVER=buggregator.default.svc:9912
+
+LOG_CHANNEL=socket
+LOG_SOCKET_URL=buggregator.default.svc:9913
+```
+
+In the same namespace the short name `buggregator` works too.
+
+## Access from outside the cluster
+
+### Web UI: Ingress
+
+An Ingress carries the web UI and everything else on HTTP port 8000 (Sentry, Ray, HTTP dumps, Inspector, profiler).
 
 ```yaml
 ingress:
@@ -69,6 +131,9 @@ ingress:
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    # The UI keeps a WebSocket open; ingress-nginx closes idle ones after 60 s by default.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   hosts:
     - host: buggregator.example.com
       paths:
@@ -80,105 +145,170 @@ ingress:
         - buggregator.example.com
 ```
 
-## Connecting your application
+Without the two timeout annotations, ingress-nginx closes the live event stream (`/connection/websocket`) after 60 seconds without traffic.
 
-Once deployed, configure your application to send data to Buggregator using the Kubernetes service name.
+### SMTP, VarDumper, Monolog, Xdebug: TCP Service
 
-Assuming the release is named `buggregator` in the `default` namespace:
+These are plain TCP ports, so an Ingress cannot carry them. `tcpService.enabled=true` adds a second Service,
+`buggregator-tcp`, with only these ports: SMTP 1025, VarDumper 9912, Monolog 9913, and Xdebug 9003 when
+`xdebug.enabled=true`. Its type is `LoadBalancer` by default (`tcpService.type`). The web UI stays behind the Ingress.
 
-```dotenv
-# Sentry
-SENTRY_LARAVEL_DSN=http://sentry@buggregator.default.svc:8000/1
+::: warning
+These ports have no authentication. On most clouds a `LoadBalancer` gets a public IP. Limit who can connect, or use
+your cloud's internal load balancer annotation:
 
-# Ray
-RAY_HOST=buggregator.default.svc
-RAY_PORT=8000
+```yaml
+tcpService:
+  enabled: true
+  extraSpec:
+    loadBalancerSourceRanges: ["203.0.113.0/24"]
+```
+:::
 
-# SMTP
-MAIL_MAILER=smtp
-MAIL_HOST=buggregator.default.svc
-MAIL_PORT=1025
+The HTTP proxy (8080) is left out of this Service. It forwards any request, HTTPS included, so on a public IP anyone
+could send traffic through your cluster. Add it with `tcpService.proxy=true` only behind such a limit.
 
-# VarDumper
-VAR_DUMPER_FORMAT=server
-VAR_DUMPER_SERVER=buggregator.default.svc:9912
+## Authentication (SSO)
 
-# Monolog (SocketHandler)
-LOG_CHANNEL=socket
-LOG_SOCKET_URL=buggregator.default.svc:9913
+Restrict the web UI to signed-in users. Providers: `auth0`, `google`, `github`, `keycloak`, `gitlab`, `oidc`.
+
+```bash
+helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator \
+  --set auth.enabled=true \
+  --set auth.provider=auth0 \
+  --set auth.providerUrl=https://your-tenant.auth0.com \
+  --set auth.clientId=YOUR_CLIENT_ID \
+  --set auth.clientSecret=YOUR_CLIENT_SECRET \
+  --set auth.callbackUrl=https://buggregator.example.com/auth/sso/callback
 ```
 
-If your application runs in the same namespace, you can use the short service name `buggregator` instead of the FQDN.
+The session signing key (`auth.jwtSecret`) is generated on install and kept across upgrades, so users stay signed in.
+You can also set it yourself.
 
-## Prometheus Metrics
+The chart keeps the key by reading the release's Secret from the cluster. Tools that only render templates (Argo CD,
+Flux with `helm template`) cannot read it, so they would make a new key on every sync and sign everyone out. With
+them, set `auth.jwtSecret` or use your own Secret:
 
-Enable metrics and create a ServiceMonitor for automatic scraping:
+```bash
+kubectl create secret generic buggregator-auth \
+  --from-literal=client-id=YOUR_CLIENT_ID \
+  --from-literal=client-secret=YOUR_CLIENT_SECRET \
+  --from-literal=jwt-secret=$(openssl rand -hex 32)
+
+helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator \
+  --set auth.enabled=true \
+  --set auth.existingSecret=buggregator-auth
+  # plus auth.provider, auth.providerUrl, auth.callbackUrl as above
+```
+
+Provider setup: [SSO guide](./sso.md).
+
+## Prometheus metrics
 
 ```yaml
 metrics:
+  enabled: true
+  addr: ":9090"
   serviceMonitor:
     enabled: true
-    interval: 30s
 ```
 
-## Using Existing Secrets
+`/metrics` has no authentication. Without `metrics.addr` it is served on the main port, so an Ingress makes it public.
+With `metrics.addr` it moves to its own port. `serviceMonitor.enabled` needs the Prometheus Operator.
 
-For production environments, store sensitive values in pre-created Kubernetes secrets:
+## Security
+
+The pod runs as user 65532 (not root), with a read-only root filesystem, all Linux capabilities dropped and the
+`RuntimeDefault` seccomp profile. `fsGroup` makes the volume writable for that user. `/tmp` is a writable `emptyDir`:
+the VarDumper parser is unpacked and run from there.
+
+## Upgrade
 
 ```bash
-# Create secrets
-kubectl create secret generic buggregator-auth \
-  --from-literal=client-id=YOUR_CLIENT_ID \
-  --from-literal=client-secret=YOUR_CLIENT_SECRET
-
-# Reference them in values
-helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator \
-  --set auth.existingSecret=buggregator-auth
+helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator --reset-then-reuse-values
 ```
 
-## Storage
+`--reset-then-reuse-values` (Helm 3.14+) takes the new chart's defaults plus the values you set yourself.
+`--reuse-values` keeps the **old** chart's defaults too, so new settings never arrive. The update notice of server
+2.11.0 shows `--reuse-values`; use `--reset-then-reuse-values` instead.
 
-The chart creates a PersistentVolumeClaim for data persistence (SQLite database, attachments). To customize:
+The chart replaces the pod with the `Recreate` strategy: the old pod stops before the new one starts, because both
+would open the same SQLite file. Expect a few seconds of downtime.
 
-```yaml
-storage:
-  enabled: true
-  size: 10Gi
-  storageClassName: fast-ssd
-```
+### Upgrade from chart 2.x
 
-Disable if you don't need persistent storage (data will be lost on pod restart):
+Chart 2.x kept data in memory and ran as root. Chart 3.0.0 keeps data on a volume and runs as user 65532. Events
+stored in memory by the 2.x release are not carried over.
 
-```yaml
-storage:
-  enabled: false
-```
+1. **Settings you set yourself.** If you set `database.dsn: ":memory:"`, `attachmentStorage.mode: memory` or a
+   `supportedEvents` list, clear them on this upgrade to take the new defaults. Check with
+   `helm get values buggregator`:
 
-## Full Configuration Reference
+   ```bash
+   helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator --reset-then-reuse-values \
+     --set database.dsn= --set attachmentStorage.mode= --set supportedEvents=
+   ```
+
+   The old `supportedEvents` default had no `xdebug-trace`.
+
+2. **File ownership.** Most volume plugins hand the volume to the pod's group on mount, so nothing is needed. Some
+   ignore it: hostPath, local-path, many NFS setups. There the server cannot write the old database and restarts with
+   «attempt to write a readonly database». Add `--set volumePermissions.enabled=true` on this upgrade: an init
+   container gives `/data` to user 65532 before the server starts. It runs as root, so clusters with the "restricted"
+   Pod Security level reject it.
+
+3. **Helm 4.** Chart 2.x used the RollingUpdate strategy. Helm 4's server-side apply cannot remove its leftover
+   settings, so the first upgrade fails with `spec.strategy.rollingUpdate: Forbidden`. Run that first upgrade once with
+   `--server-side=false`. Releases installed with Helm 3 upgrade as is.
+
+## Values
 
 | Parameter | Description | Default |
-|------------------------------------|----------------------------------------------|------------------------------|
-| `replicaCount` | Number of replicas | `1` |
-| `image.repository` | Container image | `ghcr.io/buggregator/server` |
-| `image.tag` | Image tag (defaults to appVersion) | `""` |
-| `auth.enabled` | Enable SSO | `false` |
-| `auth.provider` | SSO provider | `auth0` |
-| `auth.providerUrl` | Provider URL | `""` |
-| `auth.clientId` | OAuth client ID | `""` |
-| `auth.clientSecret` | OAuth client secret | `""` |
-| `auth.callbackUrl` | OAuth callback URL | `""` |
-| `auth.scopes` | OAuth scopes | `openid,email,profile` |
-| `auth.existingSecret` | Existing secret for auth | `""` |
-| `supportedEvents` | Enabled event types | all |
-| `service.type` | Service type | `ClusterIP` |
-| `service.httpPort` | Web UI port | `8000` |
-| `service.smtpPort` | SMTP port | `1025` |
-| `service.varDumperPort` | VarDumper port | `9912` |
-| `service.monologPort` | Monolog port | `9913` |
-| `ingress.enabled` | Enable Ingress | `false` |
-| `storage.enabled` | Enable PVC | `true` |
+|---|---|---|
+| `image.repository` | Server image | `ghcr.io/buggregator/server` |
+| `image.tag` | Image tag | chart `appVersion` |
+| `database.dsn` | SQLite DSN | `/data/buggregator.db` with storage, else `:memory:` |
+| `database.maxOpenConns` | SQLite connection pool size | server default |
+| `attachmentStorage.mode` | `filesystem` or `memory` | `filesystem` with storage, else `memory` |
+| `attachmentStorage.path` | Attachments directory | `/data/storage` |
+| `storage.enabled` | PVC at `/data` | `true` |
 | `storage.size` | PVC size | `5Gi` |
-| `metrics.serviceMonitor.enabled` | Enable ServiceMonitor | `false` |
+| `storage.storageClassName` | Storage class | `""` (cluster default) |
+| `retention.maxAge` | Delete events older than this (`24h`, `7d`) | keep |
+| `retention.maxEvents` | Keep at most this many events | no cap |
+| `config` | Contents of `buggregator.yaml` (projects, webhooks, mocks) | `{}` |
+| `extraEnv`, `envFrom` | More environment for the container | `[]` |
+| `cors.origins` | Allowed CORS origins | `*` |
+| `supportedEvents` | Enabled event types (comma-separated) | all |
+| `ui.defaultLimit`, `ui.maxLimit`, `ui.defaultWindow` | Event list limits | server defaults |
+| `sentry.sourceFetch` | Fetch JS sources for stack frames: `private`, `any`, `off` | `private` |
+| `update.checkEnabled`, `update.checkInterval` | New-version notice | on, `12h` |
+| `update.selfUpdate` | Update from the UI: `auto`, `on`, `off`. In Kubernetes `auto` shows the `helm upgrade` command | `auto` |
+| `xdebug.enabled` | Xdebug proxy on port 9003 | `false` |
+| `xdebug.ideAddr`, `xdebug.mode`, `xdebug.idleTimeout`, `xdebug.allowEval`, `xdebug.allowControl`, `xdebug.pauseOnFirstLine` | Xdebug proxy settings | server defaults |
+| `xdebugTrace.maxUpload`, `xdebugTrace.maxSize`, `xdebugTrace.keep` | Uploaded Xdebug traces | `100MB`, `256MB`, `20` |
+| `auth.enabled` | SSO | `false` |
+| `auth.provider` | `auth0`, `google`, `github`, `keycloak`, `gitlab`, `oidc` | `oidc` |
+| `auth.providerUrl`, `auth.clientId`, `auth.clientSecret`, `auth.callbackUrl` | SSO settings | `""` |
+| `auth.scopes` | OAuth scopes | `openid,email,profile` |
+| `auth.jwtSecret` | Session signing key | generated once, kept |
+| `auth.existingSecret` | Secret with `client-id`, `client-secret`, `jwt-secret` | `""` |
+| `mcp.enabled`, `mcp.transport`, `mcp.addr`, `mcp.authToken` | MCP server for AI assistants | off, `socket`, `:8001`, `""` |
+| `mcp.existingSecret`, `mcp.existingSecretKey` | Take the MCP token from a Secret | `""`, `mcp-auth-token` |
+| `metrics.enabled` | Prometheus `/metrics` (no auth) | `false` |
+| `metrics.addr` | Separate metrics address (e.g. `:9090`); empty = main port | `""` |
+| `metrics.serviceMonitor.enabled` | Prometheus Operator ServiceMonitor | `false` |
+| `service.type` | Service type | `ClusterIP` |
+| `service.httpPort`, `smtpPort`, `varDumperPort`, `monologPort`, `proxyPort`, `xdebugPort` | Service ports | `8000`, `1025`, `9912`, `9913`, `8080`, `9003` |
+| `service.annotations` | Service annotations | `{}` |
+| `tcpService.enabled`, `type`, `proxy`, `annotations`, `extraSpec` | Second Service for the TCP ports; `proxy` adds the HTTP proxy | off, `LoadBalancer`, `false` |
+| `ingress.*` | Ingress for the web UI | off |
+| `podSecurityContext`, `securityContext` | Non-root, read-only root filesystem (see [Security](#security)) | set |
+| `volumePermissions.enabled` | Root init container that gives `/data` to the pod's user (upgrades from 2.x) | `false` |
+| `resources` | Requests 50m CPU, 128Mi memory; no limits | |
+| `nodeSelector`, `tolerations`, `affinity` | Scheduling | empty |
+
+Every option with comments: [`values.yaml`](https://github.com/buggregator/helm-chart/blob/master/values.yaml).
 
 ## Uninstall
 
@@ -186,7 +316,4 @@ storage:
 helm uninstall buggregator
 ```
 
-> **Note:** The PVC is not deleted automatically. To remove it:
-> ```bash
-> kubectl delete pvc buggregator-storage
-> ```
+The PVC is deleted with the release, and the database with it. Copy `/data/buggregator.db` first if you need it.
