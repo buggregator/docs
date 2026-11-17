@@ -1,5 +1,5 @@
 ---
-llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup."
+llms_description: "Install the standalone binary (no Docker, no dependencies): download URLs per OS and CPU (linux-amd64, linux-arm64, darwin-arm64, darwin-amd64, windows-amd64.exe, windows-arm64.exe) from GitHub releases; install scripts install.sh (curl | sh, ~/.local/bin, checksums) and install.ps1 (irm | iex); macOS quarantine (xattr) and Windows SmartScreen (Unblock-File); first start, default ports and addresses (all interfaces), flags -http-addr -smtp-addr -vardumper-addr -monolog-addr -db -config, keeping events across restarts with -db, check with GET /api/version. For an AI agent: see /agent-setup. Update: since server 2.11.0 from the UI (Settings › About & updates, «Update to X»): binary on Linux/macOS downloads, checks ed25519-signed checksums.txt + sha256, probes --version, copies the DB (<file>.pre-<old>.bak), swaps (old kept as <name>.old), restarts; Windows replaces, restart by hand; Docker/Kubernetes/read-only folder get the command; with auth off only when listening on 127.0.0.1 only (UPDATE_SELF=auto|on|off); in-memory DB loses events; rollback at once if the new version fails to start, on the next start after a crash. By hand: rerun install.sh/install.ps1 (BUGGREGATOR_INSTALL_DIR), docker pull / compose pull, helm upgrade --set image.tag."
 ---
 
 # Install the binary
@@ -167,4 +167,83 @@ exist there. Without `MCP_ADDR`, the MCP server listens on `:8001`, on all netwo
 
 ## Update
 
-Run the install script (or the download) again, then restart. With `-db`, your events stay.
+### From the UI
+
+Since server 2.11.0, Buggregator can update itself. When a new release is out, open
+**Settings › About & updates**. **Check now** asks GitHub at once. What you see depends on how you run it:
+
+| You run it as | What the UI offers |
+|---------------|--------------------|
+| The binary on Linux or macOS | the button **Update to &lt;version&gt;**: it downloads, installs and restarts by itself |
+| The binary on Windows | the button **Update to &lt;version&gt;**: it replaces the program; then restart Buggregator yourself |
+| Docker, Kubernetes, or a binary in a folder it cannot write to | the command to run, ready to copy |
+
+**The button is there only when it is safe.** With no login ([SSO](/config/sso)) on, it shows only if the server
+listens on this machine only, e.g. `-http-addr 127.0.0.1:8000`. The default, `:8000`, listens on every network
+interface, so by default you get the command instead. Then also open the UI as `http://127.0.0.1:8000` or
+`http://localhost:8000`, not by another name.
+
+What the button does, step by step:
+
+1. Downloads the file for your system from the latest release.
+2. Checks it: the release's `checksums.txt` must carry a valid ed25519 signature (`checksums.txt.sig`), and the
+   file's SHA-256 must match it.
+3. Starts the new version once with `--version` to make sure it runs here.
+4. Copies your database file next to it (`<file>.pre-<old version>.bak`).
+5. Replaces the program. The old one stays next to it as `<name>.old`.
+6. Restarts.
+
+With the default in-memory database, all events are gone after the restart. The button then reads **Delete events
+and update**.
+
+**If the new version does not start**, Buggregator puts back the old program and the database copy at once. The UI
+then shows «Rolled back from &lt;version&gt;», the error and the start-up log (**Copy log**). One case is slower: if the
+new version crashes on its own before it is ready, the rollback happens on the **next** start. A supervisor that
+restarts the service (e.g. systemd with `Restart=on-failure`) does that by itself; without one, start Buggregator
+again by hand.
+
+When the new version serves, the database copy is deleted.
+
+### By hand
+
+Run the install script again with the same folder, then restart. With `-db`, your events stay.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/buggregator/server/master/scripts/install.sh | sh
+```
+
+```powershell
+irm https://raw.githubusercontent.com/buggregator/server/master/scripts/install.ps1 | iex
+```
+
+Installed somewhere else? Set `BUGGREGATOR_INSTALL_DIR` to that folder.
+
+Docker:
+
+```bash
+docker pull ghcr.io/buggregator/server:<version>
+# or, with Docker Compose: change the tag in the file, then
+docker compose pull && docker compose up -d
+```
+
+Kubernetes (Helm):
+
+```bash
+helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator --reuse-values --set image.tag=<version>
+```
+
+Which version runs now: `GET /api/version`, or, since server 2.11.0, `buggregator --version`.
+
+### Turn it off
+
+```bash
+UPDATE_SELF=off ./buggregator
+```
+
+`UPDATE_SELF` (`update.self_update`, `--update-self`):
+
+- `auto` (default): the button where it is safe, as above;
+- `on`: the button also when the server listens on all interfaces without a login;
+- `off`: no update from the UI.
+
+With `UPDATE_CHECK_ENABLED=false` the server does not look for new releases, so the UI offers no update either.

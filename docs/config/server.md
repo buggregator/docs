@@ -141,6 +141,11 @@ update_check:
   enabled: ${UPDATE_CHECK_ENABLED:true}
   interval: ${UPDATE_CHECK_INTERVAL:12h}
 
+# Update from the UI (since server 2.11.0): auto | on | off
+update:
+  self_update: ${UPDATE_SELF:auto}
+  # release_url: https://mirror.example/releases/latest
+
 # Pre-defined projects
 # projects:
 #   - key: my-app
@@ -253,6 +258,17 @@ or through the API. See [Mock Server](/config/mock-server).
 |----------|---------|-------------|
 | `UPDATE_CHECK_ENABLED` | `true` | Ask GitHub for the newest server release. `false` = no network call at all. See [New-version check](#new-version-check) |
 | `UPDATE_CHECK_INTERVAL` | `12h` | Time between checks, a Go duration (`6h`, `24h`); at least `1h` |
+
+### Update from the UI
+
+Since server 2.11.0. How it works: [Install → Update](/install#update).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `UPDATE_SELF` | `auto` | `auto`: the update button for a binary install, unless the server listens beyond `127.0.0.1` with no login on; `on`: also then; `off`: no update from the UI. Docker, Kubernetes and a folder it cannot write to always get the command to run instead. Also `update.self_update`, `--update-self` |
+| `UPDATE_RELEASE_URL` | GitHub | A mirror of GitHub's `releases/latest` answer, for the check and the update. The download is still checked against the signing key built into Buggregator. Also `update.release_url` |
+
+`buggregator --version` prints the version and exits (since server 2.11.0).
 
 ### Retention
 
