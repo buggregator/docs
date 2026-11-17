@@ -125,14 +125,14 @@ metrics:
 #     body: '{"id": 1}'
 #     delay: 150ms
 
-# Retention (since server [version: to fill]): delete old events every minute.
+# Retention (since server 2.11.0): delete old events every minute.
 # Unset keeps everything. Pinned events are never deleted and do not count.
 retention:
   max_age: ${RETENTION_MAX_AGE:}          # e.g. "24h", "7d"; empty or 0 = keep
   max_events: ${RETENTION_MAX_EVENTS:0}   # keep at most this many events; 0 = no cap
 
 # Sentry: where the server may fetch JavaScript sources for stack frames
-# (since server [version: to fill]): private (default) | any | off
+# (since server 2.11.0): private (default) | any | off
 sentry:
   source_fetch: ${SENTRY_SOURCE_FETCH:private}
 
@@ -256,7 +256,7 @@ or through the API. See [Mock Server](/config/mock-server).
 
 ### Retention
 
-Since server [version: to fill]. Nothing is deleted unless you set one of these. The cleanup runs at start and then
+Since server 2.11.0. Nothing is deleted unless you set one of these. The cleanup runs at start and then
 every minute; attachments go with their events; pinned events are never deleted and do not count towards the cap.
 `RETENTION_MAX_AGE` also removes Sentry logs and metrics (by the time they arrived) and traces and spans (by their
 start time); `RETENTION_MAX_EVENTS` counts event cards only and leaves Sentry logs, metrics and traces alone.
@@ -270,7 +270,7 @@ A value it cannot read is logged as a warning, and that setting is off; the othe
 
 ### Sentry Source Fetch
 
-Since server [version: to fill]. JavaScript stack frames carry only a file URL; the server downloads that file to
+Since server 2.11.0. JavaScript stack frames carry only a file URL; the server downloads that file to
 show the code. See [Security and data](/security#what-leaves-your-machine).
 
 | Variable | Default | Description |

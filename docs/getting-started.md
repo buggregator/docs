@@ -109,7 +109,7 @@ Add Buggregator to your `docker-compose.yml` alongside your other services:
 ```yaml
 services:
   buggregator:
-    image: ghcr.io/buggregator/server:2.10.0
+    image: ghcr.io/buggregator/server:2.11.0
     ports:
       - 127.0.0.1:8000:8000
       - 127.0.0.1:1025:1025
@@ -119,7 +119,7 @@ services:
 
 No environment configuration needed. Works out of the box.
 
-The tag `2.10.0` pins one release, so a new version never arrives by surprise. Change it when you decide to upgrade;
+The tag `2.11.0` pins one release, so a new version never arrives by surprise. Change it when you decide to upgrade;
 see [Image Tags](#image-tags).
 
 ## Just change the address
@@ -201,7 +201,7 @@ spec:
     spec:
       containers:
         - name: buggregator
-          image: ghcr.io/buggregator/server:2.10.0
+          image: ghcr.io/buggregator/server:2.11.0
           ports:
             - containerPort: 8000
             - containerPort: 1025
@@ -251,15 +251,15 @@ docker run --pull always \
 | `latest` | Latest stable release. Good for a quick try. |
 | `X` (e.g., `2`) | Latest release of a major version. Published since v2.6.0. |
 | `X.Y` (e.g., `2.6`) | Latest patch of a minor version. |
-| `X.Y.Z` (e.g., `2.10.0`) | One exact release, pinned. **Recommended** for a team, CI and compose files. |
+| `X.Y.Z` (e.g., `2.11.0`) | One exact release, pinned. **Recommended** for a team, CI and compose files. |
 
-Image tags have no `v` (`2.10.0`); release pages and binaries do (`v2.10.0`). A minor release may change behaviour:
+Image tags have no `v` (`2.11.0`); release pages and binaries do (`v2.11.0`). A minor release may change behaviour:
 read the [release notes](https://github.com/buggregator/server/releases) before you move the pin.
 
 ## Security
 
 The examples on this page publish every port as `127.0.0.1:…`, so only your machine can reach them. Your events
-are not sent anywhere unless you set up [webhooks](/config/webhooks). A few things do go out, such as the new-version check and the UI fonts: see
+are not sent anywhere unless you set up [webhooks](/config/webhooks). A few things do go out, such as the new-version check: see
 [Security and data](/security) for the full list and which ones you can turn off.
 
 > **Warning:** If you remove the `127.0.0.1:` prefix (e.g., `-p 8000:8000`), the port becomes accessible from

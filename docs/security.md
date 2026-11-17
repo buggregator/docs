@@ -1,12 +1,12 @@
 ---
-llms_description: "Security and data (server 2.10.0): what leaves the machine — server: update check GET api.github.com/repos/buggregator/server/releases/latest at start and every 12h (User-Agent buggregator/<version>; UPDATE_CHECK_ENABLED=false turns it off), Sentry JS source context: server GETs http(s) URLs from JS stack-frame filenames (3 s, 2 MiB, TLS not verified, any host in 2.10.0; since server [version: to fill] loopback/private only by default, sentry.source_fetch / SENTRY_SOURCE_FETCH / --sentry-source-fetch = private|any|off); browser: the UI loads Google Fonts (fonts.googleapis.com, fonts.gstatic.com) on every open, no switch; images and styles inside captured HTML emails and HTML dumps load from their hosts when opened (scripts do not run), no switch; only when you turn them on: SSO provider, webhooks, OpenAPI import, HTTP proxy upstreams, Xdebug IDE. No analytics or usage reporting. Listening: binary on all interfaces (:8000, :1025, :9912, :9913, HTTP proxy :8080 = open forward proxy with HTTPS MITM, no auth); opt-in: MCP over HTTP :8001 all interfaces, no auth without MCP_AUTH_TOKEN (MCP_ADDR to bind), METRICS_ADDR; bind with -http-addr/-smtp-addr/-vardumper-addr/-monolog-addr and PROXY_ADDR=127.0.0.1:8080; Docker: publish as 127.0.0.1:port:port. SSO protects UI and UI APIs only: ingestion, TCP ports, HTTP proxy, /mock/, /api/version, /api/settings, attachment links, MCP HTTP, /metrics stay open. Data: in memory by default (lost on restart), DATABASE_DSN file, attachments STORAGE_MODE; no automatic cleanup in 2.10.0; since server [version: to fill] retention.max_age / RETENTION_MAX_AGE / --retention-max-age (30m, 24h, 7d) and retention.max_events / RETENTION_MAX_EVENTS / --retention-max-events, default keep all, every minute, pinned kept and not counted, attachments go too; max_age also prunes Sentry logs/metrics (received) and traces/spans (start time), max_events counts event cards only; deleting an event also deletes its Sentry error details; manual clear of events keeps Sentry logs/metrics/traces (use DELETE /api/sentry/all). Versions: semver, minor may change behaviour, pin ghcr.io/buggregator/server:2.10.0 (no v), tags latest, 2, 2.10, 2.10.0; fixes only for the latest release line."
+llms_description: "Security and data (server 2.11.0): what leaves the machine — server: update check GET api.github.com/repos/buggregator/server/releases/latest at start and every 12h (User-Agent buggregator/<version>; UPDATE_CHECK_ENABLED=false turns it off), Sentry JS source context: server GETs http(s) URLs from JS stack-frame filenames (3 s, 2 MiB, TLS not verified, any host in 2.10.0 and older; since server 2.11.0 loopback/private only by default, sentry.source_fetch / SENTRY_SOURCE_FETCH / --sentry-source-fetch = private|any|off); browser: UI fonts ship with the UI since 2.11.0 (2.10.0 and older load Google Fonts on every open); images and styles inside captured HTML emails and HTML dumps load from their hosts when opened (scripts do not run), no switch; only when you turn them on: SSO provider, webhooks, OpenAPI import, HTTP proxy upstreams, Xdebug IDE. No analytics or usage reporting. Listening: binary on all interfaces (:8000, :1025, :9912, :9913, HTTP proxy :8080 = open forward proxy with HTTPS MITM, no auth); opt-in: MCP over HTTP :8001 all interfaces, no auth without MCP_AUTH_TOKEN (MCP_ADDR to bind), METRICS_ADDR; bind with -http-addr/-smtp-addr/-vardumper-addr/-monolog-addr and PROXY_ADDR=127.0.0.1:8080; Docker: publish as 127.0.0.1:port:port. SSO protects UI and UI APIs only: ingestion, TCP ports, HTTP proxy, /mock/, /api/version, /api/settings, attachment links, MCP HTTP, /metrics stay open. Data: in memory by default (lost on restart), DATABASE_DSN file, attachments STORAGE_MODE; no automatic cleanup by default; since server 2.11.0 retention.max_age / RETENTION_MAX_AGE / --retention-max-age (30m, 24h, 7d) and retention.max_events / RETENTION_MAX_EVENTS / --retention-max-events, default keep all, every minute, pinned kept and not counted, attachments go too; max_age also prunes Sentry logs/metrics (received) and traces/spans (start time), max_events counts event cards only; deleting an event also deletes its Sentry error details; manual clear of events keeps Sentry logs/metrics/traces (use DELETE /api/sentry/all). Versions: semver, minor may change behaviour, pin ghcr.io/buggregator/server:2.11.0 (no v), tags latest, 2, 2.11, 2.11.0; fixes only for the latest release line."
 ---
 
 # Security and data
 
 Buggregator is a debugging tool for your own machine or a trusted dev network. It has no accounts, sends no
 analytics and reports no usage. This page lists, without gaps, what it does send, who can reach it, and where
-your events are kept. Everything here is true for server **2.10.0**.
+your events are kept. Everything here is true for server **2.11.0**.
 
 ## What leaves your machine
 
@@ -15,28 +15,28 @@ your events are kept. Everything here is true for server **2.10.0**.
 | What | Who sends | Where to | When | How to turn it off |
 |------|-----------|----------|------|--------------------|
 | New-version check | the server | `https://api.github.com/repos/buggregator/server/releases/latest` | at start, then every 12 hours | `UPDATE_CHECK_ENABLED=false` |
-| UI fonts | your browser | `fonts.googleapis.com`, `fonts.gstatic.com` (Google Fonts) | each time you open the UI | no switch in 2.10.0 |
-| Source of JavaScript errors | the server | the URL of each file in a JavaScript stack trace | each Sentry error from a browser or JS app | no switch in 2.10.0; since server [version: to fill]: `SENTRY_SOURCE_FETCH=off` |
-| Images and styles inside captured HTML | your browser | the hosts named in that HTML (e.g. a tracking pixel) | when you open an HTML email or an HTML HTTP dump | no switch in 2.10.0 |
+| Source of JavaScript errors | the server | the URL of each file in a JavaScript stack trace | each Sentry error from a browser or JS app | `SENTRY_SOURCE_FETCH=off` (since 2.11.0) |
+| Images and styles inside captured HTML | your browser | the hosts named in that HTML (e.g. a tracking pixel) | when you open an HTML email or an HTML HTTP dump | no switch |
 
 **New-version check.** One GET request. Besides your IP address, it carries only the server version
-(`User-Agent: buggregator/2.10.0`). Nothing about your events or projects is sent. With
+(`User-Agent: buggregator/2.11.0`). Nothing about your events or projects is sent. With
 `UPDATE_CHECK_ENABLED=false` the server makes no such call at all. Details:
 [Server → New-Version Check](/config/server#new-version-check).
 
-**UI fonts.** The web UI loads its fonts (DM Sans, JetBrains Mono) from Google Fonts. Google sees the IP address of
-the browser that opens the UI. No event data goes there.
+**UI fonts.** Since server 2.11.0 the fonts (DM Sans, JetBrains Mono) are part of the UI, and the browser
+loads nothing from Google Fonts. Server 2.10.0 and older load them from `fonts.googleapis.com` and
+`fonts.gstatic.com`, so Google sees the IP address of the browser that opens the UI. No event data goes there.
 
 **Source of JavaScript errors.** Browser SDKs send stack frames with a file URL but no code, e.g.
 `http://localhost:5173/src/App.vue`. To show the code, the server downloads that file: up to 2 MiB, 3-second
-timeout, TLS certificates not checked. It does this for any `http://` or `https://` URL in a frame, not only for
-local ones. So whoever can send a Sentry event to your Buggregator can make it request a URL from inside your
-network. Keep the server where only your apps can reach it (see below).
+timeout, TLS certificates not checked. In server 2.10.0 and older it does this for any `http://` or `https://` URL
+in a frame, not only for local ones. So whoever can send a Sentry event to your Buggregator can make it request a
+URL from inside your network. Keep the server where only your apps can reach it (see below).
 
-Since server [version: to fill], the server fetches only from loopback and private addresses by default
+Since server 2.11.0, the server fetches only from loopback and private addresses by default
 (`127.0.0.0/8`, `::1`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`): your dev server, a Docker
 service. One setting changes it: `sentry.source_fetch` in `buggregator.yaml`, `SENTRY_SOURCE_FETCH` or
-`--sentry-source-fetch`, with `private` (default), `any` (every host, as in 2.10.0) or `off` (never fetch).
+`--sentry-source-fetch`, with `private` (default), `any` (every host, as in 2.10.0 and older) or `off` (never fetch).
 The check is made on the resolved IP address, cloud metadata addresses are refused, and redirects go only to the
 same host. Details: [Server → Sentry Source Fetch](/config/server#sentry-source-fetch).
 
@@ -132,11 +132,11 @@ Scripts call the protected API with the token the UI gets after login (30 days).
 
 Details: [Database](/config/database).
 
-**How long.** Server 2.10.0 deletes nothing by itself. Events stay until you clear them in the UI, call
+**How long.** By default the server deletes nothing by itself. Events stay until you clear them in the UI, call
 `DELETE /api/events`, or restart a server that keeps them in memory. With a database file, the file grows until you
 clear it.
 
-Since server [version: to fill], you can let it delete old events by itself:
+Since server 2.11.0, you can let it delete old events by itself:
 
 ```bash
 RETENTION_MAX_AGE=7d RETENTION_MAX_EVENTS=5000 ./buggregator
@@ -159,27 +159,27 @@ What goes with them:
 - Clearing events by hand does not remove Sentry logs, metrics and traces. Remove those with **Clear** on the
   Sentry page or `DELETE /api/sentry/all` (see [Sentry → Clearing data](/config/sentry#clearing-data)).
 
-In 2.10.0, deleting an event left its Sentry error details in the database.
+In 2.10.0 and older, deleting an event left its Sentry error details in the database.
 
 ## Versions
 
-Releases are numbered `major.minor.patch` (e.g. `2.10.0`). A minor release may still change behaviour, so read
+Releases are numbered `major.minor.patch` (e.g. `2.11.0`). A minor release may still change behaviour, so read
 the [release notes](https://github.com/buggregator/server/releases) before you upgrade.
 
 Pin the version and upgrade on purpose:
 
 ```yaml
-image: ghcr.io/buggregator/server:2.10.0
+image: ghcr.io/buggregator/server:2.11.0
 ```
 
 | Tag | What you get |
 |-----|--------------|
-| `2.10.0` | exactly this release, never changes |
-| `2.10` | the newest `2.10.x` patch |
+| `2.11.0` | exactly this release, never changes |
+| `2.11` | the newest `2.11.x` patch |
 | `2` | the newest `2.x` release |
 | `latest` | the newest release, whatever it is |
 
-The image tags have no `v`: `2.10.0`, not `v2.10.0`. Release pages and binaries use `v2.10.0`.
+The image tags have no `v`: `2.11.0`, not `v2.11.0`. Release pages and binaries use `v2.11.0`.
 
 Security fixes go into the newest release only. To get a fix, upgrade.
 
