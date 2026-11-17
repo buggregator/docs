@@ -1,5 +1,5 @@
 ---
-llms_description: "Helm chart 3.0.0 (server 2.11.0) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+; older: helm get values -o yaml > f, upgrade -f f); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.*, jwtSecret generated and kept (lookup; set it for Argo CD; Flux keeps it). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall deletes the PVC (volume gone with reclaimPolicy Delete)."
+llms_description: "Helm chart 3.0.x (3.0.1: server 2.11.1) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+; older: helm get values -o yaml > f, upgrade -f f); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.*, jwtSecret generated and kept (lookup; set it for Argo CD; Flux keeps it). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall: chart 3.0.1+ keeps the PVC (helm.sh/resource-policy: keep; storage.keepOnUninstall=false deletes it; PVC <release>-buggregator-data, buggregator-data for release buggregator; reinstall same name+namespace reuses events); chart 3.0.0 deletes it."
 ---
 
 # Configuration — Helm Chart
@@ -7,7 +7,7 @@ llms_description: "Helm chart 3.0.0 (server 2.11.0) for Kubernetes: helm install
 Deploy Buggregator on Kubernetes with the official Helm chart. The chart runs one Go binary with an embedded SQLite
 database: no other services are needed.
 
-This page describes chart **3.0.0** (server 2.11.0). Coming from chart 2.x? Read
+This page describes chart **3.0.1** (server 2.11.1). Coming from chart 2.x? Read
 [Upgrade from chart 2.x](#upgrade-from-chart-2-x) first.
 
 ## Prerequisites
@@ -30,7 +30,7 @@ kubectl port-forward svc/buggregator 8000:8000
 
 Then go to http://localhost:8000.
 
-A specific chart version: add `--version 3.0.0`. A specific server image: `--set image.tag=2.11.0`. By default the
+A specific chart version: add `--version 3.0.1`. A specific server image: `--set image.tag=2.11.1`. By default the
 chart uses the server version it was released with (its `appVersion`).
 
 ## Data
@@ -229,8 +229,8 @@ helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator --rese
 ```
 
 `--reset-then-reuse-values` (Helm 3.14+) takes the new chart's defaults plus the values you set yourself.
-`--reuse-values` keeps the **old** chart's defaults too, so new settings never arrive. The update notice of server
-2.11.0 shows `--reuse-values`; use `--reset-then-reuse-values` instead.
+`--reuse-values` keeps the **old** chart's defaults too, so new settings never arrive. Since server 2.11.1 the update
+notice shows both commands; server 2.11.0 shows only `--reuse-values`, so use `--reset-then-reuse-values` instead.
 
 Helm older than 3.14: save the values you set yourself, then pass them back:
 
@@ -246,7 +246,7 @@ would open the same SQLite file. Expect a few seconds of downtime.
 
 ### Upgrade from chart 2.x
 
-Chart 2.x kept data in memory and ran as root. Chart 3.0.0 keeps data on a volume and runs as user 65532. Events
+Chart 2.x kept data in memory and ran as root. Chart 3.x keeps data on a volume and runs as user 65532. Events
 stored in memory by the 2.x release are not carried over.
 
 1. **Settings you set yourself.** If you set `database.dsn: ":memory:"`, `attachmentStorage.mode: memory` or a
@@ -283,6 +283,7 @@ stored in memory by the 2.x release are not carried over.
 | `storage.enabled` | PVC at `/data` | `true` |
 | `storage.size` | PVC size | `5Gi` |
 | `storage.storageClassName` | Storage class | `""` (cluster default) |
+| `storage.keepOnUninstall` | Keep the PVC on `helm uninstall` (chart 3.0.1+) | `true` |
 | `retention.maxAge` | Delete events older than this (`24h`, `7d`) | keep |
 | `retention.maxEvents` | Keep at most this many events | no cap |
 | `config` | Contents of `buggregator.yaml` (projects, webhooks, mocks) | `{}` |
@@ -325,5 +326,16 @@ Every option with comments: [`values.yaml`](https://github.com/buggregator/helm-
 helm uninstall buggregator
 ```
 
-The PVC is deleted with the release. With the usual StorageClass setting (`reclaimPolicy: Delete`) the volume and the
-database go with it; with `Retain` the volume stays. Copy `/data/buggregator.db` first if you need it.
+From chart 3.0.1 the volume is kept: `helm uninstall` leaves the PVC and your events on it. Install again with the
+same release name and namespace, and Buggregator picks the old events up. To delete the data too:
+
+```bash
+kubectl delete pvc buggregator-data
+```
+
+The name is `<release>-buggregator-data`, or `<release>-data` when the release name contains `buggregator`.
+`kubectl get pvc` lists it. To delete the PVC with the release, as before, set `storage.keepOnUninstall=false` on install or with
+`helm upgrade` before you uninstall: `helm uninstall` takes no `--set`.
+
+Chart 3.0.0 deletes the PVC with the release. With the usual StorageClass setting (`reclaimPolicy: Delete`) the
+volume and the database go with it; with `Retain` the volume stays. Copy `/data/buggregator.db` first if you need it.
