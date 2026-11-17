@@ -1,5 +1,5 @@
 ---
-llms_description: "JetBrains IDE plugin (Marketplace id 26344, vendor xepozz, version 2026.1.0, IDE 2025.3+, Freemium with a 30-day trial): a Buggregator tool window with the UI in the IDE's built-in browser (JCEF). Two ways: show your Buggregator server (Settings > Languages & Frameworks > Buggregator: Trap > Run automatically off, Web UI > URL http://127.0.0.1:8000 or the server's address) or start Buggregator Trap from the project (default: Run automatically on, URL http://127.0.0.1:5007, Trap port 5007, vendor/bin/trap). The plugin only loads that URL; it calls no server API. Install from Marketplace or a .zip from the Marketplace versions page (GitHub releases end at 2025.0.11). Issues: github.com/buggregator/phpstorm-plugin (no source code there)."
+llms_description: "JetBrains IDE plugin (Marketplace id 26344, vendor xepozz, version 2026.1.0, IDE 2025.3.1+, Freemium with a 30-day trial): a Buggregator tool window with the UI in the IDE's built-in browser (JCEF). Two ways: show your Buggregator server (Settings > Languages & Frameworks > Buggregator: Trap > Run automatically off, Web UI > URL http://127.0.0.1:8000 or the server's address) or start Buggregator Trap from the project (default: Run automatically on, URL http://127.0.0.1:5007, Trap port 5007, vendor/bin/trap). The plugin only loads that URL; it calls no server API. Install from Marketplace or a .zip from the Marketplace versions page (GitHub releases end at 2025.0.11). Issues: github.com/buggregator/phpstorm-plugin (no source code there)."
 ---
 
 # JetBrains IDE Plugin
@@ -18,7 +18,7 @@ The plugin starts in the Trap way. To see your server, change two settings: see
 ## Installation
 
 The plugin is on [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/26344-buggregator). Version 2026.1.0
-needs an IDE from version 2025.3 on.
+needs an IDE version 2025.3.1 or newer. On an older IDE, Marketplace offers an older plugin version.
 
 The plugin is **Freemium**: Marketplace offers a 30-day trial of its paid part. The plugin page does not say which
 features are paid.
@@ -42,8 +42,16 @@ After installation, find the **Buggregator** tool window on the right side of th
 1. Start your Buggregator server, e.g. with Docker:
 
    ```bash
-   docker run --pull always -p 127.0.0.1:8000:8000 ghcr.io/buggregator/server:latest
+   docker run --pull always \
+     -p 127.0.0.1:8000:8000 \
+     -p 127.0.0.1:1025:1025 \
+     -p 127.0.0.1:9912:9912 \
+     -p 127.0.0.1:9913:9913 \
+     ghcr.io/buggregator/server:latest
    ```
+
+   Port 8000 serves the UI and most SDKs; 1025 (SMTP), 9912 (VarDumper) and 9913 (Monolog) receive the rest. See
+   [Getting started](/getting-started).
 
 2. Open **Settings** > **Languages & Frameworks** > **Buggregator**.
 3. Under **Trap**, turn off **Run automatically**. The plugin then does not look for `vendor/bin/trap`.
@@ -69,6 +77,8 @@ By default the plugin starts Trap from your project (`vendor/bin/trap`, port `50
 
 Under **Trap** you choose how Trap runs (**Execution Mode**, **Binary**, **Command**) and its **Port**.
 
+Besides **Web UI**, the tool window has a **Terminal** tab with Trap's output.
+
 > **Tip:** If several IDE windows use the same port, their Web UIs share one Trap. A second Trap waits until the
 > port is free.
 
@@ -79,7 +89,7 @@ settings.
 
 ## Supported IDEs
 
-All JetBrains IDEs from version 2025.3 on: PhpStorm, IntelliJ IDEA, WebStorm and others. The PHP plugin is needed
+All JetBrains IDEs, version 2025.3.1 or newer: PhpStorm, IntelliJ IDEA, WebStorm and others. The PHP plugin is needed
 only to run Trap with the IDE's PHP interpreter.
 
 ## Feedback
