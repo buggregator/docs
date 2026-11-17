@@ -146,7 +146,8 @@ resp, err := client.Get("https://api.example.com/users")
 
 ### JavaScript / Node.js — fetch
 
-Import `fetch` from `undici` too. Node's built-in `fetch` refuses an agent from the npm `undici` package.
+Import `fetch` from `undici` too, so `fetch` and the agent come from the same package. Mixed versions can fail:
+Node 22's built-in `fetch` refuses a `ProxyAgent` from npm `undici` 8 (`invalid onRequestStart method`).
 
 ```js
 import { fetch, ProxyAgent } from 'undici'
