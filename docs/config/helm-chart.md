@@ -1,5 +1,5 @@
 ---
-llms_description: "Helm chart 3.0.0 (server 2.11.0) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.*, jwtSecret generated and kept (lookup; set it for Argo CD/Flux). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall deletes the PVC."
+llms_description: "Helm chart 3.0.0 (server 2.11.0) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+; older: helm get values -o yaml > f, upgrade -f f); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.*, jwtSecret generated and kept (lookup; set it for Argo CD; Flux keeps it). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall deletes the PVC (volume gone with reclaimPolicy Delete)."
 ---
 
 # Configuration — Helm Chart
@@ -185,9 +185,9 @@ helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator \
 The session signing key (`auth.jwtSecret`) is generated on install and kept across upgrades, so users stay signed in.
 You can also set it yourself.
 
-The chart keeps the key by reading the release's Secret from the cluster. Tools that only render templates (Argo CD,
-Flux with `helm template`) cannot read it, so they would make a new key on every sync and sign everyone out. With
-them, set `auth.jwtSecret` or use your own Secret:
+The chart keeps the key by reading the release's Secret from the cluster. Tools that only render templates, such as
+Argo CD, cannot read it, so they would make a new key on every sync and sign everyone out. (Flux runs real Helm
+upgrades, so the key is kept there.) With Argo CD, set `auth.jwtSecret` or use your own Secret:
 
 ```bash
 kubectl create secret generic buggregator-auth \
@@ -231,6 +231,15 @@ helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator --rese
 `--reset-then-reuse-values` (Helm 3.14+) takes the new chart's defaults plus the values you set yourself.
 `--reuse-values` keeps the **old** chart's defaults too, so new settings never arrive. The update notice of server
 2.11.0 shows `--reuse-values`; use `--reset-then-reuse-values` instead.
+
+Helm older than 3.14: save the values you set yourself, then pass them back:
+
+```bash
+helm get values buggregator -o yaml > my-values.yaml
+helm upgrade buggregator oci://ghcr.io/buggregator/helm-chart/buggregator -f my-values.yaml
+```
+
+Use the same `-f my-values.yaml` in place of `--reset-then-reuse-values` in the steps below.
 
 The chart replaces the pod with the `Recreate` strategy: the old pod stops before the new one starts, because both
 would open the same SQLite file. Expect a few seconds of downtime.
@@ -316,4 +325,5 @@ Every option with comments: [`values.yaml`](https://github.com/buggregator/helm-
 helm uninstall buggregator
 ```
 
-The PVC is deleted with the release, and the database with it. Copy `/data/buggregator.db` first if you need it.
+The PVC is deleted with the release. With the usual StorageClass setting (`reclaimPolicy: Delete`) the volume and the
+database go with it; with `Retain` the volume stays. Copy `/data/buggregator.db` first if you need it.
