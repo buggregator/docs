@@ -1,67 +1,89 @@
 ---
-llms_description: "JetBrains IDE plugin: embeds Buggregator Trap UI into PhpStorm, IntelliJ IDEA, WebStorm. Requires buggregator/trap Composer package and PHP interpreter. Two views: Web UI (embedded browser) and Terminal. Settings: PHP interpreter, path to Trap binary, Web UI port. Install from JetBrains Marketplace or manual .jar."
+llms_description: "JetBrains IDE plugin (Marketplace id 26344, vendor xepozz, version 2026.1.0, IDE 2025.3+, Freemium with a 30-day trial): a Buggregator tool window with the UI in the IDE's built-in browser (JCEF). Two ways: show your Buggregator server (Settings > Languages & Frameworks > Buggregator: Trap > Run automatically off, Web UI > URL http://127.0.0.1:8000 or the server's address) or start Buggregator Trap from the project (default: Run automatically on, URL http://127.0.0.1:5007, Trap port 5007, vendor/bin/trap). The plugin only loads that URL; it calls no server API. Install from Marketplace or a .zip from the Marketplace versions page (GitHub releases end at 2025.0.11). Issues: github.com/buggregator/phpstorm-plugin (no source code there)."
 ---
 
 # JetBrains IDE Plugin
 
 You use PhpStorm (or another JetBrains IDE) and don't want to switch to a browser to check dumps and logs.
-The Buggregator plugin embeds the full debug UI directly into your IDE — dumps, logs, exceptions, and profiling
-data appear in a panel next to your code. All IDE shortcuts keep working. No context switching.
+The Buggregator plugin shows the Buggregator UI in a panel of your IDE, next to your code.
 
-**Plugin repository:** https://github.com/buggregator/phpstorm-plugin
+The plugin is a browser window inside the IDE. It opens one address and shows that page. It works in two ways:
 
-## How it works
+- **With your Buggregator server.** The panel shows your server's UI: every module, your projects, live updates.
+- **With Buggregator Trap.** The plugin starts [Trap](/trap/what-is-trap) from your project and shows Trap's UI.
 
-The plugin launches [Buggregator Trap](/trap/what-is-trap) from your project's `vendor` directory using the PHP
-interpreter configured in your IDE. Trap starts collecting debug data and the plugin displays it in two tabs:
-
-- **Web UI** — the full interactive Buggregator interface in the IDE's built-in browser. Same UI as the standalone server.
-- **Terminal** — text-based output for quick inspection.
-
-Trap opens a web interface port (configurable in settings), which works with all standard clients — VarDumper,
-Monolog, Sentry, Ray, and others.
-
-> **Tip:** If you have the plugin running in multiple IDE windows with the same port, both Web UIs share the same
-> Trap instance. A second Trap will wait until the port is free.
-
-## Requirements
-
-- [buggregator/trap](https://github.com/buggregator/trap) installed in your project (`composer require --dev buggregator/trap`)
-- A PHP interpreter configured in your IDE settings
+The plugin starts in the Trap way. To see your server, change two settings: see
+[Connect to your Buggregator server](#connect-to-your-buggregator-server).
 
 ## Installation
 
-### From JetBrains Marketplace (recommended)
+The plugin is on [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/26344-buggregator). Version 2026.1.0
+needs an IDE from version 2025.3 on.
 
-Go to the [plugin page](https://plugins.jetbrains.com/plugin/26344-buggregator) and click **Install to ...**
+The plugin is **Freemium**: Marketplace offers a 30-day trial of its paid part. The plugin page does not say which
+features are paid.
 
-### From IDE
+### From the IDE
 
 **Settings** > **Plugins** > **Marketplace** > search for **"Buggregator"** > **Install**
 
 ### Manual
 
-1. Download the `.jar` file from [GitHub Releases](https://github.com/buggregator/phpstorm-plugin/releases) or [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/26344-buggregator/versions).
-2. **Settings** > **Plugins** > **⚙️** > **Install plugin from disk...** > select the `.jar` file.
+1. Download the `.zip` file from the [versions page](https://plugins.jetbrains.com/plugin/26344-buggregator/versions).
+2. **Settings** > **Plugins** > **⚙️** > **Install Plugin from Disk...** > select the `.zip` file.
 3. Restart the IDE if prompted.
 
-After installation, find the **Buggregator** button in the top right corner of the IDE window.
+GitHub Releases of the plugin end at 2025.0.11. Newer versions are only on Marketplace.
 
-## Configuration
+After installation, find the **Buggregator** tool window on the right side of the IDE.
 
-Open the plugin settings to customize:
+## Connect to your Buggregator server
 
-- **PHP interpreter** — which PHP binary to use for running Trap.
-- **Path to Trap** — defaults to `vendor/bin/trap`, change if needed.
-- **Web UI port** — the port for the embedded web interface.
+1. Start your Buggregator server, e.g. with Docker:
 
-Click the **🌐** button on the toolbar to open the Web UI in your system browser instead of the IDE.
+   ```bash
+   docker run --pull always -p 127.0.0.1:8000:8000 ghcr.io/buggregator/server:latest
+   ```
+
+2. Open **Settings** > **Languages & Frameworks** > **Buggregator**.
+3. Under **Trap**, turn off **Run automatically**. The plugin then does not look for `vendor/bin/trap`.
+4. Under **Web UI**, set **URL** to your server's address: `http://127.0.0.1:8000`. For a server on another machine,
+   use its address, e.g. `http://192.168.1.20:8000`.
+5. Open the **Buggregator** tool window. It shows the same UI as your browser at that address.
+
+The settings are per project. Set them in each project where you want the server.
+
+Your apps send events to the server, not to the plugin. Set them up as usual, e.g.
+[Sentry](/config/sentry), [VarDumper](/config/var-dumper), [SMTP](/config/smtp).
+
+If your server uses [SSO](/config/sso), you sign in inside the IDE's browser. Some login providers refuse
+built-in browsers; this was not tested.
+
+## Use with Trap
+
+By default the plugin starts Trap from your project (`vendor/bin/trap`, port `5007`) and shows its UI at
+`http://127.0.0.1:5007`. Trap needs:
+
+- [buggregator/trap](https://github.com/buggregator/trap) in your project (`composer require --dev buggregator/trap`)
+- a PHP interpreter set up in your IDE
+
+Under **Trap** you choose how Trap runs (**Execution Mode**, **Binary**, **Command**) and its **Port**.
+
+> **Tip:** If several IDE windows use the same port, their Web UIs share one Trap. A second Trap waits until the
+> port is free.
+
+## Toolbar
+
+The tool window has buttons to reload the page, open it in your system browser, start and stop Trap, and open the
+settings.
 
 ## Supported IDEs
 
-The plugin works with all JetBrains IDEs that support PHP development:
+All JetBrains IDEs from version 2025.3 on: PhpStorm, IntelliJ IDEA, WebStorm and others. The PHP plugin is needed
+only to run Trap with the IDE's PHP interpreter.
 
-- PhpStorm
-- IntelliJ IDEA (with PHP plugin)
-- WebStorm
-- And other JetBrains products
+## Feedback
+
+The plugin is published by its author (vendor `xepozz` on Marketplace). Report problems in
+[buggregator/phpstorm-plugin](https://github.com/buggregator/phpstorm-plugin/issues). That repository holds no source
+code.

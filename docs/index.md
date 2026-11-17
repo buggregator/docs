@@ -179,9 +179,9 @@ Don't want to leave your IDE? The [Buggregator plugin for JetBrains IDEs](https:
 brings dumps, logs, and debug data directly into PhpStorm, IntelliJ IDEA, WebStorm, and other JetBrains products.
 No need to switch windows — everything is in a panel next to your code.
 
-The plugin launches [Buggregator Trap](/trap/what-is-trap) from your project and provides two views:
-- **Web UI** — the full Buggregator interface embedded in the IDE's built-in browser.
-- **Terminal** — text-based output for quick inspection.
+The panel shows your Buggregator server's UI: turn off **Run automatically** under **Trap** and set the **URL** to
+your server, e.g. `http://127.0.0.1:8000`. By default the plugin starts [Buggregator Trap](/trap/what-is-trap)
+from your project instead. The plugin is Freemium, with a 30-day trial on Marketplace.
 
 Install from **Settings** > **Plugins** > **Marketplace** > search "Buggregator", or visit the
 [plugin page](https://plugins.jetbrains.com/plugin/26344-buggregator).
