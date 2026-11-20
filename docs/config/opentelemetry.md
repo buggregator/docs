@@ -1,5 +1,5 @@
 ---
-llms_description: "OpenTelemetry (OTLP/HTTP) ingestion, since server [version: to fill]: POST /v1/traces and /v1/logs on the main HTTP port (8000), also /api/<project>/integration/otlp/v1/traces|logs. Protobuf (default) or JSON (Content-Type application/json), gzip ok. No gRPC (4317), no metrics. OTel SDK: OTEL_EXPORTER_OTLP_ENDPOINT=http://buggregator:8000, OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf|http/json, project via OTEL_EXPORTER_OTLP_HEADERS=X-Buggregator-Project=<key>. Collector (any version): exporter otlphttp (otlp_http in new versions) endpoint http://buggregator:8000, optional headers X-Buggregator-Project, add to traces and logs pipelines; replaces the old sentry exporter dsn config; the new sentry exporter (url/org_slug/auth_token) is not supported. Project order: path segment > X-Buggregator-Event detection > X-Buggregator-Project header > Sentry DSN key; only existing projects, else default. Shown on the Sentry page: Traces (source label OTel, the trace's services chain; Service column in the span waterfall; filters ?source=otel|sentry and ?service=) and Logs (?source=); logs link to their trace; no cards in the main event feed. Mapping: service.name -> service, service.version -> release, deployment.environment(.name) -> environment, span status ERROR -> error, severity -> log level. Needs the sentry event type enabled."
+llms_description: "OpenTelemetry (OTLP/HTTP) ingestion, since server 2.12.0: POST /v1/traces and /v1/logs on the main HTTP port (8000), also /api/<project>/integration/otlp/v1/traces|logs. Protobuf (default) or JSON (Content-Type application/json), gzip ok. No gRPC (4317), no metrics. OTel SDK: OTEL_EXPORTER_OTLP_ENDPOINT=http://buggregator:8000, OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf|http/json, project via OTEL_EXPORTER_OTLP_HEADERS=X-Buggregator-Project=<key>. Collector (any version): exporter otlphttp (otlp_http in new versions) endpoint http://buggregator:8000, optional headers X-Buggregator-Project, add to traces and logs pipelines; replaces the old sentry exporter dsn config; the new sentry exporter (url/org_slug/auth_token) is not supported. Project order: path segment > X-Buggregator-Event detection > X-Buggregator-Project header > Sentry DSN key; only existing projects, else default. Shown on the Sentry page: Traces (source label OTel, the trace's services chain; Service column in the span waterfall; filters ?source=otel|sentry and ?service=) and Logs (?source=); logs link to their trace; no cards in the main event feed. Mapping: service.name -> service, service.version -> release, deployment.environment(.name) -> environment, span status ERROR -> error, severity -> log level. Needs the sentry event type enabled."
 ---
 
 # OpenTelemetry — Traces and logs
@@ -9,7 +9,7 @@ want to see those traces and logs locally, without Jaeger, Grafana or a cloud ac
 OTLP, the protocol OTel uses to send data. Point your SDK or your Collector at Buggregator and the data shows up
 next to your Sentry errors, dumps and emails.
 
-Available since server `[version: to fill]`.
+Available since server 2.12.0.
 
 ## What it accepts
 
