@@ -188,6 +188,7 @@ export default defineConfig({
                 items: [
                     {text: 'XHProf Profiler', link: '/config/xhprof'},
                     {text: 'Sentry', link: '/config/sentry'},
+                    {text: 'OpenTelemetry', link: '/config/opentelemetry'},
                     {text: 'SMTP Server', link: '/config/smtp'},
                     {text: 'SMS Gateway', link: '/config/sms'},
                     {text: 'HTTP Dumps', link: '/config/http-dumps'},

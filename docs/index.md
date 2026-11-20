@@ -1,5 +1,5 @@
 ---
-llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions, fake SMTP email capture, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
+llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions, OpenTelemetry traces and logs (OTLP/HTTP), fake SMTP email capture, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
 ---
 
 # What is Buggregator?
@@ -111,6 +111,7 @@ and **Top Functions** table. **Compare two runs** side-by-side to verify your op
 Catch unhandled exceptions with full **stack traces**, **breadcrumbs**, **request details**,
 **device/browser info**, tags, and context. See exactly where your code breaks.
 All Sentry SDKs are supported — PHP, JavaScript, Python, and more.
+OpenTelemetry traces and logs show up here too: see [OpenTelemetry](/config/opentelemetry).
 
 <img src="/images/sentry.webp" alt="sentry" width="1399" height="803" loading="lazy">
 
