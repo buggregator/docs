@@ -1,5 +1,5 @@
 ---
-llms_description: "Broadcast events (Pusher / Laravel Reverb / soketi server API), since server [version: to fill]: event type broadcast. Buggregator answers POST /apps/{app_id}/events and /apps/{app_id}/batch_events on the HTTP port 8000 (any path prefix; signed requests only: auth_key + auth_signature in the query, else http-dump). One event per broadcast (batch: shared batch_id). Config: broadcast.upstream / BROADCAST_UPSTREAM (empty = capture only, app gets {}, browsers get nothing), broadcast.apps [{key,secret}] / BROADCAST_APPS=key:secret,... (signature check valid|invalid|not_checked). Forward: request sent unchanged (signature stays valid), 5 s timeout, app gets upstream answer; upstream down → 502, card kept with upstream.error; loop guard X-Buggregator-Forwarded → 508; credentials in upstream URL and secret never shown. Laravel: REVERB_HOST/REVERB_PORT/REVERB_SCHEME=http (keep VITE_REVERB_* on real Reverb) or PUSHER_HOST/PUSHER_PORT/PUSHER_SCHEME. Project: X-Buggregator-Event: broadcast + X-Buggregator-Project, or broadcast:<project>@host; app id is not a project. Not stored: terminate_connections; GET channel queries not answered; encrypted channel data not decrypted. Off: modules.broadcast: false or CLIENT_SUPPORTED_EVENTS. API GET /api/events?type=broadcast."
+llms_description: "Broadcast events (Pusher / Laravel Reverb / soketi server API), since server [version: to fill]: event type broadcast. Buggregator answers POST /apps/{app_id}/events and /apps/{app_id}/batch_events on the HTTP port 8000 (any path prefix; signed requests only: auth_key + auth_signature in the query, else http-dump). One event per broadcast (batch: shared batch_id). Config: broadcast.upstream / BROADCAST_UPSTREAM (empty = capture only, app gets {}, browsers get nothing), broadcast.apps [{key,secret}] / BROADCAST_APPS=key:secret,... (signature check valid|invalid|not_checked). Forward: request sent unchanged (signature stays valid), 5 s timeout, app gets upstream answer; upstream down → 502, card kept with upstream.error; loop guard X-Buggregator-Forwarded → 508; credentials in upstream URL and secret never shown. Laravel: REVERB_HOST/REVERB_PORT/REVERB_SCHEME=http (keep VITE_REVERB_* on real Reverb) or PUSHER_HOST/PUSHER_PORT/PUSHER_SCHEME. Project: X-Buggregator-Project header (alone; Laravel: reverb client_options headers), or broadcast:<project>@host (wins); new name creates the project; app id is not a project. Not stored: terminate_connections; GET channel queries not answered; encrypted channel data not decrypted. Off: modules.broadcast: false or CLIENT_SUPPORTED_EVENTS. API GET /api/events?type=broadcast."
 ---
 
 # Broadcast Events (Pusher, Laravel Reverb)
@@ -152,9 +152,23 @@ API: `GET /api/events?type=broadcast`.
 
 ## Projects
 
-Events go to the `default` project. To send them to another [project](/config/projects), add both headers
-`X-Buggregator-Event: broadcast` and `X-Buggregator-Project: shop`. From curl or a script you can also put the
-project in the address: `http://broadcast:shop@127.0.0.1:8000`. The app id does not choose the project.
+Events go to the `default` project. To send them to another [project](/config/projects), add the header
+`X-Buggregator-Project: shop`. A new name creates the project with its first event. The app id does not choose the
+project.
+
+In Laravel, add the header to the `reverb` connection in `config/broadcasting.php`:
+
+```php
+'reverb' => [
+    // ...
+    'client_options' => [
+        'headers' => ['X-Buggregator-Project' => env('BUGGREGATOR_PROJECT', 'default')],
+    ],
+],
+```
+
+From curl or a script you can also put the project in the address, `http://broadcast:shop@127.0.0.1:8000`; it wins
+over the header.
 
 ## Limits
 

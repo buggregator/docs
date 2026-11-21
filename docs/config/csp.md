@@ -1,5 +1,5 @@
 ---
-llms_description: "CSP and Reporting API reports, since server [version: to fill]: event type csp. POST /csp or /csp/<project>; also any POST with Content-Type application/csp-report or application/reports+json not claimed by another module. Formats: report-uri (application/csp-report, one report) and Reporting API (application/reports+json, a list: csp-violation, deprecation, intervention…), one event per request. Project: /csp/<project>, csp:<project>@host userinfo (curl/scripts only; browsers drop userinfo), or X-Buggregator-Event: csp + X-Buggregator-Project (the project header alone goes to default); an unknown project key creates that project. CORS preflight answered (204, *). Limits: body 1 MB; empty list or non-report JSON → 400. Off: modules.csp: false or leave csp out of CLIENT_SUPPORTED_EVENTS. report-to needs https or localhost on both sides; over plain http use report-uri. Deprecation/intervention reports go only to the endpoint named default. API: GET /api/events?type=csp."
+llms_description: "CSP and Reporting API reports, since server [version: to fill]: event type csp. POST /csp or /csp/<project>; also any POST with Content-Type application/csp-report or application/reports+json not claimed by another module. Formats: report-uri (application/csp-report, one report) and Reporting API (application/reports+json, a list: csp-violation, deprecation, intervention…), one event per request. Project: /csp/<project>, csp:<project>@host userinfo (curl/scripts only; browsers drop userinfo), or the X-Buggregator-Project header alone; order path > userinfo > header; a new name creates the project. CORS preflight answered (204, *). Limits: body 1 MB; empty list or non-report JSON → 400. Off: modules.csp: false or leave csp out of CLIENT_SUPPORTED_EVENTS. report-to needs https or localhost on both sides; over plain http use report-uri. Deprecation/intervention reports go only to the endpoint named default. API: GET /api/events?type=csp."
 ---
 
 # CSP Reports
@@ -70,14 +70,16 @@ with several reports.
 
 ## Projects
 
-Choose the project with one of:
+Browsers send reports with no headers of your own, so for them put the project in the path: `/csp/shop`. Leave
+out `/<project>` for `default`.
 
-- the path: `/csp/shop`;
-- headers: `X-Buggregator-Event: csp` and `X-Buggregator-Project: shop`. The project header alone is not enough;
-- from curl or a script only, the address: `http://csp:shop@localhost:8000/`. Browsers drop the `csp:shop@` part
-  from `report-uri` and `report-to`.
+From curl, a script or a proxy that passes reports on, you can also use:
 
-An unknown project key creates that project. Leave out `/<project>` for `default`.
+- the address: `http://csp:shop@localhost:8000/`;
+- the header `X-Buggregator-Project: shop`.
+
+If several are set, the path wins, then the address, then the header. A new name creates the project with its
+first report.
 
 ## Details
 
