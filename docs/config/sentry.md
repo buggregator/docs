@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility: DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Java SDK checked with Spring Boot (guides/spring-boot); other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default', unless (since server v2.10.0) its public key names an existing project; since 2.11.0 a key with _ also finds the project with - (http://billing@host:8000/1 → billing; key from sentry_key query or X-Sentry-Auth; key 'sentry' reserved; unknown key → default, no project created). Order: DSN path > X-Buggregator-Project / Basic Auth > public key > default. Sentry page tabs Exceptions, Traces, Logs, Metrics (Traces and Logs also hold OpenTelemetry OTLP data, see /config/opentelemetry), filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
+llms_description: "Sentry SDK compatibility (since [version: to fill]: user feedback — feedback/user_report envelope items stored, shown on the error page and the Feedback tab, GET /api/sentry/feedback, no feed card, screenshots not stored; desktop notifications in Settings › Notifications for new errors while the tab is hidden, https or localhost only; cron monitors — see /config/crons): DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Java SDK checked with Spring Boot (guides/spring-boot); other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default', unless (since server v2.10.0) its public key names an existing project; since 2.11.0 a key with _ also finds the project with - (http://billing@host:8000/1 → billing; key from sentry_key query or X-Sentry-Auth; key 'sentry' reserved; unknown key → default, no project created). Order: DSN path > X-Buggregator-Project / Basic Auth > public key > default. Sentry page tabs Exceptions, Traces, Logs, Metrics (Traces and Logs also hold OpenTelemetry OTLP data, see /config/opentelemetry), filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
 ---
 
 # Sentry — Exceptions
@@ -331,6 +331,47 @@ For clients of the WebSocket: when a request stored logs, metrics or traces, the
 ```
 
 Kinds are `log`, `metric` and `trace`. An error alone sends the usual `event.received`.
+
+## Cron monitors
+
+Check-ins from Sentry Crons (`check_in`) are stored: see [Cron Monitoring](/config/crons).
+
+## User feedback
+
+Since server `[version: to fill]` Buggregator keeps the feedback your users send through a Sentry SDK: the
+feedback widget, `captureFeedback`, or the older `captureUserFeedback`. Nothing to set up beyond the usual DSN.
+
+```js
+const eventId = Sentry.captureException(new Error('Checkout failed'))
+
+Sentry.captureFeedback({
+  name: 'Jane Doe',
+  email: 'jane@example.com',
+  message: 'The pay button did nothing',
+  associatedEventId: eventId,
+})
+```
+
+- Feedback tied to an error shows on that error's page, above the tabs: name, email, message, page URL and time.
+- The **Feedback** tab on the Sentry page lists all feedback, also the one sent without an error.
+- Feedback makes no card of its own in the event feed.
+- Screenshots attached to feedback are not stored.
+- API: `GET /api/sentry/feedback` (filters `event_id`, `project`, `from`, `to`, `window`).
+
+Clearing Sentry data clears feedback too, except the feedback of pinned errors.
+
+## Desktop notifications
+
+Want to know about a new error while you work in another window? Turn on **Settings › Notifications › Desktop
+notifications** (since server `[version: to fill]`). The browser asks for permission once and shows a test notice.
+
+- You get a notice for each new Sentry error (an exception, or a message at level error or fatal) from any project,
+  while the Buggregator tab is in the background. Click it to open the error.
+- Several errors within 10 seconds come as one notice: «3 new errors».
+- With several Buggregator tabs open, only one notifies, and none while you are looking at one of them.
+- The tab must stay open; a closed tab shows nothing.
+- It works only when you open Buggregator as https or `localhost`, e.g. `http://localhost:8000`. Chrome on Android
+  does not show notifications from a page.
 
 ## Clearing data
 

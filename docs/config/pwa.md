@@ -42,6 +42,8 @@ number on the app icon. When you focus the window, the number is cleared.
 The badge works in Chromium-based browsers (Chrome, Edge) on Windows and macOS. Elsewhere the app works, but
 shows no number.
 
+For a notice on each new error, turn on [desktop notifications](/config/sentry#desktop-notifications).
+
 ## What it does not do
 
 - No offline mode: the app needs a running Buggregator server.

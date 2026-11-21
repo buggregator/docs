@@ -211,6 +211,30 @@ Off by default. See [Xdebug](/config/xdebug).
 | `XDEBUG_PROXY_IDE_ADDR` | `127.0.0.1:9004` | Where the IDE listens |
 | `XDEBUG_PROXY_ALLOW_EVAL` | `false` | Allow MCP clients and watches to evaluate PHP expressions |
 
+### Email relay
+
+Off by default. Sends one caught email to a real inbox on request. See
+[SMTP › Send to a real inbox](/config/smtp#send-to-a-real-inbox).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SMTP_RELAY_HOST` | (empty) | Outgoing SMTP server; empty turns sending off |
+| `SMTP_RELAY_PORT` | by `tls` | `587` for `starttls`, `465` for `tls`, `25` for `none` |
+| `SMTP_RELAY_TLS` | `starttls` | `starttls`, `tls` or `none` |
+| `SMTP_RELAY_USERNAME`, `SMTP_RELAY_PASSWORD`, `SMTP_RELAY_PASSWORD_FILE` | (empty) | Login |
+| `SMTP_RELAY_FROM` | (empty) | Sender address given to the server |
+| `SMTP_RELAY_ALLOWED_RECIPIENTS` | (empty) | Comma-separated patterns, e.g. `*@mycompany.com`; required without login |
+| `SMTP_RELAY_INSECURE_SKIP_VERIFY` | `false` | Accept any certificate |
+
+### Broadcast
+
+See [Broadcast Events](/config/broadcast).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BROADCAST_UPSTREAM` | (empty) | Real Reverb or Pusher server to pass events on to; empty = capture only |
+| `BROADCAST_APPS` | (empty) | `key:secret,...` to check event signatures |
+
 ### Mock Server
 
 Mock rules have no environment variables: define them in the `mocks` section of `buggregator.yaml`, in the UI,
