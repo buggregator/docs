@@ -34,17 +34,38 @@ In `.env`, point the server-side settings at Buggregator, and keep the browser s
 
 ```dotenv
 BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=...
+REVERB_APP_KEY=...
+REVERB_APP_SECRET=...
 
-# Server side: where Laravel sends broadcasts
-REVERB_HOST=127.0.0.1
-REVERB_PORT=8000
+# Laravel sends broadcasts to Buggregator
+REVERB_HOST=127.0.0.1        # host.docker.internal when Laravel runs in Docker and Buggregator on the host
+REVERB_PORT=8000             # Buggregator's HTTP port
 REVERB_SCHEME=http
 
-# Browser side: the real Reverb (the default .env copies these from REVERB_*)
+# Echo in the browser connects to Reverb directly
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
 VITE_REVERB_HOST=localhost
-VITE_REVERB_PORT=8080
+VITE_REVERB_PORT=8080        # Reverb's port
 VITE_REVERB_SCHEME=http
 ```
+
+Then let Buggregator pass the events on to Reverb, so the browser keeps getting them:
+
+```bash
+BROADCAST_UPSTREAM=http://localhost:8080 ./buggregator
+```
+
+Two things to watch:
+
+- `php artisan install:broadcasting` writes `VITE_REVERB_HOST="${REVERB_HOST}"` and
+  `VITE_REVERB_PORT="${REVERB_PORT}"`. Once `REVERB_HOST` points at Buggregator, the browser would go there too, and
+  Buggregator does not speak WebSocket. Set `VITE_REVERB_HOST` and `VITE_REVERB_PORT` to Reverb itself, as above.
+- The Reverb server listens on `REVERB_SERVER_HOST` and `REVERB_SERVER_PORT` (default `0.0.0.0:8080`), not on
+  `REVERB_HOST`. Changing `REVERB_HOST` does not move Reverb.
+
+Checked with Laravel 12, laravel/reverb 1.14 and Laravel Echo 2.1. In Buggregator the event name is the full class
+name, for example `App\Events\OrderShipped`; Echo's `.listen('OrderShipped')` keeps working.
 
 Older Laravel apps use `BROADCAST_DRIVER` instead of `BROADCAST_CONNECTION`.
 
