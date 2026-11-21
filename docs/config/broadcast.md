@@ -109,6 +109,17 @@ Environment variables win over the file; `BROADCAST_APPS` replaces the whole `ap
 
 ## What you see
 
+**Broadcast** in the menu opens a channel console:
+
+- On the left, every channel that got events, with its kind (public, private, presence, encrypted) and the number
+  of events. Type in **Filter channels** to find one, or pick **All channels**.
+- On the right, the events of that channel, newest or oldest first: time, event name, size, payload.
+- Open an event to see its payload, what **Changed** since the previous event of the same name on that channel,
+  who sent it and to whom, the signature result and, when forwarding, the real server's answer. **Copy as cURL**
+  gives the request to send it again.
+
+A feed card for a broadcast opens the console on that event.
+
 Each broadcast is one `broadcast` event: its name, channels (public, private, presence, encrypted or user), data,
 the socket id, the signature result and, when forwarding, the real server's status and time. A batch
 (`triggerBatch`) gives one event per item, marked with the same batch.
