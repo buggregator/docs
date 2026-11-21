@@ -114,7 +114,7 @@ days…). `@every` and `TZ=` inside the crontab are not supported.
 that failed, hung, missed a run or are running late come first, under **Needs attention**; a button shows only those. Type in
 **Filter jobs** to find one. Times are shown in each job's time zone, and the page updates by itself.
 
-Open a job for its run history: status, start, duration and the output it sent. **Ping URLs of this job** gives
+Open a job for its run history: status, start, duration and the output it sent. For a ping job, **Ping URLs of this job** gives
 the `curl` commands to copy. With no jobs yet, the tab shows how to set one up.
 
 Runs make no cards in the event feed. The same data through the API:
