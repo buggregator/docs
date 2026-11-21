@@ -1,5 +1,5 @@
 ---
-llms_description: "Cron monitoring, since server [version: to fill]: scheduled jobs report runs via Sentry Crons check-ins (check_in envelope item to the usual DSN; monitor_config upserts the monitor) or the Sentry cron HTTP endpoint GET|POST /api/{project}/cron/{slug}/{key}/?status=in_progress|ok|error&check_in_id=&duration=<sec> (202), or the ping URL GET|POST /ping/<slug> (ok), /ping/<slug>/start (in_progress), /ping/<slug>/fail (error); body = job output, last 10 KB kept; query schedule (crontab only), tz, margin, max_runtime (minutes), project (or X-Buggregator-Project), check_in_id, environment; answer 200 OK + X-Check-In-Id; first ping creates the monitor, max 500 per project (429). Slug [A-Za-z0-9._-]{1,128}. Schedules: crontab (5 fields or @daily…, no @every/TZ=) or interval; timezone IANA default UTC; checkin_margin default 1 min, max_runtime 30 min. Server-made statuses: missed (slot + margin passed, no check-in; not while a run is in progress; one row for several slots), timeout (in_progress longer than max_runtime), unknown (slot while the server was down; file DB only); checker every 30 s. No alerts/webhooks; WebSocket sentry.stored kinds [cron]; no feed cards. API: GET /api/crons, GET /api/crons/{slug}/checkins, PUT /api/crons/{slug}, DELETE /api/crons/{slug}. Clearing Sentry data keeps monitors, drops runs. Needs a file DB (-db) to keep data across restarts."
+llms_description: "Cron monitoring, since server [version: to fill]: scheduled jobs report runs via Sentry Crons check-ins (check_in envelope item to the usual DSN; monitor_config upserts the monitor) or the Sentry cron HTTP endpoint GET|POST /api/{project}/cron/{slug}/{key}/?status=in_progress|ok|error&check_in_id=&duration=<sec> (202), or the ping URL GET|POST /ping/<slug> (ok), /ping/<slug>/start (in_progress), /ping/<slug>/fail (error); body = job output, last 10 KB kept; query schedule (crontab only), tz, margin, max_runtime (minutes), project (or X-Buggregator-Project), check_in_id, environment; answer 200 OK + X-Check-In-Id; first ping creates the monitor, max 500 per project (429). Slug [A-Za-z0-9._-]{1,128}. Schedules: crontab (5 fields or @daily…, no @every/TZ=) or interval; timezone IANA default UTC; checkin_margin default 1 min, max_runtime 30 min. Server-made statuses: missed (slot + margin passed, no check-in; not while a run is in progress; one row for several slots), timeout (in_progress longer than max_runtime), unknown (slot while the server was down; file DB only); checker every 30 s. UI: Sentry → Crons (/sentry/crons: status, schedule, last/next run, last 20 runs, Needs attention, Filter jobs) and a job page (/sentry/crons/<slug>: runs, output, ping URLs). No alerts/webhooks; WebSocket sentry.stored kinds [cron]; no feed cards. API: GET /api/crons, GET /api/crons/{slug}/checkins, PUT /api/crons/{slug}, DELETE /api/crons/{slug}. Clearing Sentry data keeps monitors, drops runs. Needs a file DB (-db) to keep data across restarts."
 ---
 
 # Cron Monitoring
@@ -110,7 +110,14 @@ days…). `@every` and `TZ=` inside the crontab are not supported.
 
 ## Where you see it
 
-Runs make no cards in the event feed. Read them through the API:
+**Sentry → Crons** lists your jobs: status, schedule, last and next run, and a strip of the last 20 runs. Jobs
+that failed, hung, missed a run or are running late come first, under **Needs attention**; a button shows only those. Type in
+**Filter jobs** to find one. Times are shown in each job's time zone, and the page updates by itself.
+
+Open a job for its run history: status, start, duration and the output it sent. **Ping URLs of this job** gives
+the `curl` commands to copy. With no jobs yet, the tab shows how to set one up.
+
+Runs make no cards in the event feed. The same data through the API:
 
 | Request | Gives |
 |---|---|
