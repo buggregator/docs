@@ -119,7 +119,8 @@ Runs make no cards in the event feed. Read them through the API:
 | `PUT /api/crons/<job>?project=<key>` | change the schedule, time zone, margin or max runtime |
 | `DELETE /api/crons/<job>?project=<key>` | delete the job and its runs |
 
-A change with `PUT` lasts until the job's SDK sends its own settings again.
+A change with `PUT` lasts until the job sends its own settings again: from its Sentry SDK, or a ping with
+`schedule`, `tz`, `margin` or `max_runtime`.
 
 Clearing Sentry data deletes the runs and keeps the jobs with their settings.
 

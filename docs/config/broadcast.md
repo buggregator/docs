@@ -83,8 +83,8 @@ broadcast:
 
 Or `BROADCAST_UPSTREAM=http://127.0.0.1:8080`.
 
-- Keep your real app id, key and secret in the app. Buggregator sends the request unchanged, so the real server
-  accepts the signature.
+- Keep your real app id, key and secret in the app. Buggregator sends the same path, query and body, so the real
+  server accepts the signature.
 - Buggregator waits up to 5 seconds for the real server. Your app gets the real server's answer.
 - When the real server cannot be reached, your app gets `502` with the reason, and the event is still stored.
 - Pointed `upstream` at Buggregator itself by mistake? It notices the loop and answers `508` instead of sending the
@@ -132,14 +132,15 @@ API: `GET /api/events?type=broadcast`.
 ## Projects
 
 Events go to the `default` project. To send them to another [project](/config/projects), add both headers
-`X-Buggregator-Event: broadcast` and `X-Buggregator-Project: shop`, or put the project in the address:
-`http://broadcast:shop@127.0.0.1:8000`. The app id does not choose the project.
+`X-Buggregator-Event: broadcast` and `X-Buggregator-Project: shop`. From curl or a script you can also put the
+project in the address: `http://broadcast:shop@127.0.0.1:8000`. The app id does not choose the project.
 
 ## Limits
 
 - Only signed `POST` requests are broadcasts. A `POST` without `auth_key` and `auth_signature` is stored as an
   [HTTP dump](/config/http-dumps).
-- Channel queries (`GET /apps/<id>/channels`) are not answered. With `upstream` set, send them to the real server.
+- Channel queries (`GET /apps/<id>/channels`) are not supported: Buggregator answers with its web page, not JSON,
+  so the Pusher client fails on it. Send them to the real server.
 - Closing a user's connections (`terminateUserConnections`) is passed on or answered, but not stored.
 - Data on encrypted channels is stored as sent; Buggregator cannot decrypt it.
 - Turn it off with `modules.broadcast: false` in `buggregator.yaml`, or leave `broadcast` out of

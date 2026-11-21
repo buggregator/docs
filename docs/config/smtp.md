@@ -1,5 +1,5 @@
 ---
-llms_description: "Fake SMTP server on port 1025: (since [version: to fill]) Send to inbox: release one caught email via a real SMTP relay — smtp_relay: host/port/tls(starttls|tls|none)/username/password/password_file/from/allowed_recipients (globs, *@domain)/insecure_skip_verify or SMTP_RELAY_* env; auth off: localhost only, no proxy headers, allowed_recipients required with exact domains (* or *@* turns it off); auth on: any signed-in user, list optional; same-origin UI only; POST /api/smtp/release/{uuid} {to, rewrite_to}, GET /api/smtp/relay; raw message sent as caught, rewrite_to replaces To and drops Cc; 20 recipients, 10 mails/min. Base: captures outgoing emails with HTML preview (desktop/mobile viewport), plain text, addresses (From/To/CC/BCC), attachments, raw MIME source. Project via the SMTP AUTH user name (any password; since v2.5.0). Config for Laravel (MAIL_HOST/MAIL_PORT), Spiral (MAILER_DSN), Symfony, Magento 2, WordPress (mu-plugin phpmailer_init hook). Testing API for e2e tests: GET /api/smtp/cursor, /api/smtp/messages (filters to, from, cc, subject, subject_contains, subject_regex, body_contains, project, since, until; order, limit, offset), /api/smtp/messages/wait (long poll, timeout max 60s, 408), /api/smtp/stats, DELETE /api/smtp/messages, /api/smtp/message/{uuid}/raw|links|codes; X-Auth-Token with SSO."
+llms_description: "Fake SMTP server on port 1025: (since [version: to fill]) Send to inbox: release one caught email via a real SMTP relay — smtp_relay: host/port/tls(starttls|tls|none)/username/password/password_file/from/allowed_recipients (globs, *@domain)/insecure_skip_verify or SMTP_RELAY_* env; auth off: localhost only, no proxy headers, allowed_recipients required with exact domains (* or *@* turns it off); auth on: any signed-in user, list optional; another browser page is refused (no Origin, e.g. curl, passes: localhost without SSO, token with SSO); a proxy that adds no X-Forwarded-*/X-Real-IP/Forwarded looks local; insecure_skip_verify with a login only for a loopback relay; POST /api/smtp/release/{uuid} {to, rewrite_to}, GET /api/smtp/relay; raw message sent as caught, rewrite_to replaces To and drops Cc; 20 recipients, 10 mails/min. Base: captures outgoing emails with HTML preview (desktop/mobile viewport), plain text, addresses (From/To/CC/BCC), attachments, raw MIME source. Project via the SMTP AUTH user name (any password; since v2.5.0). Config for Laravel (MAIL_HOST/MAIL_PORT), Spiral (MAILER_DSN), Symfony, Magento 2, WordPress (mu-plugin phpmailer_init hook). Testing API for e2e tests: GET /api/smtp/cursor, /api/smtp/messages (filters to, from, cc, subject, subject_contains, subject_regex, body_contains, project, since, until; order, limit, offset), /api/smtp/messages/wait (long poll, timeout max 60s, 408), /api/smtp/stats, DELETE /api/smtp/messages, /api/smtp/message/{uuid}/raw|links|codes; X-Auth-Token with SSO."
 ---
 
 # SMTP — Email Testing
@@ -153,7 +153,7 @@ SMTP_RELAY_ALLOWED_RECIPIENTS=me@gmail.com,*@mycompany.com \
 | `password_file` | `SMTP_RELAY_PASSWORD_FILE` | read the password from a file (Docker or Kubernetes secret) |
 | `from` | `SMTP_RELAY_FROM` | the sender address given to the server; empty: the login if it is an address, else the email's From |
 | `allowed_recipients` | `SMTP_RELAY_ALLOWED_RECIPIENTS` (comma-separated) | who may get mail, see below |
-| `insecure_skip_verify` | `SMTP_RELAY_INSECURE_SKIP_VERIFY` | `false`; `true` accepts any certificate (a local test server) |
+| `insecure_skip_verify` | `SMTP_RELAY_INSECURE_SKIP_VERIFY` | `false`; `true` accepts any certificate. With a login, only for a relay on this machine: to a remote relay it then refuses to send |
 
 Environment variables win over the file. The password is never sent over an unencrypted connection to another
 machine: use `starttls` or `tls`.
@@ -166,14 +166,18 @@ everyone at that domain (not its subdomains).
 **Without login ([SSO](/config/sso) off)**, two rules protect you:
 
 - The button works only from this machine, with the UI opened as `localhost` or `127.0.0.1`. From another machine,
-  from Docker, or through a proxy you get «without auth, release works only from this machine». Turn on SSO there.
+  from Docker, or through a proxy that adds `X-Forwarded-For`, `X-Forwarded-Host`, `X-Real-IP` or `Forwarded`, you
+  get «without auth, release works only from this machine». A proxy on this machine that adds none of these headers
+  looks local, so the button works through it. Behind any proxy, turn on SSO.
 - `allowed_recipients` must be set, and each pattern must name a real domain. `*`, `*@*` or `*@*.com` would let
   anyone mail anyone, so they turn the button off. One such pattern turns off the whole list.
 
 **With SSO on**, any signed-in user can send from anywhere. `allowed_recipients` is optional; without it any address
 is allowed.
 
-In both cases only the Buggregator UI itself can send: another page open in the same browser gets an error.
+In both cases another web page open in the same browser cannot send: it gets an error. A request without a
+browser's `Origin`, like curl or a script, is not blocked by this: without SSO it works from this machine, with SSO
+it needs a token.
 
 ### What is sent
 

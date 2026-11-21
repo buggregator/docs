@@ -223,7 +223,7 @@ Off by default. Sends one caught email to a real inbox on request. See
 | `SMTP_RELAY_TLS` | `starttls` | `starttls`, `tls` or `none` |
 | `SMTP_RELAY_USERNAME`, `SMTP_RELAY_PASSWORD`, `SMTP_RELAY_PASSWORD_FILE` | (empty) | Login |
 | `SMTP_RELAY_FROM` | (empty) | Sender address given to the server |
-| `SMTP_RELAY_ALLOWED_RECIPIENTS` | (empty) | Comma-separated patterns, e.g. `*@mycompany.com`; required without login |
+| `SMTP_RELAY_ALLOWED_RECIPIENTS` | (empty) | Comma-separated patterns, e.g. `*@mycompany.com`; required while SSO is off, each pattern with a literal domain |
 | `SMTP_RELAY_INSECURE_SKIP_VERIFY` | `false` | Accept any certificate |
 
 ### Broadcast

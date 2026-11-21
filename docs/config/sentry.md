@@ -1,5 +1,5 @@
 ---
-llms_description: "Sentry SDK compatibility (since [version: to fill]: user feedback — feedback/user_report envelope items stored, shown on the error page and the Feedback tab, GET /api/sentry/feedback, no feed card, screenshots not stored; desktop notifications in Settings › Notifications for new errors while the tab is hidden, https or localhost only; cron monitors — see /config/crons): DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, check-ins, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Java SDK checked with Spring Boot (guides/spring-boot); other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default', unless (since server v2.10.0) its public key names an existing project; since 2.11.0 a key with _ also finds the project with - (http://billing@host:8000/1 → billing; key from sentry_key query or X-Sentry-Auth; key 'sentry' reserved; unknown key → default, no project created). Order: DSN path > X-Buggregator-Project / Basic Auth > public key > default. Sentry page tabs Exceptions, Traces, Logs, Metrics (Traces and Logs also hold OpenTelemetry OTLP data, see /config/opentelemetry), filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
+llms_description: "Sentry SDK compatibility (since [version: to fill]: user feedback — feedback/user_report envelope items stored, shown on the error page and the Feedback tab, GET /api/sentry/feedback, no feed card, screenshots not stored; desktop notifications in Settings › Notifications for new errors while the tab is hidden, https or localhost only; cron monitors — see /config/crons): DSN format http://sentry@host:8000/1. Setup for Laravel (SENTRY_LARAVEL_DSN), Spiral, Symfony, Magento 2, WordPress (WP Sentry plugin), JavaScript (browser, Node.js, Next.js), Python (Django), Go: tested since server v2.9.0 with @sentry/browser and @sentry/node 11.11, sentry-python 2.74 (Brotli bodies), sentry-go 0.50; stored: errors, messages, transactions/spans, logs (JS enableLogs, Python enable_logs; sentry-go 0.50 sends NewLogger logs with no option); not stored: sessions, client reports, profiles, replays, attachments/minidumps; tracesSampleRate 1.0 needed; browser needs no CORS setup. Java SDK checked with Spring Boot (guides/spring-boot); other SDKs (Ruby, .NET, …) not verified. UI shows stack traces, breadcrumbs, request/device/app info, tags, modules. Projects: non-numeric DSN path (http://sentry@host:8000/shop) or headers X-Buggregator-Event: sentry + X-Buggregator-Project (the project header alone is ignored for SDK requests); numeric DSN goes to 'default', unless (since server v2.10.0) its public key names an existing project; since 2.11.0 a key with _ also finds the project with - (http://billing@host:8000/1 → billing; key from sentry_key query or X-Sentry-Auth; key 'sentry' reserved; unknown key → default, no project created). Order: DSN path > X-Buggregator-Project / Basic Auth > public key > default. Sentry page tabs Exceptions, Traces, Logs, Metrics (Traces and Logs also hold OpenTelemetry OTLP data, see /config/opentelemetry), filtered by project and period on the server, refreshed live via the sentry.stored WebSocket notice. Clear deletes one project's Sentry data and keeps pinned errors: DELETE /api/sentry/all?project=<key>&keep_pinned=1."
 ---
 
 # Sentry — Exceptions
@@ -109,7 +109,7 @@ were tested with real requests from these versions:
 | `sentry-go` | 0.50 |
 
 What Buggregator stores and shows from them: errors, messages, transactions and traces with their spans, and logs.
-What it does not store: sessions, client reports, cron check-ins, profiles, replays, attachments and minidumps.
+What it does not store: sessions, client reports, profiles, replays, attachments and minidumps.
 
 Two settings matter in every SDK:
 
@@ -375,8 +375,9 @@ notifications** (since server `[version: to fill]`). The browser asks for permis
 
 ## Clearing data
 
-**Clear** on the Sentry page deletes the Sentry data of the current project only: errors, traces, logs and
-metrics. Pinned errors stay. Other projects are not touched.
+**Clear** on the Sentry page deletes the Sentry data of the current project only: errors, traces, logs, metrics,
+user feedback and the run history of [cron monitors](/config/crons). Pinned errors stay, and so does their feedback.
+The cron monitors stay with their settings; their last status starts over. Other projects are not touched.
 
 The same through the API:
 
