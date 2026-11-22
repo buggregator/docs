@@ -1,5 +1,5 @@
 ---
-llms_description: "Logs screen (/logs, sidebar «Logs»), since server [version: to fill]: all Monolog records as one stream. Search q= (every word as a substring, any case; message, channel, context and extra keys and values, first 4 KB; words of 1-2 letters: case-insensitive for ASCII only), level and channel filters with counts, time window (default last hour, window=all), per-minute chart, live stream with pause, expandable row with context/extra, «All lines of this request» by trace id (extra.trace_id or context.trace_id, set by an app processor) and «This trace in Sentry». URL keeps the view: ?q=&level=&channel=&window=&trace=. API: GET /api/events/preview?type=monolog&q=&level=&channel=&trace=&window=; GET /api/events/facets?type=monolog (level, channel, trace counts); GET /api/events/histogram?type=monolog&bucket=60 → {bucket,data:[{t,count,levels}]}, empty buckets omitted, at most 1440 buckets (bucket grows, read it from the answer). Search index ≈500 bytes per log line. MCP events_list query + trace."
+llms_description: "Logs screen (/logs, sidebar «Logs»), since server 2.14.0: all Monolog records as one stream. Search q= (every word as a substring, any case; message, channel, context and extra keys and values, first 4 KB; words of 1-2 letters: case-insensitive for ASCII only), level and channel filters with counts, time window (default last hour, window=all), per-minute chart, live stream with pause, expandable row with context/extra, «All lines of this request» by trace id (extra.trace_id or context.trace_id, set by an app processor) and «This trace in Sentry». URL keeps the view: ?q=&level=&channel=&window=&trace=. API: GET /api/events/preview?type=monolog&q=&level=&channel=&trace=&window=; GET /api/events/facets?type=monolog (level, channel, trace counts); GET /api/events/histogram?type=monolog&bucket=60 → {bucket,data:[{t,count,levels}]}, empty buckets omitted, at most 1440 buckets (bucket grows, read it from the answer). Search index ≈500 bytes per log line. MCP events_list query + trace."
 ---
 
 # Logs Screen
@@ -7,7 +7,7 @@ llms_description: "Logs screen (/logs, sidebar «Logs»), since server [version:
 The Logs screen shows every Monolog record as one stream, like `tail -f` with search. Find the line you need,
 see how many errors came in the last minutes, and open all lines of the same request.
 
-> Available since server `[version: to fill]`. Logs come from the [Monolog](./monolog.md) integration: set it up
+> Available since server `2.14.0`. Logs come from the [Monolog](./monolog.md) integration: set it up
 > first.
 
 Open **Logs** in the sidebar, or go to `http://127.0.0.1:8000/logs`.

@@ -1,5 +1,5 @@
 ---
-llms_description: "Feed filters, since server [version: to fill]: narrow the event feed by machine (host), environment (env), user, Monolog channel (channel), level, release, Sentry/profiler tag (tag=name:value) and trace id (trace). API: same query params on GET /api/events and /api/events/preview; repeat a param = OR, different params = AND, prefix not. excludes (not.host=ci-1; events without that field stay). Levels match in any case. GET /api/events/facets?<same params> → {data:{host:[{value,count}],tag:feature:[…]},keys:[…]}: up to 50 values per key, most frequent first, a key's counts ignore its own filter. Values come from: Sentry server_name, environment, release, user (email > username > id > ip), level, logger as channel, tags; Monolog channel, level_name, extra.hostname (HostnameProcessor), extra/context trace_id; Ray/Inspector/profiler hostname, Inspector user, profiler tags; VarDumper request host (none for CLI); HTTP dumps Host header, sentry-trace/traceparent; SMTP trace header only. Limit: a tag name containing ':' cannot be filtered. Events stored before the upgrade are indexed in the background. UI: '+ Add filter' above the feed, Enter include, Shift+Enter exclude, filters in the URL. MCP: events_list host/env/user/channel/level/release/tag/trace/exclude_host, events_facets."
+llms_description: "Feed filters, since server 2.14.0: narrow the event feed by machine (host), environment (env), user, Monolog channel (channel), level, release, Sentry/profiler tag (tag=name:value) and trace id (trace). API: same query params on GET /api/events and /api/events/preview; repeat a param = OR, different params = AND, prefix not. excludes (not.host=ci-1; events without that field stay). Levels match in any case. GET /api/events/facets?<same params> → {data:{host:[{value,count}],tag:feature:[…]},keys:[…]}: up to 50 values per key, most frequent first, a key's counts ignore its own filter. Values come from: Sentry server_name, environment, release, user (email > username > id > ip), level, logger as channel, tags; Monolog channel, level_name, extra.hostname (HostnameProcessor), extra/context trace_id; Ray/Inspector/profiler hostname, Inspector user, profiler tags; VarDumper request host (none for CLI); HTTP dumps Host header, sentry-trace/traceparent; SMTP trace header only. Limit: a tag name containing ':' cannot be filtered. Events stored before the upgrade are indexed in the background. UI: '+ Add filter' above the feed, Enter include, Shift+Enter exclude, filters in the URL. MCP: events_list host/env/user/channel/level/release/tag/trace/exclude_host, events_facets."
 ---
 
 # Feed Filters
@@ -10,7 +10,7 @@ one environment, one user, one Monolog channel or one tag.
 Example: five developers and a CI runner send to the same server. Pick `host = anna-mbp`, and the feed shows only
 Anna's events.
 
-> Available since server `[version: to fill]`.
+> Available since server `2.14.0`.
 
 ## Filter the feed in the UI
 

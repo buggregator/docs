@@ -1,5 +1,5 @@
 ---
-llms_description: "Request timeline, since server [version: to fill]: the Request tab of a Sentry trace (/sentry/traces/<id>, default view; others Waterfall, Flame graph, Call graph, Sequence) shows everything one request did on one time scale, in lanes: request, SQL queries, cache, logs, errors, HTTP dumps, outgoing calls, mail, jobs, views, other. Summary on top (e.g. 23 queries · 41 ms, 2 logs · 1 error). 5+ identical spans of a lane collapse into one block. N+1 hint: server finds 5+ identical normalized SQL queries in one transaction, trace API field n_plus_one [{transaction_id, query, count, total_ms, origin, span_ids}]; origin (file:line) only when the SDK sends it (sentry-laravel: queries over SENTRY_TRACE_SQL_ORIGIN_THRESHOLD_MS, default 100; set 0 on dev; lazy relations still have none). Linked by trace id (GET /api/events?trace=<id>&window=all): Monolog extra.trace_id/context.trace_id, mails with X-Trace-Id/sentry-trace/traceparent header (app adds it), HTTP dumps with sentry-trace/traceparent (Laravel Http:: adds it); plus the trace's Sentry errors and logs. Ray and VarDumper are not linked. Needs tracing on (SENTRY_TRACES_SAMPLE_RATE=1.0)."
+llms_description: "Request timeline, since server 2.14.0: the Request tab of a Sentry trace (/sentry/traces/<id>, default view; others Waterfall, Flame graph, Call graph, Sequence) shows everything one request did on one time scale, in lanes: request, SQL queries, cache, logs, errors, HTTP dumps, outgoing calls, mail, jobs, views, other. Summary on top (e.g. 23 queries · 41 ms, 2 logs · 1 error). 5+ identical spans of a lane collapse into one block. N+1 hint: server finds 5+ identical normalized SQL queries in one transaction, trace API field n_plus_one [{transaction_id, query, count, total_ms, origin, span_ids}]; origin (file:line) only when the SDK sends it (sentry-laravel: queries over SENTRY_TRACE_SQL_ORIGIN_THRESHOLD_MS, default 100; set 0 on dev; lazy relations still have none). Linked by trace id (GET /api/events?trace=<id>&window=all): Monolog extra.trace_id/context.trace_id, mails with X-Trace-Id/sentry-trace/traceparent header (app adds it), HTTP dumps with sentry-trace/traceparent (Laravel Http:: adds it); plus the trace's Sentry errors and logs. Ray and VarDumper are not linked. Needs tracing on (SENTRY_TRACES_SAMPLE_RATE=1.0)."
 ---
 
 # Request Timeline
@@ -10,7 +10,7 @@ jobs and errors. It also spots the classic N+1 problem: the same query run again
 Example: `GET /posts` is slow. Open its trace and see 23 queries, 20 of them the same `select * from users where id
 = ?`, next to the log lines and the mail this request sent.
 
-> Available since server `[version: to fill]`. It builds on [Sentry](./sentry.md) traces: your app needs the Sentry
+> Available since server `2.14.0`. It builds on [Sentry](./sentry.md) traces: your app needs the Sentry
 > SDK with tracing on.
 
 ## Set it up

@@ -1,5 +1,5 @@
 ---
-llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). Allow-list since [version: to fill]: auth.allowed_emails / auth.allowed_domains (env AUTH_ALLOWED_EMAILS / AUTH_ALLOWED_DOMAINS, comma lists; email OR domain; confirmed email only; google matches Workspace hd; github reads the verified primary email via scope user:email (GitHub default scopes read:user,user:email since [version: to fill]; Helm chart always sends openid,email,profile → set auth.scopes); Entra ID: AUTH_PROVIDER=oidc, tenant URL https://login.microsoftonline.com/<tenant>/v2.0 (not /common), allow-list needs optional ID-token claim xms_edov, else refused; profile name = full name, else login; checked on every request, signs out old sessions; refusal page «Access denied», state mismatch «Sign-in expired»). Without a list any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict). Since [version: to fill]: users/sessions/settings/audit stored in the DB (in-memory DB: restart signs everyone out, loses them; use a file); after upgrade everyone signs in once. POST /api/auth/logout → 204, token dead at once (API 401, its sockets closed), other browsers stay. GET/PUT /api/me/settings (merge, null removes; 64 keys, key ≤128, value ≤16 KB, body ≤256 KB; 400/413). GET /api/audit?limit=1..500(100)&before=<id> → data[{id,at,user_id,user,action,target,status,ip}], next_before; actions login, login_denied, logout, settings.update, events.clear, event.delete, sentry.clear, smtp.clear, else route pattern; GETs and debugger stepping not logged; kept 90 days; readers auth.admin_emails / AUTH_ADMIN_EMAILS (empty = every signed-in user, 403 otherwise; Helm auth.adminEmails since chart [chart version: to fill], older chart extraEnv); IP = TCP peer (proxy IP behind a reverse proxy). GET /api/me adds id, provider, is_admin. /auth/sso/login?return_to=<path> returns to the page after sign-in (same-server path with one leading / only); UI: a signed-out deep link (e.g. /sentry/event/<uuid>) goes through sign-in and back; «Link» on the event page copies the address. UI user menu: name, email, «Audit log» (admins), «Logout»; /audit page (non-admin: «Only admins can see the audit log»). Settings synced per user: theme, period, menu, editor and path mapping, shortcuts, notifications, Monolog context, Sentry filters/views; feed filters stay in the URL."
+llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). Allow-list since 2.14.0: auth.allowed_emails / auth.allowed_domains (env AUTH_ALLOWED_EMAILS / AUTH_ALLOWED_DOMAINS, comma lists; email OR domain; confirmed email only; google matches Workspace hd; github reads the verified primary email via scope user:email (GitHub default scopes read:user,user:email since 2.14.0; Helm chart always sends openid,email,profile → set auth.scopes); Entra ID: AUTH_PROVIDER=oidc, tenant URL https://login.microsoftonline.com/<tenant>/v2.0 (not /common), allow-list needs optional ID-token claim xms_edov, else refused; profile name = full name, else login; checked on every request, signs out old sessions; refusal page «Access denied», state mismatch «Sign-in expired»). Without a list any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict). Since 2.14.0: users/sessions/settings/audit stored in the DB (in-memory DB: restart signs everyone out, loses them; use a file); after upgrade everyone signs in once. POST /api/auth/logout → 204, token dead at once (API 401, its sockets closed), other browsers stay. GET/PUT /api/me/settings (merge, null removes; 64 keys, key ≤128, value ≤16 KB, body ≤256 KB; 400/413). GET /api/audit?limit=1..500(100)&before=<id> → data[{id,at,user_id,user,action,target,status,ip}], next_before; actions login, login_denied, logout, settings.update, events.clear, event.delete, sentry.clear, smtp.clear, else route pattern; GETs and debugger stepping not logged; kept 90 days; readers auth.admin_emails / AUTH_ADMIN_EMAILS (empty = every signed-in user, 403 otherwise; Helm auth.adminEmails since chart 3.3.0, older chart extraEnv); IP = TCP peer (proxy IP behind a reverse proxy). GET /api/me adds id, provider, is_admin. /auth/sso/login?return_to=<path> returns to the page after sign-in (same-server path with one leading / only); UI: a signed-out deep link (e.g. /sentry/event/<uuid>) goes through sign-in and back; «Link» on the event page copies the address. UI user menu: name, email, «Audit log» (admins), «Logout»; /audit page (non-admin: «Only admins can see the audit log»). Settings synced per user: theme, period, menu, editor and path mapping, shortcuts, notifications, Monolog context, Sentry filters/views; feed filters stay in the URL."
 ---
 
 # Configuration — Single Sign-On (SSO)
@@ -21,7 +21,7 @@ not support OIDC discovery).
 
 ## Who can sign in
 
-By default, anyone the provider signs in gets in. Since server `[version: to fill]`, list who may sign in, by email
+By default, anyone the provider signs in gets in. Since server `2.14.0`, list who may sign in, by email
 or by domain:
 
 ```yaml
@@ -49,7 +49,7 @@ the settings above, `anna@gmail.com` and `bob@acme.com` sign in, `eve@gmail.com`
   signs in gets access`.
 
 ::: warning Without a list, any account the provider accepts can sign in
-On servers older than `[version: to fill]`, or with no list set, Buggregator does not check who signs in. If the
+On servers older than `2.14.0`, or with no list set, Buggregator does not check who signs in. If the
 provider lets a person log in, that person sees all your events. Example: with GitHub SSO on a public address,
 anyone with a GitHub account can open your Buggregator.
 
@@ -99,9 +99,9 @@ auth:
 | `AUTH_CALLBACK_URL` | — | Callback URL (e.g., `http://buggregator.example.com/auth/sso/callback`) |
 | `AUTH_SCOPES` | `openid,email,profile`; GitHub: `read:user,user:email` | Comma-separated OAuth2 scopes |
 | `AUTH_JWT_SECRET` | — | **Required.** Secret for signing internal JWT tokens |
-| `AUTH_ALLOWED_EMAILS` | — | Comma-separated emails that may sign in (since `[version: to fill]`) |
-| `AUTH_ALLOWED_DOMAINS` | — | Comma-separated domains that may sign in; Google: Workspace domain (since `[version: to fill]`) |
-| `AUTH_ADMIN_EMAILS` | — | Comma-separated emails that may read the audit log; empty: every signed-in user (since `[version: to fill]`) |
+| `AUTH_ALLOWED_EMAILS` | — | Comma-separated emails that may sign in (since `2.14.0`) |
+| `AUTH_ALLOWED_DOMAINS` | — | Comma-separated domains that may sign in; Google: Workspace domain (since `2.14.0`) |
+| `AUTH_ADMIN_EMAILS` | — | Comma-separated emails that may read the audit log; empty: every signed-in user (since `2.14.0`) |
 
 > **Important:** `AUTH_JWT_SECRET` is required when authentication is enabled. It is used to sign the internal
 > session JWT tokens.
@@ -163,7 +163,7 @@ AUTH_ALLOWED_EMAILS=anna@example.com,max@example.com
 ```
 
 > **Note:** GitHub does not support OIDC, so `AUTH_PROVIDER_URL` is not needed. Leave `AUTH_SCOPES` empty: for
-> GitHub the default is `read:user,user:email` (since `[version: to fill]`; older servers ask for
+> GitHub the default is `read:user,user:email` (since `2.14.0`; older servers ask for
 > `openid,email,profile`, which are not GitHub scopes). On Helm, set `auth.scopes=read:user,user:email`: the chart
 > always sends its own `openid,email,profile`.
 
@@ -234,7 +234,7 @@ AUTH_JWT_SECRET=your-secret-key
   token's issuer does not match, and everyone is refused.
 - With an allow-list (`AUTH_ALLOWED_EMAILS` / `AUTH_ALLOWED_DOMAINS`), add the optional claim `xms_edov` to the ID
   token: **App registration → Token configuration → Add optional claim → ID → `xms_edov`**. It tells Buggregator
-  the email's domain is verified by your tenant (since `[version: to fill]`). Without it, everyone is refused.
+  the email's domain is verified by your tenant (since `2.14.0`). Without it, everyone is refused.
 - The profile picture does not show: Entra's picture link needs a Microsoft token.
 
 ## Verifying the Configuration
@@ -247,13 +247,13 @@ sign in. If everything is set up right, clicking this option will take you to th
 After logging in successfully, users will be redirected back to the Buggregator server and logged in. Click your
 picture in the bottom left corner to open the user menu. It shows your name and email, **Audit log** (admins only,
 see [Audit log](#audit-log)) and **Logout**. The name is the full name from the provider, or the login when the
-profile has no name (since `[version: to fill]`). Example: `Anna Petrova`, or `anna-p` on GitHub without a name.
+profile has no name (since `2.14.0`). Example: `Anna Petrova`, or `anna-p` on GitHub without a name.
 
 ![User menu with the signed-in user](/images/sso-user-menu.webp)
 
 ## Signed-in users
 
-Since server `[version: to fill]`, Buggregator remembers who signs in. It keeps, in its database:
+Since server `2.14.0`, Buggregator remembers who signs in. It keeps, in its database:
 
 - **users**: name, email and picture from the provider. They are updated on every sign-in. Example: rename yourself
   at the provider, sign in again, and Buggregator shows the new name.
@@ -267,7 +267,7 @@ gone, and the audit log is empty. Use a database file, see [Database](./database
 the database on a volume.
 :::
 
-Right after the upgrade to `[version: to fill]`, everyone signs in once more. Older tokens have no session on the
+Right after the upgrade to `2.14.0`, everyone signs in once more. Older tokens have no session on the
 server, so they stop working.
 
 ### Sign out
@@ -335,7 +335,7 @@ The log shows every user's email and IP address. Set `admin_emails` if your team
 The IP address is the one that connected to Buggregator. Behind a reverse proxy (nginx, Traefik, a Kubernetes
 Ingress), it is the proxy's address, the same for every row.
 
-On Helm (chart `[chart version: to fill]` and later): `--set 'auth.adminEmails={anna@acme.com}'`, see
+On Helm (chart `3.3.0` and later): `--set 'auth.adminEmails={anna@acme.com}'`, see
 [Helm Chart](./helm-chart.md#authentication-sso). Older chart: pass `AUTH_ADMIN_EMAILS` (a comma list) through
 `extraEnv`.
 
@@ -390,7 +390,7 @@ With SSO off, nothing needs a token.
 
 ### Account API
 
-Since server `[version: to fill]`. All calls need `X-Auth-Token`. They exist only with SSO on.
+Since server `2.14.0`. All calls need `X-Auth-Token`. They exist only with SSO on.
 
 | Call | Answer |
 |------|--------|
