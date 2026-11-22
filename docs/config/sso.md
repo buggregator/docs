@@ -287,14 +287,14 @@ Without sign-out, a session ends after 30 days, like its token.
 Your settings are stored on the server, not only in the browser. Sign in from another browser or computer, and your
 settings are there. Example: switch to the light theme at work, sign in at home, and the light theme is on.
 
-Saved this way: the theme, the period of the event list, the menu (hidden items, collapsed sidebar, event counters),
-the code editor and file path mapping, keyboard shortcuts and key hints, desktop notifications, Monolog context
-display, and the Sentry filters and views. The feed filters are not saved: they are part of the page address, so share
-the link instead.
+Saved this way: the theme, the period of the event list, the fixed header, the menu (hidden items, collapsed sidebar,
+event counters), the code editor and file path mapping, keyboard shortcuts and key hints, desktop notifications,
+Monolog context display, and the Sentry filters, views and the paused service map. The feed filters are not saved:
+they are part of the page address, so share the link instead.
 
-The first time you sign in from a browser, its current settings become your account's. If someone else used this
-browser before, their settings are replaced by yours, not copied into your account. A setting the server refuses
-(over 16 KB) stays in this browser only.
+The first time you sign in from a browser, settings your account already has replace this browser's, and the ones it
+lacks are taken from this browser. If someone else used this browser before, their settings are replaced by yours,
+not copied into your account. A setting the server refuses (over 16 KB) stays in this browser only.
 
 ### Audit log
 
