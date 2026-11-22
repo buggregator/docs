@@ -1,5 +1,5 @@
 ---
-llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). No allow-list: any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict)."
+llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). Allow-list since [version: to fill]: auth.allowed_emails / auth.allowed_domains (env AUTH_ALLOWED_EMAILS / AUTH_ALLOWED_DOMAINS, comma lists; email OR domain; confirmed email only; google matches Workspace hd; github needs AUTH_SCOPES=user:email; Entra ID refused; checked on every request, signs out old sessions; refusal page «Access denied», state mismatch «Sign-in expired»). Without a list any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict)."
 ---
 
 # Configuration — Single Sign-On (SSO)
@@ -21,11 +21,36 @@ not support OIDC discovery).
 
 ## Who can sign in
 
-::: warning Any account the provider accepts can sign in
-Buggregator does not check who signs in. If the provider lets a person log in, that person sees all your events.
-Example: with GitHub SSO on a public address, anyone with a GitHub account can open your Buggregator.
+By default, anyone the provider signs in gets in. Since server `[version: to fill]`, list who may sign in, by email
+or by domain:
 
-Limit who can sign in at the provider before you expose Buggregator:
+```yaml
+auth:
+  allowed_emails: ["anna@gmail.com"]     # env AUTH_ALLOWED_EMAILS=anna@gmail.com,max@gmail.com
+  allowed_domains: ["acme.com"]          # env AUTH_ALLOWED_DOMAINS=acme.com
+```
+
+A person gets in when their email is in `allowed_emails` **or** its domain is in `allowed_domains`. Example: with
+the settings above, `anna@gmail.com` and `bob@acme.com` sign in, `eve@gmail.com` does not.
+
+- Only an email the provider has **confirmed** counts. Case does not matter.
+- **Google:** `allowed_domains` matches your Google Workspace domain, not the address. A personal Google account
+  with an `@acme.com` address does not pass. Name the primary Workspace domain: an alias domain never matches.
+- **GitHub:** set `AUTH_SCOPES=user:email`. Then Buggregator reads the confirmed primary email. Without it, only the
+  public profile email counts, and a user with no public email is refused.
+- **Microsoft Entra ID (Azure AD)** does not say whether an email is confirmed, so with a list everyone is refused.
+- The list is checked on every request. Add a list and restart, and people who are not on it are signed out at once,
+  even if they signed in before.
+- A refused person sees «Access denied: … is not allowed to sign in to this Buggregator».
+- With no list, the server logs at start: `auth: no allowed_emails/allowed_domains set: every account the provider
+  signs in gets access`.
+
+::: warning Without a list, any account the provider accepts can sign in
+On servers older than `[version: to fill]`, or with no list set, Buggregator does not check who signs in. If the
+provider lets a person log in, that person sees all your events. Example: with GitHub SSO on a public address,
+anyone with a GitHub account can open your Buggregator.
+
+Set a list, or limit who can sign in at the provider, before you expose Buggregator:
 
 - **Google:** on the OAuth consent screen, set **User type** to **Internal**. Then only accounts of your Google
   Workspace organization can sign in.
@@ -37,7 +62,7 @@ Limit who can sign in at the provider before you expose Buggregator:
   network, or pick another provider.
 - **Generic OIDC:** use your provider's own setting that assigns users or groups to the application.
 
-Without such a limit, do not expose Buggregator to the internet.
+Without a list or such a limit, do not expose Buggregator to the internet.
 :::
 
 ## Configuration
@@ -54,6 +79,8 @@ auth:
   callback_url: http://localhost:8000/auth/sso/callback
   scopes: openid,email,profile
   jwt_secret: your-jwt-signing-secret
+  allowed_emails: []                # who may sign in, see «Who can sign in»
+  allowed_domains: []
 ```
 
 ### Environment Variables
@@ -68,6 +95,8 @@ auth:
 | `AUTH_CALLBACK_URL` | — | Callback URL (e.g., `http://buggregator.example.com/auth/sso/callback`) |
 | `AUTH_SCOPES` | `openid,email,profile` | Comma-separated OAuth2 scopes |
 | `AUTH_JWT_SECRET` | — | **Required.** Secret for signing internal JWT tokens |
+| `AUTH_ALLOWED_EMAILS` | — | Comma-separated emails that may sign in (since `[version: to fill]`) |
+| `AUTH_ALLOWED_DOMAINS` | — | Comma-separated domains that may sign in; Google: Workspace domain (since `[version: to fill]`) |
 
 > **Important:** `AUTH_JWT_SECRET` is required when authentication is enabled. It is used to sign the internal
 > session JWT tokens.
@@ -124,6 +153,9 @@ AUTH_CLIENT_ID=xxx
 AUTH_CLIENT_SECRET=xxx
 AUTH_CALLBACK_URL=http://<server_address>/auth/sso/callback
 AUTH_JWT_SECRET=your-secret-key
+# with an allow-list: read the confirmed email
+AUTH_SCOPES=user:email
+AUTH_ALLOWED_EMAILS=anna@example.com,max@example.com
 ```
 
 > **Note:** GitHub does not support OIDC, so `AUTH_PROVIDER_URL` is not needed.
@@ -230,4 +262,8 @@ If you encounter issues during the authentication process, ensure that:
 - All environment variables are correctly set without any typos.
 - The callback URL in your provider's configuration matches the `AUTH_CALLBACK_URL` you specified.
 - `AUTH_JWT_SECRET` is set (it is required for session management).
+- «Sign-in expired»: the sign-in started in another tab, or took more than 10 minutes. Start it again. Two sign-ins in two tabs at
+  once end the same way for the first one.
+- «Access denied»: the email is not on `allowed_emails` / `allowed_domains`, or the provider did not confirm it.
+  The server log names the email and whether it was confirmed.
 - For OIDC providers, the `AUTH_PROVIDER_URL` points to the issuer root (e.g., `https://xxx.auth0.com`, not `https://xxx.auth0.com/authorize`).

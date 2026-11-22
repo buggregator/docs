@@ -201,6 +201,20 @@ helm install buggregator oci://ghcr.io/buggregator/helm-chart/buggregator \
   # plus auth.provider, auth.providerUrl, auth.callbackUrl as above
 ```
 
+To let in only your team (server `[version: to fill]` and later), pass the allow-list through `extraEnv`. The chart
+has no `auth.*` value for it yet:
+
+```yaml
+# values.yaml
+extraEnv:
+  - name: AUTH_ALLOWED_DOMAINS
+    value: "acme.com"
+  - name: AUTH_ALLOWED_EMAILS
+    value: "anna@gmail.com,max@gmail.com"
+```
+
+Who matches what: [Who can sign in](./sso.md#who-can-sign-in).
+
 Provider setup: [SSO guide](./sso.md).
 
 ## Prometheus metrics
