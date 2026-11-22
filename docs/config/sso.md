@@ -228,7 +228,8 @@ AUTH_SCOPES=openid,email,profile
 AUTH_JWT_SECRET=your-secret-key
 ```
 
-- Use your tenant id in the URL. The shared `/common` address does not work: its issuer does not match the tokens.
+- Use your tenant id in the URL. Sign-in through the shared `/common` address works, but with an allow-list the
+  token's issuer does not match, and everyone is refused.
 - With an allow-list (`AUTH_ALLOWED_EMAILS` / `AUTH_ALLOWED_DOMAINS`), add the optional claim `xms_edov` to the ID
   token: **App registration → Token configuration → Add optional claim → ID → `xms_edov`**. It tells Buggregator
   the email's domain is verified by your tenant (since `[version: to fill]`). Without it, everyone is refused.
