@@ -1,5 +1,5 @@
 ---
-llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). Allow-list since [version: to fill]: auth.allowed_emails / auth.allowed_domains (env AUTH_ALLOWED_EMAILS / AUTH_ALLOWED_DOMAINS, comma lists; email OR domain; confirmed email only; google matches Workspace hd; github needs AUTH_SCOPES=user:email; Entra ID refused; checked on every request, signs out old sessions; refusal page «Access denied», state mismatch «Sign-in expired»). Without a list any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict)."
+llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). Allow-list since [version: to fill]: auth.allowed_emails / auth.allowed_domains (env AUTH_ALLOWED_EMAILS / AUTH_ALLOWED_DOMAINS, comma lists; email OR domain; confirmed email only; google matches Workspace hd; github reads the verified primary email via scope user:email (GitHub default scopes read:user,user:email since [version: to fill]; Helm chart always sends openid,email,profile → set auth.scopes); Entra ID: AUTH_PROVIDER=oidc, tenant URL https://login.microsoftonline.com/<tenant>/v2.0 (not /common), allow-list needs optional ID-token claim xms_edov, else refused; profile name = full name, else login; checked on every request, signs out old sessions; refusal page «Access denied», state mismatch «Sign-in expired»). Without a list any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict)."
 ---
 
 # Configuration — Single Sign-On (SSO)
@@ -13,7 +13,7 @@ Supported providers:
 - [GitHub](https://github.com/settings/developers)
 - [Keycloak](https://www.keycloak.org/)
 - [GitLab](https://gitlab.com/)
-- Any **generic OIDC** provider
+- Any **generic OIDC** provider, for example [Microsoft Entra ID](#microsoft-entra-id)
 
 For OIDC-compatible providers (Auth0, Google, Keycloak, GitLab, generic OIDC), endpoints are auto-discovered
 from the provider URL via `.well-known/openid-configuration`. For GitHub, endpoints are hardcoded (GitHub does
@@ -36,9 +36,11 @@ the settings above, `anna@gmail.com` and `bob@acme.com` sign in, `eve@gmail.com`
 - Only an email the provider has **confirmed** counts. Case does not matter.
 - **Google:** `allowed_domains` matches your Google Workspace domain, not the address. A personal Google account
   with an `@acme.com` address does not pass. Name the primary Workspace domain: an alias domain never matches.
-- **GitHub:** set `AUTH_SCOPES=user:email`. Then Buggregator reads the confirmed primary email. Without it, only the
-  public profile email counts, and a user with no public email is refused.
-- **Microsoft Entra ID (Azure AD)** does not say whether an email is confirmed, so with a list everyone is refused.
+- **GitHub:** Buggregator reads the confirmed primary email, even a hidden one. This needs the scope `user:email`,
+  which is in the GitHub default (`read:user,user:email`). If you set `AUTH_SCOPES` yourself, keep `user:email` in it;
+  without it only the public profile email counts, and a user with no public email is refused.
+- **Microsoft Entra ID (Azure AD)** does not confirm emails by default, so with a list everyone is refused. Add the
+  optional claim `xms_edov` to the ID token, see [Microsoft Entra ID](#microsoft-entra-id).
 - The list is checked on every request. Add a list and restart, and people who are not on it are signed out at once,
   even if they signed in before. Right after the upgrade to this version, everyone signs in once more, allowed
   people too.
@@ -94,7 +96,7 @@ auth:
 | `AUTH_CLIENT_ID` | — | OAuth2 client ID |
 | `AUTH_CLIENT_SECRET` | — | OAuth2 client secret |
 | `AUTH_CALLBACK_URL` | — | Callback URL (e.g., `http://buggregator.example.com/auth/sso/callback`) |
-| `AUTH_SCOPES` | `openid,email,profile` | Comma-separated OAuth2 scopes |
+| `AUTH_SCOPES` | `openid,email,profile`; GitHub: `read:user,user:email` | Comma-separated OAuth2 scopes |
 | `AUTH_JWT_SECRET` | — | **Required.** Secret for signing internal JWT tokens |
 | `AUTH_ALLOWED_EMAILS` | — | Comma-separated emails that may sign in (since `[version: to fill]`) |
 | `AUTH_ALLOWED_DOMAINS` | — | Comma-separated domains that may sign in; Google: Workspace domain (since `[version: to fill]`) |
@@ -154,12 +156,14 @@ AUTH_CLIENT_ID=xxx
 AUTH_CLIENT_SECRET=xxx
 AUTH_CALLBACK_URL=http://<server_address>/auth/sso/callback
 AUTH_JWT_SECRET=your-secret-key
-# with an allow-list: read the confirmed email
-AUTH_SCOPES=user:email
+# optional: who may sign in
 AUTH_ALLOWED_EMAILS=anna@example.com,max@example.com
 ```
 
-> **Note:** GitHub does not support OIDC, so `AUTH_PROVIDER_URL` is not needed.
+> **Note:** GitHub does not support OIDC, so `AUTH_PROVIDER_URL` is not needed. Leave `AUTH_SCOPES` empty: for
+> GitHub the default is `read:user,user:email` (since `[version: to fill]`; older servers ask for
+> `openid,email,profile`, which are not GitHub scopes). On Helm, set `auth.scopes=read:user,user:email`: the chart
+> always sends its own `openid,email,profile`.
 
 ### Keycloak
 
@@ -209,6 +213,27 @@ AUTH_CALLBACK_URL=http://<server_address>/auth/sso/callback
 AUTH_JWT_SECRET=your-secret-key
 ```
 
+### Microsoft Entra ID
+
+Entra ID (Azure AD) works as a generic OIDC provider:
+
+```dotenv
+AUTH_ENABLED=true
+AUTH_PROVIDER=oidc
+AUTH_PROVIDER_URL=https://login.microsoftonline.com/<tenant-id>/v2.0
+AUTH_CLIENT_ID=xxx
+AUTH_CLIENT_SECRET=xxx
+AUTH_CALLBACK_URL=http://<server_address>/auth/sso/callback
+AUTH_SCOPES=openid,email,profile
+AUTH_JWT_SECRET=your-secret-key
+```
+
+- Use your tenant id in the URL. The shared `/common` address does not work: its issuer does not match the tokens.
+- With an allow-list (`AUTH_ALLOWED_EMAILS` / `AUTH_ALLOWED_DOMAINS`), add the optional claim `xms_edov` to the ID
+  token: **App registration → Token configuration → Add optional claim → ID → `xms_edov`**. It tells Buggregator
+  the email's domain is verified by your tenant (since `[version: to fill]`). Without it, everyone is refused.
+- The profile picture does not show: Entra's picture link needs a Microsoft token.
+
 ## Verifying the Configuration
 
 Once you set the environment variables, start your Buggregator server. You should see a Login page with an option to
@@ -217,7 +242,9 @@ sign in. If everything is set up right, clicking this option will take you to th
 ![SSO login page](/images/sso-login.webp)
 
 After logging in successfully, users will be redirected back to the Buggregator server and logged in. You will see the
-user's profile information in the bottom left corner of the app.
+user's profile information in the bottom left corner of the app. The name there is the full name from the provider,
+or the login when the profile has no name (since `[version: to fill]`). Example: `Anna Petrova`, or `anna-p` on
+GitHub without a name.
 
 ![User menu with the signed-in user](/images/sso-user-menu.webp)
 
