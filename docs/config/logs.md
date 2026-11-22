@@ -34,7 +34,8 @@ The page address keeps the view, for example
 When a line has a trace id, its details show two links:
 
 - **All lines of this request** shows only the lines with the same trace id, over all time.
-- **This trace in Sentry** opens the request's trace, if your app also sent it to [Sentry](./sentry.md).
+- **This trace in Sentry** opens the request's trace, if your app also sent it to [Sentry](./sentry.md). There the
+  [Request timeline](./request-timeline.md) shows the log next to the queries, mails and errors of the same request.
 
 Buggregator reads the trace id from `extra.trace_id` or `context.trace_id`. Monolog does not add it by itself: add
 a processor in your app. With the Sentry PHP SDK and Monolog 3:

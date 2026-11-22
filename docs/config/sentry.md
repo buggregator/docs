@@ -294,7 +294,8 @@ Besides errors, Buggregator stores what the Sentry SDK sends as traces (transact
 metrics. The **Sentry** page has a tab for each:
 
 - **Exceptions** — errors, as a list or grouped by fingerprint.
-- **Traces** — transactions with their spans.
+- **Traces** — transactions with their spans. A trace opens on the [Request timeline](./request-timeline.md):
+  everything the request did on one scale, with an N+1 hint.
 - **Logs** — Sentry structured logs.
 - **Metrics** — Sentry metrics.
 

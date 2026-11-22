@@ -90,6 +90,8 @@ Microservices, monorepos, multiple teams — one dashboard.
 - You have a **long-running PHP app** (RoadRunner, FrankenPHP, Swoole, Octane, queue workers) and `dd()` is not an option.
 - You want to see **exceptions with stack traces** like in Sentry, but don't want to set up Sentry for local dev.
 - You need to **profile performance** and find memory leaks or slow functions.
+- A request is slow, and you want to see **everything it did on one timeline** — queries, cache, logs, mails — with a
+  hint when the same query runs again and again (N+1): [Request timeline](/config/request-timeline).
 - You want to **test emails** your app sends without a real mail server.
 - You want to **capture SMS messages** without sending real ones through Twilio or Vonage.
 - You have **multiple services** (microservices, Docker Compose) and want all debug data in one place.
