@@ -42,7 +42,7 @@ Example: a `SendReport` job sends no mail at first. Open it and see three attemp
 Jobs on the `sync` driver do not show: they run inside the request, not on a worker. Their spans are still on the
 request's [Request timeline](./request-timeline.md), in the **Jobs** lane.
 
-The **Queues** tab appears once there is at least one job. Before that, open `http://127.0.0.1:8000/sentry/queues`:
+The **Queues** tab appears once there is at least one job in the period you picked. Before that, open `http://127.0.0.1:8000/sentry/queues`:
 the page shows the same setup steps under **How to set up**.
 
 ## What is on the page
