@@ -41,8 +41,8 @@ Ranked table of the most expensive function calls — CPU time, wall time, memor
 
 ### Profile Comparison
 
-Compare two profiler runs side-by-side. See performance deltas (faster/slower) for CPU time, wall clock time,
-and memory usage, with per-function percentage changes.
+Compare two profiler runs side-by-side. See per-function changes in wall time, memory and calls, in percent: green
+is faster or less, red is slower or more.
 
 ## Setup
 
