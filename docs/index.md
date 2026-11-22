@@ -115,7 +115,8 @@ Catch unhandled exceptions with full **stack traces**, **breadcrumbs**, **reques
 **device/browser info**, tags, and context. See exactly where your code breaks.
 All Sentry SDKs are supported — PHP, JavaScript, Python, and more.
 OpenTelemetry traces and logs show up here too: see [OpenTelemetry](/config/opentelemetry).
-Also user feedback, and [cron monitoring](/config/crons): missed and hung scheduled jobs.
+Also user feedback, [cron monitoring](/config/crons): missed and hung scheduled jobs, and [queue jobs](/config/queues):
+failed and retried jobs with the request that queued them.
 
 <img src="/images/sentry.webp" alt="sentry" width="1399" height="803" loading="lazy">
 

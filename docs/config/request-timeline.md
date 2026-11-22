@@ -35,6 +35,7 @@ id to them, as shown [below](#logs-mails-and-http-dumps).
 - **Lanes**, one per kind, from top to bottom: **Request**, **Queries**, **Cache**, **Logs**, **Dumps** (HTTP dumps),
   **Errors**, **HTTP out** (outgoing calls), **Mail**, **Jobs**, **Views**, **Other**. Each item sits at the moment it
   happened.
+- The **Jobs** lane shows jobs the request queued. Each job's own attempts are on the [Queue Jobs](./queues.md) page.
 - **Repeats in one block.** Five or more identical items in a lane, under the same parent span, are drawn as
   one block marked `×N`.
 - **List** under the lanes: every item by time. Click one to see its details on the right; a log, mail or HTTP dump

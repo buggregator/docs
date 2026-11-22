@@ -298,6 +298,8 @@ metrics. The **Sentry** page has a tab for each:
   everything the request did on one scale, with an N+1 hint.
 - **Logs** — Sentry structured logs.
 - **Metrics** — Sentry metrics.
+- **Queues** — jobs of your queue worker: attempts, failures, the request that queued them. See
+  [Queue Jobs](./queues.md).
 
 Traces and logs from OpenTelemetry (OTLP) land in the same **Traces** and **Logs** tabs, marked **OTel**:
 see [OpenTelemetry](/config/opentelemetry).
