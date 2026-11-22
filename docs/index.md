@@ -149,7 +149,8 @@ Capture and inspect HTTP requests: method, URI, headers, cookies, POST data, upl
 ### [Monolog Server](/config/monolog) — Logs
 
 Aggregate application logs in real time. See log level, channel, message, context, extra fields, and source
-location. Filter by level, search by message. Supports all PSR-3 levels.
+location. Filter by level, search by message. Supports all PSR-3 levels. The [Logs screen](/config/logs) shows them as
+one stream with full-text search, a per-minute chart and all lines of one request.
 
 <img src="/images/monolog.webp" alt="monolog" width="1399" height="803" loading="lazy">
 

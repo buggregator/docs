@@ -40,7 +40,7 @@ already send these values.
 | `level`       | Monolog level name; Sentry level                                                                            |
 | `release`     | Sentry `release`                                                                                            |
 | `tag`         | Sentry tags; profiler tags                                                                                  |
-| `trace`       | Trace id: Monolog `extra.trace_id` or `context.trace_id`; mails and HTTP dumps with a `sentry-trace` or `traceparent` header (mails also `X-Trace-Id`) |
+| `trace`       | Trace id: Monolog `extra.trace_id` or `context.trace_id` (see [Logs screen](./logs.md)); mails and HTTP dumps with a `sentry-trace` or `traceparent` header (mails also `X-Trace-Id`) |
 
 Some things to know:
 

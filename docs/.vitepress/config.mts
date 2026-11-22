@@ -199,6 +199,7 @@ export default defineConfig({
                     {text: 'Mock Server', link: '/config/mock-server'},
                     {text: 'Mock Templates', link: '/config/mock-templates'},
                     {text: 'Monolog', link: '/config/monolog'},
+                    {text: 'Logs Screen', link: '/config/logs'},
                     {text: 'VarDumper', link: '/config/var-dumper'},
                     {text: 'Ray', link: '/config/ray'},
                     {text: 'Inspector', link: '/config/inspector'},

@@ -30,6 +30,9 @@ logging stack.
   the machine name, and you can [filter the feed](./feed-filters.md) by it.
 - **Source** — file, line, and function where the log was generated, when the record has a `source` key in its context.
 
+To read logs as one stream with search, a per-minute chart and all lines of one request, open the
+[Logs screen](./logs.md).
+
 ## Configuration
 
 Buggregator receives logs via Monolog's `SocketHandler` on port **9913**. The formatter **must** be `JsonFormatter`.
