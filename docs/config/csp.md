@@ -1,5 +1,5 @@
 ---
-llms_description: "CSP and Reporting API reports, since server [version: to fill]: event type csp. POST /csp or /csp/<project>; also any POST with Content-Type application/csp-report or application/reports+json not claimed by another module. Formats: report-uri (application/csp-report, one report) and Reporting API (application/reports+json, a list: csp-violation, deprecation, intervention…), one event per request. Project: /csp/<project>, csp:<project>@host userinfo (curl/scripts only; browsers drop userinfo), or the X-Buggregator-Project header alone; order path > userinfo > header; a new name creates the project. CORS preflight answered (204, *). Limits: body 1 MB; empty list or non-report JSON → 400. Off: modules.csp: false or leave csp out of CLIENT_SUPPORTED_EVENTS. report-to needs https or localhost on both sides; over plain http use report-uri. Deprecation/intervention reports go only to the endpoint named default. API: GET /api/events?type=csp."
+llms_description: "CSP and Reporting API reports, since server 2.13.0: event type csp. POST /csp or /csp/<project>; also any POST with Content-Type application/csp-report or application/reports+json not claimed by another module. Formats: report-uri (application/csp-report, one report) and Reporting API (application/reports+json, a list: csp-violation, deprecation, intervention…), one event per request. Project: /csp/<project>, csp:<project>@host userinfo (curl/scripts only; browsers drop userinfo), or the X-Buggregator-Project header alone; order path > userinfo > header; a new name creates the project. CORS preflight answered (204, *). Limits: body 1 MB; empty list or non-report JSON → 400. Off: modules.csp: false or leave csp out of CLIENT_SUPPORTED_EVENTS. report-to needs https or localhost on both sides; over plain http use report-uri. Deprecation/intervention reports go only to the endpoint named default. API: GET /api/events?type=csp."
 ---
 
 # CSP Reports
@@ -11,7 +11,7 @@ you write it, before your users do.
 It also catches other browser reports from the Reporting API, for example a warning that your page uses a deprecated
 feature.
 
-Available since server `[version: to fill]`.
+Available since server 2.13.0.
 
 ## Setup
 

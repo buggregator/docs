@@ -1,5 +1,5 @@
 ---
-llms_description: "Broadcast events (Pusher / Laravel Reverb / soketi server API), since server [version: to fill]: event type broadcast. Buggregator answers POST /apps/{app_id}/events and /apps/{app_id}/batch_events on the HTTP port 8000 (any path prefix; signed requests only: auth_key + auth_signature in the query, else http-dump). One event per broadcast (batch: shared batch_id). Config: broadcast.upstream / BROADCAST_UPSTREAM (empty = capture only, app gets {}, browsers get nothing), broadcast.apps [{key,secret}] / BROADCAST_APPS=key:secret,... (signature check valid|invalid|not_checked). Forward: same path, query and body sent (signature stays valid), 5 s timeout, app gets upstream answer; upstream down → 502, card kept with upstream.error; loop guard X-Buggregator-Forwarded → 508; credentials in upstream URL and secret never shown. Laravel: REVERB_HOST/REVERB_PORT/REVERB_SCHEME=http (keep VITE_REVERB_* on real Reverb) or PUSHER_HOST/PUSHER_PORT/PUSHER_SCHEME. Project: X-Buggregator-Project header (alone; Laravel: reverb client_options headers), or broadcast:<project>@host (wins); new name creates the project; app id is not a project. Not stored: terminate_connections; GET channel queries not answered; encrypted channel data not decrypted. Off: modules.broadcast: false or CLIENT_SUPPORTED_EVENTS. API GET /api/events?type=broadcast."
+llms_description: "Broadcast events (Pusher / Laravel Reverb / soketi server API), since server 2.13.0: event type broadcast. Buggregator answers POST /apps/{app_id}/events and /apps/{app_id}/batch_events on the HTTP port 8000 (any path prefix; signed requests only: auth_key + auth_signature in the query, else http-dump). One event per broadcast (batch: shared batch_id). Config: broadcast.upstream / BROADCAST_UPSTREAM (empty = capture only, app gets {}, browsers get nothing), broadcast.apps [{key,secret}] / BROADCAST_APPS=key:secret,... (signature check valid|invalid|not_checked). Forward: same path, query and body sent (signature stays valid), 5 s timeout, app gets upstream answer; upstream down → 502, card kept with upstream.error; loop guard X-Buggregator-Forwarded → 508; credentials in upstream URL and secret never shown. Laravel: REVERB_HOST/REVERB_PORT/REVERB_SCHEME=http (keep VITE_REVERB_* on real Reverb) or PUSHER_HOST/PUSHER_PORT/PUSHER_SCHEME. Project: X-Buggregator-Project header (alone; Laravel: reverb client_options headers), or broadcast:<project>@host (wins); new name creates the project; app id is not a project. Not stored: terminate_connections; GET channel queries not answered; encrypted channel data not decrypted. Off: modules.broadcast: false or CLIENT_SUPPORTED_EVENTS. API GET /api/events?type=broadcast."
 ---
 
 # Broadcast Events (Pusher, Laravel Reverb)
@@ -11,7 +11,7 @@ its channel and data.
 
 It can also pass each event on to your real Reverb or Pusher server, so the browser keeps getting live updates.
 
-Available since server `[version: to fill]`.
+Available since server 2.13.0.
 
 ## How it works
 
