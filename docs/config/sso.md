@@ -40,7 +40,8 @@ the settings above, `anna@gmail.com` and `bob@acme.com` sign in, `eve@gmail.com`
   public profile email counts, and a user with no public email is refused.
 - **Microsoft Entra ID (Azure AD)** does not say whether an email is confirmed, so with a list everyone is refused.
 - The list is checked on every request. Add a list and restart, and people who are not on it are signed out at once,
-  even if they signed in before.
+  even if they signed in before. Right after the upgrade to this version, everyone signs in once more, allowed
+  people too.
 - A refused person sees «Access denied: … is not allowed to sign in to this Buggregator».
 - With no list, the server logs at start: `auth: no allowed_emails/allowed_domains set: every account the provider
   signs in gets access`.
