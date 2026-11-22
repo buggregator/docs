@@ -1,5 +1,5 @@
 ---
-llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions, OpenTelemetry traces and logs (OTLP/HTTP), fake SMTP email capture, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
+llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions (with user feedback and cron monitors), OpenTelemetry traces and logs (OTLP/HTTP), fake SMTP email capture (with send to a real inbox), Pusher/Laravel Reverb broadcast capture, CSP reports, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
 ---
 
 # What is Buggregator?
@@ -112,15 +112,26 @@ Catch unhandled exceptions with full **stack traces**, **breadcrumbs**, **reques
 **device/browser info**, tags, and context. See exactly where your code breaks.
 All Sentry SDKs are supported — PHP, JavaScript, Python, and more.
 OpenTelemetry traces and logs show up here too: see [OpenTelemetry](/config/opentelemetry).
+Also user feedback, and [cron monitoring](/config/crons): missed and hung scheduled jobs.
 
 <img src="/images/sentry.webp" alt="sentry" width="1399" height="803" loading="lazy">
 
 ### [Fake SMTP Server](/config/smtp) — Emails
 
 Intercept outgoing emails during development. Preview HTML (with mobile/desktop viewport switcher),
-plain text, all addresses, attachments, and raw source. No emails actually sent.
+plain text, all addresses, attachments, and raw source. No emails actually sent, unless you
+[send one to a real inbox](/config/smtp#send-to-a-real-inbox) yourself.
 
 <img src="/images/smtp.webp" alt="smtp" width="1399" height="803" loading="lazy">
+
+### [Broadcast Events](/config/broadcast) — Pusher, Laravel Reverb
+
+See every event your backend broadcasts to the browser: channel, event name and data. Optionally pass them on to
+the real Reverb or Pusher server.
+
+### [CSP Reports](/config/csp) — Content Security Policy
+
+Catch the browser's CSP violation reports and other Reporting API reports while you write your policy.
 
 ### [SMS Gateway](/config/sms) — SMS Messages
 

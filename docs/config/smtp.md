@@ -1,5 +1,5 @@
 ---
-llms_description: "Fake SMTP server on port 1025: captures outgoing emails with HTML preview (desktop/mobile viewport), plain text, addresses (From/To/CC/BCC), attachments, raw MIME source. Project via the SMTP AUTH user name (any password; since v2.5.0). Config for Laravel (MAIL_HOST/MAIL_PORT), Spiral (MAILER_DSN), Symfony, Magento 2, WordPress (mu-plugin phpmailer_init hook). Testing API for e2e tests: GET /api/smtp/cursor, /api/smtp/messages (filters to, from, cc, subject, subject_contains, subject_regex, body_contains, project, since, until; order, limit, offset), /api/smtp/messages/wait (long poll, timeout max 60s, 408), /api/smtp/stats, DELETE /api/smtp/messages, /api/smtp/message/{uuid}/raw|links|codes; X-Auth-Token with SSO."
+llms_description: "Fake SMTP server on port 1025: (since 2.13.0) Send to inbox: release one caught email via a real SMTP relay — smtp_relay: host/port/tls(starttls|tls|none)/username/password/password_file/from/allowed_recipients (globs, *@domain)/insecure_skip_verify or SMTP_RELAY_* env; auth off: localhost only, no proxy headers, allowed_recipients required with exact domains (* or *@* turns it off); auth on: any signed-in user, list optional; another browser page is refused (no Origin, e.g. curl, passes: localhost without SSO, token with SSO); a proxy that adds no X-Forwarded-*/X-Real-IP/Forwarded looks local; insecure_skip_verify with a login only for a loopback relay; POST /api/smtp/release/{uuid} {to, rewrite_to}, GET /api/smtp/relay; raw message sent as caught, rewrite_to replaces To and drops Cc; 20 recipients, 10 mails/min. Base: captures outgoing emails with HTML preview (desktop/mobile viewport), plain text, addresses (From/To/CC/BCC), attachments, raw MIME source. Project via the SMTP AUTH user name (any password; since v2.5.0). Config for Laravel (MAIL_HOST/MAIL_PORT), Spiral (MAILER_DSN), Symfony, Magento 2, WordPress (mu-plugin phpmailer_init hook). Testing API for e2e tests: GET /api/smtp/cursor, /api/smtp/messages (filters to, from, cc, subject, subject_contains, subject_regex, body_contains, project, since, until; order, limit, offset), /api/smtp/messages/wait (long poll, timeout max 60s, 408), /api/smtp/stats, DELETE /api/smtp/messages, /api/smtp/message/{uuid}/raw|links|codes; X-Auth-Token with SSO."
 ---
 
 # SMTP — Email Testing
@@ -111,6 +111,85 @@ MAILER_DSN=smtp://shop:any@127.0.0.1:1025
 ```
 
 A user name like `shop@example.com` works too: the part before `@` is the project key.
+
+## Send to a real inbox
+
+Sometimes you want to see a caught email in a real mail client: how Gmail or Outlook shows it, whether a link works
+on your phone. Since server 2.13.0 the button **Send to inbox** on an email's page sends that one
+message on through a real SMTP server you set up. Nothing is forwarded by itself: only the message you send, only to
+the addresses you type.
+
+### Setup
+
+Add the outgoing server to `buggregator.yaml`. Example for Gmail (it needs an
+[app password](https://support.google.com/accounts/answer/185833)):
+
+```yaml
+smtp_relay:
+  host: smtp.gmail.com
+  port: 587
+  tls: starttls
+  username: me@gmail.com
+  password_file: /run/secrets/smtp_password
+  allowed_recipients: ["me@gmail.com", "*@mycompany.com"]
+```
+
+Or the same with environment variables:
+
+```bash
+SMTP_RELAY_HOST=smtp.gmail.com \
+SMTP_RELAY_USERNAME=me@gmail.com \
+SMTP_RELAY_PASSWORD=app-password \
+SMTP_RELAY_ALLOWED_RECIPIENTS=me@gmail.com,*@mycompany.com \
+./buggregator
+```
+
+| Key | Environment variable | Default |
+|-----|----------------------|---------|
+| `host` | `SMTP_RELAY_HOST` | empty: the button is off |
+| `port` | `SMTP_RELAY_PORT` | `587` for `starttls`, `465` for `tls`, `25` for `none` |
+| `tls` | `SMTP_RELAY_TLS` | `starttls`; or `tls`, `none` |
+| `username`, `password` | `SMTP_RELAY_USERNAME`, `SMTP_RELAY_PASSWORD` | no login |
+| `password_file` | `SMTP_RELAY_PASSWORD_FILE` | read the password from a file (Docker or Kubernetes secret) |
+| `from` | `SMTP_RELAY_FROM` | the sender address given to the server; empty: the login if it is an address, else the email's From |
+| `allowed_recipients` | `SMTP_RELAY_ALLOWED_RECIPIENTS` (comma-separated) | who may get mail, see below |
+| `insecure_skip_verify` | `SMTP_RELAY_INSECURE_SKIP_VERIFY` | `false`; `true` accepts any certificate. With a login, only for a relay on this machine: to a remote relay it then refuses to send |
+
+Environment variables win over the file. The password is never sent over an unencrypted connection to another
+machine: use `starttls` or `tls`.
+
+`allowed_recipients` takes patterns, case does not matter: `me@gmail.com` is one address, `*@mycompany.com` is
+everyone at that domain (not its subdomains).
+
+### Who can send
+
+**Without login ([SSO](/config/sso) off)**, two rules protect you:
+
+- The button works only from this machine, with the UI opened as `localhost` or `127.0.0.1`. From another machine,
+  from Docker, or through a proxy that adds `X-Forwarded-For`, `X-Forwarded-Host`, `X-Real-IP` or `Forwarded`, you
+  get «without auth, release works only from this machine». A proxy on this machine that adds none of these headers
+  looks local, so the button works through it. Behind any proxy, turn on SSO.
+- `allowed_recipients` must be set, and each pattern must name a real domain. `*`, `*@*` or `*@*.com` would let
+  anyone mail anyone, so they turn the button off. One such pattern turns off the whole list.
+
+**With SSO on**, any signed-in user can send from anywhere. `allowed_recipients` is optional; without it any address
+is allowed.
+
+In both cases another web page open in the same browser cannot send: it gets an error. A request without a
+browser's `Origin`, like curl or a script, is not blocked by this: without SSO it works from this machine, with SSO
+it needs a token.
+
+### What is sent
+
+In the dialog, type the addresses to send to. The email's original recipients never get it.
+
+- By default the message goes exactly as it was caught: same headers (the original To and Cc stay in it), same
+  attachments.
+- Check **Put these addresses in To** to replace To with your addresses and drop Cc. The rest stays as it was.
+
+Limits: 20 addresses per email, 10 emails a minute for the whole server.
+
+**Settings › Email relay** shows whether sending is on, the server, the allowed recipients and, when it is off, why.
 
 ## Testing API
 
