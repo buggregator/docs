@@ -1,5 +1,5 @@
 ---
-llms_description: "Helm chart 3.0.x (3.0.1: server 2.11.1) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+; older: helm get values -o yaml > f, upgrade -f f); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.* (auth.allowedEmails/allowedDomains lists since chart [chart version: to fill], server [version: to fill]; older chart: extraEnv AUTH_ALLOWED_*), jwtSecret generated and kept (lookup; set it for Argo CD; Flux keeps it). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall: chart 3.0.1+ keeps the PVC (helm.sh/resource-policy: keep; storage.keepOnUninstall=false deletes it; PVC <release>-buggregator-data, buggregator-data for release buggregator; reinstall same name+namespace reuses events); chart 3.0.0 deletes it."
+llms_description: "Helm chart 3.0.x (3.0.1: server 2.11.1) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+; older: helm get values -o yaml > f, upgrade -f f); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.* (auth.allowedEmails/allowedDomains lists since chart [chart version: to fill], server [version: to fill]; older chart: extraEnv AUTH_ALLOWED_*); auth.adminEmails → AUTH_ADMIN_EMAILS (audit log readers, empty = every signed-in user) since chart [chart version: to fill], jwtSecret generated and kept (lookup; set it for Argo CD; Flux keeps it). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall: chart 3.0.1+ keeps the PVC (helm.sh/resource-policy: keep; storage.keepOnUninstall=false deletes it; PVC <release>-buggregator-data, buggregator-data for release buggregator; reinstall same name+namespace reuses events); chart 3.0.0 deletes it."
 ---
 
 # Configuration — Helm Chart
@@ -219,6 +219,17 @@ anyone the provider signs in.
 Older chart: it ignores these values, so pass `AUTH_ALLOWED_EMAILS` / `AUTH_ALLOWED_DOMAINS` (comma lists) through
 `extraEnv` instead. The server must still be `[version: to fill]` or later.
 
+The audit log (who signed in, cleared or deleted what) is open to every signed-in user, with every user's email and
+IP address. To let only admins read it (chart `[chart version: to fill]`, server `[version: to fill]`):
+
+```yaml
+auth:
+  adminEmails: ["anna@acme.com"]
+```
+
+Or `--set 'auth.adminEmails={anna@acme.com}'`. Behind the Ingress the log shows the Ingress's IP address, not the
+user's. Older chart: pass `AUTH_ADMIN_EMAILS` through `extraEnv`. More: [Audit log](./sso.md#audit-log).
+
 Who matches what: [Who can sign in](./sso.md#who-can-sign-in).
 
 Provider setup: [SSO guide](./sso.md).
@@ -322,6 +333,7 @@ stored in memory by the 2.x release are not carried over.
 | `auth.providerUrl`, `auth.clientId`, `auth.clientSecret`, `auth.callbackUrl` | SSO settings | `""` |
 | `auth.scopes` | OAuth scopes | `openid,email,profile` |
 | `auth.allowedEmails`, `auth.allowedDomains` | Who may sign in, see [SSO](./sso.md#who-can-sign-in) (chart `[chart version: to fill]`) | `[]` |
+| `auth.adminEmails` | Who may read the audit log; empty: every signed-in user, see [SSO](./sso.md#audit-log) (chart `[chart version: to fill]`) | `[]` |
 | `auth.jwtSecret` | Session signing key | generated once, kept |
 | `auth.existingSecret` | Secret with `client-id`, `client-secret`, `jwt-secret` | `""` |
 | `mcp.enabled`, `mcp.transport`, `mcp.addr`, `mcp.authToken` | MCP server for AI assistants | off, `socket`, `:8001`, `""` |

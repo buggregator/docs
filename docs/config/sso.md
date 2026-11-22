@@ -1,5 +1,5 @@
 ---
-llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). Allow-list since [version: to fill]: auth.allowed_emails / auth.allowed_domains (env AUTH_ALLOWED_EMAILS / AUTH_ALLOWED_DOMAINS, comma lists; email OR domain; confirmed email only; google matches Workspace hd; github reads the verified primary email via scope user:email (GitHub default scopes read:user,user:email since [version: to fill]; Helm chart always sends openid,email,profile → set auth.scopes); Entra ID: AUTH_PROVIDER=oidc, tenant URL https://login.microsoftonline.com/<tenant>/v2.0 (not /common), allow-list needs optional ID-token claim xms_edov, else refused; profile name = full name, else login; checked on every request, signs out old sessions; refusal page «Access denied», state mismatch «Sign-in expired»). Without a list any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict)."
+llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). Allow-list since [version: to fill]: auth.allowed_emails / auth.allowed_domains (env AUTH_ALLOWED_EMAILS / AUTH_ALLOWED_DOMAINS, comma lists; email OR domain; confirmed email only; google matches Workspace hd; github reads the verified primary email via scope user:email (GitHub default scopes read:user,user:email since [version: to fill]; Helm chart always sends openid,email,profile → set auth.scopes); Entra ID: AUTH_PROVIDER=oidc, tenant URL https://login.microsoftonline.com/<tenant>/v2.0 (not /common), allow-list needs optional ID-token claim xms_edov, else refused; profile name = full name, else login; checked on every request, signs out old sessions; refusal page «Access denied», state mismatch «Sign-in expired»). Without a list any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict). Since [version: to fill]: users/sessions/settings/audit stored in the DB (in-memory DB: restart signs everyone out, loses them; use a file); after upgrade everyone signs in once. POST /api/auth/logout → 204, token dead at once (API 401, its sockets closed), other browsers stay. GET/PUT /api/me/settings (merge, null removes; 64 keys, key ≤128, value ≤16 KB, body ≤256 KB; 400/413). GET /api/audit?limit=1..500(100)&before=<id> → data[{id,at,user_id,user,action,target,status,ip}], next_before; actions login, login_denied, logout, settings.update, events.clear, event.delete, sentry.clear, smtp.clear, else route pattern; GETs and debugger stepping not logged; kept 90 days; readers auth.admin_emails / AUTH_ADMIN_EMAILS (empty = every signed-in user, 403 otherwise; Helm auth.adminEmails since chart [chart version: to fill], older chart extraEnv); IP = TCP peer (proxy IP behind a reverse proxy). GET /api/me adds id, provider, is_admin. /auth/sso/login?return_to=<path> returns to the page after sign-in (same-server path with one leading / only); UI: a signed-out deep link (e.g. /sentry/event/<uuid>) goes through sign-in and back; «Link» on the event page copies the address. UI user menu: name, email, «Audit log» (admins), «Logout»; /audit page (non-admin: «Only admins can see the audit log»). Settings synced per user: theme, period, menu, editor and path mapping, shortcuts, notifications, Monolog context, Sentry filters/views; feed filters stay in the URL."
 ---
 
 # Configuration — Single Sign-On (SSO)
@@ -84,6 +84,7 @@ auth:
   jwt_secret: your-jwt-signing-secret
   allowed_emails: []                # who may sign in, see «Who can sign in»
   allowed_domains: []
+  admin_emails: []                  # who may read the audit log, see «Audit log»
 ```
 
 ### Environment Variables
@@ -100,6 +101,7 @@ auth:
 | `AUTH_JWT_SECRET` | — | **Required.** Secret for signing internal JWT tokens |
 | `AUTH_ALLOWED_EMAILS` | — | Comma-separated emails that may sign in (since `[version: to fill]`) |
 | `AUTH_ALLOWED_DOMAINS` | — | Comma-separated domains that may sign in; Google: Workspace domain (since `[version: to fill]`) |
+| `AUTH_ADMIN_EMAILS` | — | Comma-separated emails that may read the audit log; empty: every signed-in user (since `[version: to fill]`) |
 
 > **Important:** `AUTH_JWT_SECRET` is required when authentication is enabled. It is used to sign the internal
 > session JWT tokens.
@@ -242,12 +244,114 @@ sign in. If everything is set up right, clicking this option will take you to th
 
 ![SSO login page](/images/sso-login.webp)
 
-After logging in successfully, users will be redirected back to the Buggregator server and logged in. You will see the
-user's profile information in the bottom left corner of the app. The name there is the full name from the provider,
-or the login when the profile has no name (since `[version: to fill]`). Example: `Anna Petrova`, or `anna-p` on
-GitHub without a name.
+After logging in successfully, users will be redirected back to the Buggregator server and logged in. Click your
+picture in the bottom left corner to open the user menu. It shows your name and email, **Audit log** (admins only,
+see [Audit log](#audit-log)) and **Logout**. The name is the full name from the provider, or the login when the
+profile has no name (since `[version: to fill]`). Example: `Anna Petrova`, or `anna-p` on GitHub without a name.
 
 ![User menu with the signed-in user](/images/sso-user-menu.webp)
+
+## Signed-in users
+
+Since server `[version: to fill]`, Buggregator remembers who signs in. It keeps, in its database:
+
+- **users**: name, email and picture from the provider. They are updated on every sign-in. Example: rename yourself
+  at the provider, sign in again, and Buggregator shows the new name.
+- **sessions**: one per sign-in, so that **Logout** really signs out;
+- **personal settings** of each user;
+- the **audit log**: who changed or deleted what.
+
+::: warning Keep the database in a file
+With the default in-memory database, a restart forgets all of this. Everyone is signed out, personal settings are
+gone, and the audit log is empty. Use a database file, see [Database](./database.md). The Helm chart already stores
+the database on a volume.
+:::
+
+Right after the upgrade to `[version: to fill]`, everyone signs in once more. Older tokens have no session on the
+server, so they stop working.
+
+### Sign out
+
+**Logout** in the user menu ends the session on the server. The token stops working at once, even if someone copied it:
+
+- the API answers `401`;
+- open live-feed connections of this session are closed, and a new one is refused.
+
+Only this browser is signed out. Example: you signed in on your laptop and your desktop; sign out on the laptop, and
+the desktop stays signed in.
+
+Without sign-out, a session ends after 30 days, like its token.
+
+### Personal settings
+
+Your settings are stored on the server, not only in the browser. Sign in from another browser or computer, and your
+settings are there. Example: switch to the light theme at work, sign in at home, and the light theme is on.
+
+Saved this way: the theme, the period of the event list, the fixed header, the menu (hidden items, collapsed sidebar,
+event counters), the code editor and file path mapping, keyboard shortcuts and key hints, desktop notifications,
+Monolog context display, and the Sentry filters, views and the paused service map. The feed filters are not saved:
+they are part of the page address, so share the link instead.
+
+The first time you sign in from a browser, settings your account already has replace this browser's, and the ones it
+lacks are taken from this browser. If someone else used this browser before, their settings are replaced by yours,
+not copied into your account. A setting the server refuses (over 16 KB) stays in this browser only.
+
+### Audit log
+
+The audit log lists what people did:
+
+| Action | When |
+|--------|------|
+| `login` | someone signed in |
+| `login_denied` | someone was refused by the allow-list |
+| `logout` | someone signed out |
+| `settings.update` | someone changed personal settings (the log shows which keys) |
+| `events.clear` | someone cleared events (the log shows the type, project and how many were selected) |
+| `event.delete` | someone deleted one event |
+| `sentry.clear`, `smtp.clear` | someone cleared Sentry data or emails |
+| the route, e.g. `POST /api/mocks` | any other change: mock rules, crons, Xdebug `eval` |
+
+Admins open it from the user menu (**Audit log**) or the command palette. It lists the newest rows first; **Show
+older** loads more. Each row has the time (in your time zone), who, the action with the address that was called, the
+answer's status code (red when it failed) and the IP address. A person who is not an admin sees «Only admins can see
+the audit log».
+
+![Audit log page](/images/sso-audit-log.webp)
+
+The API answers the time in UTC. Reading pages and stepping through the debugger are not logged. Rows older than 90
+days are deleted.
+
+**Who may read it:** list the admins by email:
+
+```yaml
+auth:
+  admin_emails: ["anna@acme.com"]   # env AUTH_ADMIN_EMAILS=anna@acme.com,max@acme.com
+```
+
+::: warning With no admins listed, every signed-in user reads the audit log
+The log shows every user's email and IP address. Set `admin_emails` if your team should not see each other's.
+:::
+
+The IP address is the one that connected to Buggregator. Behind a reverse proxy (nginx, Traefik, a Kubernetes
+Ingress), it is the proxy's address, the same for every row.
+
+On Helm (chart `[chart version: to fill]` and later): `--set 'auth.adminEmails={anna@acme.com}'`, see
+[Helm Chart](./helm-chart.md#authentication-sso). Older chart: pass `AUTH_ADMIN_EMAILS` (a comma list) through
+`extraEnv`.
+
+### Links to an event
+
+Share a link to an event, and the person who opens it lands on that event, even when they have to sign in first.
+**Link** at the top of an event page copies its address. Example: you send
+`https://buggregator.example.com/sentry/event/<uuid>` in chat. Your teammate opens it, signs in at the provider, and
+sees that Sentry error, not the start page.
+
+**Link** is on the common event page. Sentry trace, cron and queue pages have no **Link** button: copy the address
+from the browser. Such a link also returns to its page after sign-in.
+
+To start a sign-in that returns to a page, open `/auth/sso/login?return_to=<path>`, with the path URL-encoded.
+Buggregator accepts only a path on the same server, starting with one `/`. Any other value (another site, `//host`)
+is dropped, and the person lands on the start page.
 
 ## Calling the API from Scripts
 
@@ -283,6 +387,28 @@ Centrifugo `connect` command. Without a valid token the connect gets error `109 
 closed with code `1008`, and no events are pushed. The UI does this by itself after you sign in.
 
 With SSO off, nothing needs a token.
+
+### Account API
+
+Since server `[version: to fill]`. All calls need `X-Auth-Token`. They exist only with SSO on.
+
+| Call | Answer |
+|------|--------|
+| `GET /api/me` | `{"data": {"id", "provider", "username", "email", "avatar", "logout_url", "is_admin"}}`. `is_admin`: may read the audit log |
+| `POST /api/auth/logout` | `204`. The token stops working at once |
+| `GET /api/me/settings` | `{"data": {"<key>": <any JSON>}}` |
+| `PUT /api/me/settings` | Body `{"<key>": <value>}` adds or replaces keys; `null` removes a key. Answers all settings, like `GET` |
+| `GET /api/audit?limit=100&before=<id>` | `{"data": [{"id", "at", "user_id", "user", "action", "target", "status", "ip"}], "next_before": <id>}`, newest first. `limit` 1–500, default 100. `403` for a user who is not an admin |
+
+Settings limits: 64 keys per user, a key up to 128 characters, a value up to 16 KB, a request up to 256 KB. Over a
+limit the server answers `400` or `413` with `{"message", "code"}`.
+
+To read the next page of the audit log, pass the last `next_before` as `before`:
+
+```bash
+curl "http://buggregator.example.com/api/audit?limit=50" -H "X-Auth-Token: $BUGGREGATOR_TOKEN"
+curl "http://buggregator.example.com/api/audit?limit=50&before=1234" -H "X-Auth-Token: $BUGGREGATOR_TOKEN"
+```
 
 ### Troubleshooting
 
