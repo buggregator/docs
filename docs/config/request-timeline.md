@@ -35,7 +35,8 @@ id to them, as shown [below](#logs-mails-and-http-dumps).
 - **Lanes**, one per kind, from top to bottom: **Request**, **Queries**, **Cache**, **Logs**, **Dumps** (HTTP dumps),
   **Errors**, **HTTP out** (outgoing calls), **Mail**, **Jobs**, **Views**, **Other**. Each item sits at the moment it
   happened.
-- **Repeats in one block.** Five or more identical items in a lane are drawn as one block marked `×N`.
+- **Repeats in one block.** Five or more identical items in a lane, under the same parent span, are drawn as
+  one block marked `×N`.
 - **List** under the lanes: every item by time. Click one to see its details on the right; a log, mail or HTTP dump
   links to its own page. On a phone, only the list is shown.
 
@@ -75,9 +76,9 @@ use Sentry\SentrySdk;
 
 public function headers(): Headers
 {
-    return new Headers(text: [
-        'X-Trace-Id' => (string) SentrySdk::getCurrentHub()->getSpan()?->getTraceId(),
-    ]);
+    $traceId = SentrySdk::getCurrentHub()->getSpan()?->getTraceId();
+
+    return new Headers(text: $traceId ? ['X-Trace-Id' => (string) $traceId] : []);
 }
 ```
 
