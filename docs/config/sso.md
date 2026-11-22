@@ -1,5 +1,5 @@
 ---
-llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008)."
+llms_description: "SSO authentication with OAuth2/OIDC providers: Auth0, Google, GitHub, Keycloak, GitLab, and generic OIDC. Environment variables: AUTH_ENABLED, AUTH_PROVIDER, AUTH_PROVIDER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_CALLBACK_URL, AUTH_SCOPES, AUTH_JWT_SECRET. OIDC auto-discovery for compatible providers. Callback endpoint /auth/sso/callback. With SSO on, UI APIs (/api/events, /api/sentry/*, profiler, SMTP testing API /api/smtp/*, attachment lists, /api/metrics, /api/mocks, /api/xdebug) need the X-Auth-Token header (UI login token, 30 days); ingestion, /mock/, /api/version, /api/settings, attachment download/preview stay open. WebSocket /connection/websocket needs the token in the connect command (else error 109, close 1008). No allow-list: any account the provider accepts signs in; restrict at the provider (Google user type Internal, Auth0 sign-ups off + app connections, Keycloak realm users with registration off, self-hosted GitLab; GitHub OAuth apps cannot restrict)."
 ---
 
 # Configuration — Single Sign-On (SSO)
@@ -18,6 +18,27 @@ Supported providers:
 For OIDC-compatible providers (Auth0, Google, Keycloak, GitLab, generic OIDC), endpoints are auto-discovered
 from the provider URL via `.well-known/openid-configuration`. For GitHub, endpoints are hardcoded (GitHub does
 not support OIDC discovery).
+
+## Who can sign in
+
+::: warning Any account the provider accepts can sign in
+Buggregator does not check who signs in. If the provider lets a person log in, that person sees all your events.
+Example: with GitHub SSO on a public address, anyone with a GitHub account can open your Buggregator.
+
+Limit who can sign in at the provider before you expose Buggregator:
+
+- **Google:** on the OAuth consent screen, set **User type** to **Internal**. Then only accounts of your Google
+  Workspace organization can sign in.
+- **Auth0:** turn off sign-ups, and enable for the application only the connections your team uses.
+- **Keycloak:** only users of the realm can sign in. Turn off **User registration** in the realm.
+- **GitLab:** on gitlab.com any GitLab account can sign in. A self-hosted GitLab lets in only its own users; turn
+  off sign-ups there.
+- **GitHub:** a GitHub OAuth app cannot limit who signs in. Any GitHub account gets in. Use it only on a private
+  network, or pick another provider.
+- **Generic OIDC:** use your provider's own setting that assigns users or groups to the application.
+
+Without such a limit, do not expose Buggregator to the internet.
+:::
 
 ## Configuration
 
