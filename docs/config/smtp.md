@@ -1,5 +1,5 @@
 ---
-llms_description: "Fake SMTP server on port 1025: (since 2.13.0) Send to inbox: release one caught email via a real SMTP relay — smtp_relay: host/port/tls(starttls|tls|none)/username/password/password_file/from/allowed_recipients (globs, *@domain)/insecure_skip_verify or SMTP_RELAY_* env; auth off: localhost only, no proxy headers, allowed_recipients required with exact domains (* or *@* turns it off); auth on: any signed-in user, list optional; another browser page is refused (no Origin, e.g. curl, passes: localhost without SSO, token with SSO); a proxy that adds no X-Forwarded-*/X-Real-IP/Forwarded looks local; insecure_skip_verify with a login only for a loopback relay; POST /api/smtp/release/{uuid} {to, rewrite_to}, GET /api/smtp/relay; raw message sent as caught, rewrite_to replaces To and drops Cc; 20 recipients, 10 mails/min. Base: captures outgoing emails with HTML preview (desktop/mobile viewport), plain text, addresses (From/To/CC/BCC), attachments, raw MIME source. Project via the SMTP AUTH user name (any password; since v2.5.0). Config for Laravel (MAIL_HOST/MAIL_PORT), Spiral (MAILER_DSN), Symfony, Magento 2, WordPress (mu-plugin phpmailer_init hook). Testing API for e2e tests: GET /api/smtp/cursor, /api/smtp/messages (filters to, from, cc, subject, subject_contains, subject_regex, body_contains, project, since, until; order, limit, offset), /api/smtp/messages/wait (long poll, timeout max 60s, 408), /api/smtp/stats, DELETE /api/smtp/messages, /api/smtp/message/{uuid}/raw|links|codes; X-Auth-Token with SSO."
+llms_description: "Fake SMTP server on port 1025: (since [version: to fill]) other body parts kept and shown as tabs — text/watch-html Apple Watch, text/x-amp-html AMP (static, scripts off), text/calendar/application/ics Calendar, delivery-status, read receipt, rfc822-headers, enriched/richtext/markdown, any text/*; payload.parts [{type,label,content,size,truncated}] (1 MB cut per part), payload.calendar {method,summary,start,end,tz,all_day,location,description,url,status,uid,sequence,rrule,organizer,attendees[{name,email,status,role}]} from a text/calendar part or .ics attachment (invite card; CANCEL/CANCELLED = cancelled); list badges Watch/AMP/Invite/Cancelled; only mail received after the upgrade; text/html unchanged; MCP event_get includes them. (since 2.13.0) Send to inbox: release one caught email via a real SMTP relay — smtp_relay: host/port/tls(starttls|tls|none)/username/password/password_file/from/allowed_recipients (globs, *@domain)/insecure_skip_verify or SMTP_RELAY_* env; auth off: localhost only, no proxy headers, allowed_recipients required with exact domains (* or *@* turns it off); auth on: any signed-in user, list optional; another browser page is refused (no Origin, e.g. curl, passes: localhost without SSO, token with SSO); a proxy that adds no X-Forwarded-*/X-Real-IP/Forwarded looks local; insecure_skip_verify with a login only for a loopback relay; POST /api/smtp/release/{uuid} {to, rewrite_to}, GET /api/smtp/relay; raw message sent as caught, rewrite_to replaces To and drops Cc; 20 recipients, 10 mails/min. Base: captures outgoing emails with HTML preview (desktop/mobile viewport), plain text, addresses (From/To/CC/BCC), attachments, raw MIME source. Project via the SMTP AUTH user name (any password; since v2.5.0). Config for Laravel (MAIL_HOST/MAIL_PORT), Spiral (MAILER_DSN), Symfony, Magento 2, WordPress (mu-plugin phpmailer_init hook). Testing API for e2e tests: GET /api/smtp/cursor, /api/smtp/messages (filters to, from, cc, subject, subject_contains, subject_regex, body_contains, project, since, until; order, limit, offset), /api/smtp/messages/wait (long poll, timeout max 60s, 408), /api/smtp/stats, DELETE /api/smtp/messages, /api/smtp/message/{uuid}/raw|links|codes; X-Auth-Token with SSO."
 ---
 
 # SMTP — Email Testing
@@ -25,6 +25,52 @@ module in the same Buggregator instance where you already see your logs and exce
 - **Addresses** — From, To, CC, BCC, Reply-To organized by type.
 - **Attachments** — download or preview any attached file. Inline images display correctly in the HTML preview.
 - **Raw source** — the raw MIME source for debugging encoding or header issues.
+- **Other versions** — Apple Watch, AMP, calendar invites and delivery reports, each in its own tab, see
+  [Other versions of an email](#other-versions-of-an-email).
+
+## Other versions of an email
+
+An email can carry more than an HTML and a plain-text body. Example: an order email from Apple Mail also has a short
+version for the Apple Watch, and a Google Calendar invite has the event itself as `text/calendar`. Since server
+`[version: to fill]`, Buggregator keeps these versions and shows each in its own tab. Nothing to set up: send the email
+as usual.
+
+| Part in the email | Tab |
+|-------------------|-----|
+| `text/watch-html` | **Apple Watch**: shown at phone width, with a **Source** view |
+| `text/x-amp-html` | **AMP**: a static view, AMP scripts do not run; with a **Source** view |
+| `text/calendar`, `application/ics` | **Calendar** |
+| `message/delivery-status` | **Delivery status** (a bounce report) |
+| `message/disposition-notification` | **Read receipt** |
+| `text/rfc822-headers` | **Original headers** |
+| `text/enriched`, `text/richtext`, `text/markdown` | **Enriched text**, **Rich text**, **Markdown** |
+| any other `text/*` | the media type, e.g. `text/x-custom` |
+
+The tabs come after the main preview and before **Raw**. The email's info also lists them under **Other versions**.
+
+### Calendar invites
+
+When an email has a `text/calendar` part or an `.ics` attachment, an invite card shows above the email: what, when,
+where, the organizer and the guests with their answers (**Accepted**, **Declined**, **Maybe**, **No answer**).
+Example: your app invites to «Release sync» on 1 December 2026 from 09:00 to 09:30 UTC. A viewer in Berlin sees
+«Tue, 1 Dec 2026, 10:00 – 10:30 (CET)», the organizer and who has answered.
+
+- The time is shown in your time zone. When the invite names a zone the server does not know (Outlook names such as
+  `W. Europe Standard Time`), the card shows the sender's time with that name.
+- A cancelled invite (`METHOD:CANCEL` or `STATUS:CANCELLED`) is struck out and marked **Cancelled**.
+- The card reads only the first event of the invite. A link in the invite is clickable only when it is `http` or
+  `https`.
+
+### In the list
+
+The email list marks emails with **Watch**, **AMP**, **Invite** or **Cancelled**, and shows the invite's title and
+time in one line.
+
+### Limits
+
+- Only emails received after the upgrade have these tabs. Older emails stay as they were.
+- Each version is kept up to 1 MB. A longer one is cut, the tab says so, and the whole email stays in **Raw**.
+- The `text` and `html` fields do not change: codes, links and `body_contains` read them as before.
 
 ## Configuration
 
@@ -213,7 +259,16 @@ All routes below need the same login as the rest of `/api` when [SSO](/config/ss
 
 An `event` is a normal Buggregator event: `uuid`, `type` (`smtp`), `timestamp`, `project` and `payload`. The
 `payload` has `subject`, `from`, `to`, `cc`, `reply_to` (lists of `{"email", "name"}`), `bcc`, `text`, `html` and
-`raw`.
+`raw`. Since server `[version: to fill]`, two optional fields, absent on an ordinary email:
+
+- `parts`: the [other versions](#other-versions-of-an-email), `[{"type", "label", "content", "size", "truncated"}]`
+  in message order. `size` is in bytes before the 1 MB cut; `truncated` is `true` when the content was cut.
+- `calendar`: the invite, `{"method", "summary", "start", "end", "tz", "all_day", "location", "description", "url",
+  "status", "uid", "sequence", "rrule", "organizer": {"name", "email"}, "attendees": [{"name", "email", "status",
+  "role"}]}`. `start` and `end` are RFC 3339 when the zone is known (`2026-12-01T09:00:00Z`); a local time plus `tz`
+  when it is not (`2026-12-03T14:00:00`, `W. Europe Standard Time`); a date when `all_day` is `true`.
+
+The MCP tool `event_get` returns the same payload, so an AI assistant sees the other versions and the invite too.
 
 Errors are `{"message", "code"}`. An unknown `uuid` gets `404`.
 
