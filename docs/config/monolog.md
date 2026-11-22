@@ -26,7 +26,8 @@ logging stack.
 - **Severity level** — all PSR-3 levels: emergency, alert, critical, error, warning, notice, info, debug.
 - **Timestamp** — when the log was recorded.
 - **Context** — structured context data in JSON format.
-- **Extra fields** — additional data from Monolog processors.
+- **Extra fields** — additional data from Monolog processors. With `Monolog\Processor\HostnameProcessor` the log gets
+  the machine name, and you can [filter the feed](./feed-filters.md) by it.
 - **Source** — file, line, and function where the log was generated, when the record has a `source` key in its context.
 
 ## Configuration

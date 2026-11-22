@@ -214,6 +214,7 @@ export default defineConfig({
                     {text: 'Server', link: '/config/server'},
                     {text: 'Database', link: '/config/database'},
                     {text: 'Projects', link: '/config/projects'},
+                    {text: 'Feed Filters', link: '/config/feed-filters'},
                     {text: 'API Reference', link: '/api'},
                     {text: 'Webhooks', link: '/config/webhooks'},
                     {text: 'Security and Data', link: '/security'},
