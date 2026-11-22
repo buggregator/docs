@@ -1,5 +1,5 @@
 ---
-llms_description: "Inspector.dev SDK compatibility for local APM: transaction name, duration, memory peak, result status, HTTP details, timeline breakdown. Config: INSPECTOR_URL=http://inspector@host:8000, INSPECTOR_API_KEY, INSPECTOR_INGESTION_KEY. Laravel and generic PHP setup. Project: INSPECTOR_URL=http://inspector:project_key@host (since 2.11.0; older servers: default project). INSPECTOR_SECRET_KEY env for access restriction."
+llms_description: "Inspector.dev SDK compatibility for local APM: transaction name, duration, memory peak, result status, HTTP details, timeline breakdown. Config: INSPECTOR_URL=http://inspector@host:8000, INSPECTOR_API_KEY, INSPECTOR_INGESTION_KEY. Laravel and generic PHP setup. Project: INSPECTOR_URL=http://inspector:project_key@host (since 2.11.0; older servers: default project). Any ingestion key is accepted (not checked)."
 ---
 
 # Inspector — Application Monitoring
@@ -68,28 +68,9 @@ INSPECTOR_URL=http://inspector:shop@127.0.0.1:8000
 
 Without a key, and on older servers, events land in `default`.
 
-## Secret key validation
+## Ingestion key
 
-To restrict access, set a secret key on the server:
-
-```bash
-docker run --pull always \
-  -p 127.0.0.1:8000:8000 \
-  -e INSPECTOR_SECRET_KEY=my-secret-key \
-  ghcr.io/buggregator/server:latest
-```
-
-Then use the key as the ingestion key in your client:
-
-**Laravel:**
-
-```dotenv
-INSPECTOR_INGESTION_KEY=my-secret-key
-```
-
-**PHP:**
-
-```php
-$configuration = new Configuration('my-secret-key');
-$configuration->setUrl('http://inspector@127.0.0.1:8000');
-```
+Buggregator does not check the ingestion key: any value in `INSPECTOR_INGESTION_KEY` (or in
+`new Configuration('…')`) works, for example `test`. There is no server setting to restrict it. To keep others from
+sending events, do not expose port 8000 outside your machine; see [Security and Data](/security). SSO does not help
+here: it protects the UI, not event ingestion.
