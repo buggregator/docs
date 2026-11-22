@@ -23,8 +23,8 @@ Anna's events.
 The filters go into the page address, for example `?host=ci-runner-3`. Send that link to a colleague, and they see the
 same feed. **Copy link** and **Clear** sit at the right of the filter bar.
 
-New events that do not match are not added to the feed. The bar counts them instead: «N new events hidden by this
-filter».
+New events that do not match are not added to the feed. The bar counts them instead: «N new events arrived and are
+hidden by this filter.»
 
 ## Which events have which fields
 
