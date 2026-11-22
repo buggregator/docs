@@ -17,10 +17,11 @@ Open **Logs** in the sidebar, or go to `http://127.0.0.1:8000/logs`.
 - **Search.** Type words, and only lines that contain every word stay. Upper or lower case does not matter. The
   search looks in the message, the channel, and the keys and values of `context` and `extra`. The found words are
   highlighted.
-- **Levels.** One chip per level with the number of lines, for example `error 12`. Click to show only those levels.
+- **Levels.** One chip per level with the number of lines, for example `error 12`. All are on at the start. Click a
+  chip to hide or show its level. To see only errors, turn the other levels off.
 - **Channel.** Pick one or more Monolog channels: `payments`, `db`, `cache`…
 - **Time.** The last hour by default. Pick another period, up to **All time**.
-- **Chart.** Lines per minute, colored by level. A spike of red bars is a burst of errors.
+- **Chart.** Lines per minute, colored by level (wider bars for long periods). A spike of red bars is a burst of errors.
 - **Live stream with pause.** New lines appear as they come. Press pause to read in peace. The screen then counts
   what came in: «3 new lines while paused (1 match)». **Show them** adds them and goes on.
 - **Line details.** Click a line to open its `context` and `extra`.
