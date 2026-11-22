@@ -1,5 +1,5 @@
 ---
-llms_description: "Symfony VarDumper integration via TCP port 9912: VAR_DUMPER_FORMAT=server, VAR_DUMPER_SERVER=host:9912. UI shows dumped values as interactive tree, source location with IDE click-to-open (link order: Settings editor/path mapping if set > app's context.source.file_link if an editor scheme like phpstorm:// or vscode://, file:// and http(s) skipped > VS Code default; app link via SYMFONY_IDE, xdebug.file_link_format or framework.ide, path map suffix &/container/>/local/), variable labels. VAR_DUMPER_PREVIEW_MAX_DEPTH env for performance. Syntax highlighting via trap() context(language:). Buggregator Trap alternative with trap()/tr()/td() helpers."
+llms_description: "Symfony VarDumper integration via TCP port 9912: VAR_DUMPER_FORMAT=server, VAR_DUMPER_SERVER=host:9912. UI shows dumped values as interactive tree, source location with IDE click-to-open (link order: Settings editor/path mapping if set > app's context.source.file_link if an editor scheme like phpstorm:// or vscode://, file:// and http(s) skipped > VS Code default; app link via SYMFONY_IDE, xdebug.file_link_format or framework.ide, path map suffix &/container/>/local/), variable labels. Not available on Windows (binary skips the module; use Docker or WSL). Syntax highlighting via trap() context(language:). Buggregator Trap alternative with trap()/tr()/td() helpers."
 ---
 
 # VarDumper — Variable Dumps
@@ -85,6 +85,9 @@ VAR_DUMPER_SERVER=127.0.0.1:9912
 
 > In Docker Compose, replace `127.0.0.1` with the Buggregator service name (e.g., `VAR_DUMPER_SERVER=buggregator:9912`).
 
+> On Windows the VarDumper module (port 9912) is not available: the standalone binary skips it. Run Buggregator in
+> Docker or WSL to receive dumps there.
+
 That's it. Use `dump()` and `dd()` as usual — the output goes to Buggregator.
 
 If your project doesn't use `.env` files, set via PHP:
@@ -93,20 +96,6 @@ If your project doesn't use `.env` files, set via PHP:
 $_SERVER['VAR_DUMPER_FORMAT'] = 'server';
 $_SERVER['VAR_DUMPER_SERVER'] = '127.0.0.1:9912';
 ```
-
-## Performance tip
-
-Large objects with deep nesting can slow down the browser. Limit the preview depth on the events list page:
-
-```bash
-docker run --pull always \
-  -p 127.0.0.1:8000:8000 \
-  -p 127.0.0.1:9912:9912 \
-  -e VAR_DUMPER_PREVIEW_MAX_DEPTH=3 \
-  ghcr.io/buggregator/server:latest
-```
-
-The full dump is still available when you open the event detail page.
 
 ## Syntax highlighting
 
