@@ -1,5 +1,5 @@
 ---
-llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions (with user feedback and cron monitors), OpenTelemetry traces and logs (OTLP/HTTP), fake SMTP email capture (with send to a real inbox), Pusher/Laravel Reverb broadcast capture, CSP reports, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
+llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions (with user feedback and cron monitors), OpenTelemetry traces and logs (OTLP/HTTP), fake SMTP email capture (with send to a real inbox), Pusher/Laravel Reverb broadcast capture, CSP reports, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes feed filters (machine, environment, user, Monolog channel, tag), event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
 ---
 
 # What is Buggregator?
@@ -93,6 +93,7 @@ Microservices, monorepos, multiple teams — one dashboard.
 - You want to **test emails** your app sends without a real mail server.
 - You want to **capture SMS messages** without sending real ones through Twilio or Vonage.
 - You have **multiple services** (microservices, Docker Compose) and want all debug data in one place.
+- Your team shares **one instance**, and you want only your events: [feed filters](/config/feed-filters) by machine, environment, user or tag.
 - Your team wants **one shared instance in Kubernetes**: `helm install` from the [official Helm chart](/config/helm-chart) — data on a persistent volume, SSO for the UI, Ingress, Prometheus metrics.
 - You want to **inspect HTTP requests** your app makes to external APIs.
 - You just need a better `dump()` — with syntax highlighting, IDE links, and no browser pollution.

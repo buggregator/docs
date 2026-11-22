@@ -17,6 +17,9 @@ different teams, applications, or environments separate.
 3. The sidebar displays a project selector dropdown, allowing you to quickly switch between projects and view only
    the events relevant to the selected project.
 
+Projects split events by app. To narrow one project's feed further, by machine, environment, user or Monolog
+channel, use [feed filters](./feed-filters.md).
+
 ### Default Project
 
 When you start the server, Buggregator automatically sets up a default project with key `default`. All your data goes
