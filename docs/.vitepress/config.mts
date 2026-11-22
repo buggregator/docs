@@ -188,6 +188,7 @@ export default defineConfig({
                 items: [
                     {text: 'XHProf Profiler', link: '/config/xhprof'},
                     {text: 'Sentry', link: '/config/sentry'},
+                    {text: 'Request Timeline', link: '/config/request-timeline'},
                     {text: 'OpenTelemetry', link: '/config/opentelemetry'},
                     {text: 'Cron Monitoring', link: '/config/crons'},
                     {text: 'CSP Reports', link: '/config/csp'},
