@@ -224,6 +224,7 @@ export default defineConfig({
                     {text: 'Security and Data', link: '/security'},
                     {text: 'Single Sign On (SSO)', link: '/config/sso'},
                     {text: 'MCP (AI Assistants)', link: '/config/mcp'},
+                    {text: 'Agents Panel', link: '/config/agents'},
                     {text: 'Installable App (PWA)', link: '/config/pwa'},
                     {text: 'Helm Chart', link: '/config/helm-chart'},
                     {text: 'Metrics', link: '/config/metrics'},
