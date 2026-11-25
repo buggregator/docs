@@ -1,5 +1,5 @@
 ---
-llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list (feed filters host/env/user/channel/level/release/tag/trace/exclude_host), events_facets, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only), xdebug_breakpoints, and with allow_control (default true; a session without an IDE) xdebug_wait, xdebug_step, xdebug_continue, xdebug_stop, xdebug_breakpoint_set, xdebug_breakpoint_remove; mock server: mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, and (mcp.mock_write, default true, env MCP_MOCK_WRITE) mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request, mock_import_openapi, mock_group_delete. Xdebug traces: xdebug_traces, xdebug_trace_summary, xdebug_trace_calls, xdebug_trace_call. Integration with Claude Code, Cursor, and other MCP-compatible clients."
+llms_description: "MCP (Model Context Protocol) server for AI assistant integration. Two transports: Unix socket (default) and HTTP/SSE. Available tools: events_list (feed filters host/env/user/channel/level/release/tag/trace/exclude_host), events_facets, event_get, event_delete, sentry_event, vardump_get, profiler_summary, profiler_top, profiler_call_graph; with the Xdebug proxy on, xdebug_sessions, xdebug_location, xdebug_stack, xdebug_variables, xdebug_property, xdebug_eval (allow_eval only), xdebug_breakpoints, and with allow_control (default true; a session without an IDE) xdebug_wait, xdebug_step, xdebug_continue, xdebug_stop, xdebug_breakpoint_set, xdebug_breakpoint_remove; mock server: mock_rules_list, mock_rule_get, mock_rule_preview, mock_requests_list, mock_template_helpers, and (mcp.mock_write, default true, env MCP_MOCK_WRITE) mock_rule_create, mock_rule_update, mock_rule_delete, mock_rule_from_request, mock_import_openapi, mock_group_delete. Read-only mode (since 2.15.0; mcp.read_only, env MCP_READ_ONLY, default false; both transports): removes event_delete, the six mock write tools and xdebug_wait/step/continue/stop/breakpoint_set/breakpoint_remove/eval even when mock_write, allow_control or allow_eval are true; a call to a removed tool fails with unknown tool. Queue jobs: queue_jobs. Xdebug traces: xdebug_traces, xdebug_trace_summary, xdebug_trace_calls, xdebug_trace_call. Integration with Claude Code, Cursor, and other MCP-compatible clients."
 ---
 
 # Configuration — MCP (Model Context Protocol)
@@ -179,6 +179,53 @@ services:
       MCP_ADDR: ":8001"
 ```
 
+## Read-only mode
+
+Since server v2.15.0. Read-only mode lets an AI agent look at your events but not change anything. The agent can
+read errors, dumps, profiles, mock rules and paused debug sessions. It cannot delete events, edit mock rules or step
+through code.
+
+Use it when you give Buggregator to an agent that should only investigate. Example: a harnsy agent that reaches
+Buggregator as an MCP connection.
+
+```yaml
+mcp:
+  enabled: true
+  read_only: true
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MCP_READ_ONLY` | `false` | `true` removes every tool that changes data or drives a debug session |
+
+It works with both transports. These tools are removed:
+
+| Area | Removed tools |
+|------|---------------|
+| Events | `event_delete` |
+| Mock server | `mock_rule_create`, `mock_rule_update`, `mock_rule_delete`, `mock_rule_from_request`, `mock_import_openapi`, `mock_group_delete` |
+| Xdebug | `xdebug_wait`, `xdebug_step`, `xdebug_continue`, `xdebug_stop`, `xdebug_breakpoint_set`, `xdebug_breakpoint_remove`, `xdebug_eval` |
+
+A removed tool is not in the tool list. A call to it fails with `unknown tool`. All other tools stay, including
+`mock_rule_preview` (it runs a rule on a sample request and saves nothing) and the Xdebug tools that read a paused
+session.
+
+Read-only mode wins over the other switches. With `read_only: true` the tools above are gone even when
+`mcp.mock_write`, `xdebug.allow_control` or `xdebug.allow_eval` is `true`.
+
+For agents that connect over HTTP, add a token:
+
+```yaml
+mcp:
+  enabled: true
+  transport: http
+  addr: 127.0.0.1:8001
+  auth_token: your-secret-token
+  read_only: true
+```
+
+Without `auth_token` anyone who reaches the port can use the tools. Then add `http://127.0.0.1:8001/` with the header `Authorization: Bearer <token>` to the agent as an MCP server.
+
 ## Available Tools
 
 MCP clients can use the following tools to query Buggregator data:
@@ -190,13 +237,14 @@ MCP clients can use the following tools to query Buggregator data:
 | `events_list` | List events with optional filtering by type and project. Returns metadata (uuid, type, timestamp, project) without payloads. Supports `limit` parameter (default 20, max 100). |
 | `events_facets` | List the values events can be filtered by (machines, environments, users, channels, levels, releases, tags) with counts. `events_list` takes them as `host`, `env`, `user`, `channel`, `level`, `release`, `tag`, `trace` and `exclude_host`: see [Feed Filters](./feed-filters.md). |
 | `event_get` | Get a complete event by UUID, including the full payload. |
-| `event_delete` | Delete an event by UUID. |
+| `event_delete` | Delete an event by UUID. Removed in [read-only mode](#read-only-mode). |
 
 ### Sentry
 
 | Tool | Description |
 |------|-------------|
 | `sentry_event` | Get structured details of a Sentry error: message, severity, exception chain with stack traces, environment, platform. Returns clean, AI-friendly data. |
+| `queue_jobs` | [Queue jobs](./queues.md) seen through Sentry tracing. Without `id`: jobs, newest first, filtered by `queue`, `job`, `status` (`ok`, `failed`, `retried`), `window`, `project`, `limit` (50, max 500). With `id`: one job's attempts, the error of each failed attempt and the request that dispatched it. |
 
 ### VarDumper
 
@@ -232,7 +280,7 @@ Tools for the [mock server](/config/mock-server) rules. Details and an example f
 | `mock_group_delete` | Deletes all stored rules of a group. |
 
 The last six change rules. They are on by default; `mcp.mock_write: false` (env `MCP_MOCK_WRITE=false`) leaves
-only the first five.
+only the first five. [Read-only mode](#read-only-mode) removes them too.
 
 ```yaml
 mcp:
@@ -265,6 +313,7 @@ the session, stepping and continuing stay in the IDE.
 `xdebug_wait`, `xdebug_step`, `xdebug_continue`, `xdebug_stop`, `xdebug_breakpoint_set` and
 `xdebug_breakpoint_remove` drive a session that has no IDE ([Debug without an IDE](/config/xdebug#debug-without-an-ide)).
 They are left out with `xdebug.allow_control: false`; stepping is refused while an IDE drives.
+[Read-only mode](#read-only-mode) removes them and `xdebug_eval`.
 
 `session_id` can be left out when exactly one session is paused. More in [Xdebug → MCP tools](/config/xdebug#mcp-tools).
 
