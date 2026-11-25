@@ -96,7 +96,8 @@ Search finds a page by its title and visible text. Text inside scripts and style
 
 - Up to 1 MB per page. A larger body gets `400` with `html: body over 1 MB`.
 - An empty page gets `400` with `html: empty markup`.
-- JSON other than `{"title", "html"}` gets `400`.
+- Broken JSON, or JSON that is not an object, gets `400`. JSON without `html` gets `400` with `html: empty markup`.
+  Other fields are ignored.
 - A title is cut at 300 characters.
 - Since this module exists, a POST to `/html/…` without a type is an HTML page, not an [HTTP dump](/config/http-dumps).
 
