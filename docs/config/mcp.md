@@ -185,8 +185,8 @@ Since server v2.15.0. Read-only mode lets an AI agent look at your events but no
 read errors, dumps, profiles, mock rules and paused debug sessions. It cannot delete events, edit mock rules or step
 through code.
 
-Use it when you give Buggregator to an agent that should only investigate. Example: an agent that explains an error
-to you, or a harnsy agent that reaches Buggregator as an MCP connection.
+Use it when you give Buggregator to an agent that should only investigate. Example: a harnsy agent that reaches
+Buggregator as an MCP connection.
 
 ```yaml
 mcp:
@@ -220,11 +220,11 @@ mcp:
   enabled: true
   transport: http
   addr: 127.0.0.1:8001
-  auth_token: ${MCP_AUTH_TOKEN:}
+  auth_token: your-secret-token
   read_only: true
 ```
 
-Then add `http://127.0.0.1:8001/` with the header `Authorization: Bearer <token>` to the agent as an MCP server.
+Without `auth_token` anyone who reaches the port can use the tools. Then add `http://127.0.0.1:8001/` with the header `Authorization: Bearer <token>` to the agent as an MCP server.
 
 ## Available Tools
 
