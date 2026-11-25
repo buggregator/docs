@@ -1,5 +1,5 @@
 ---
-llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions (with user feedback and cron monitors), OpenTelemetry traces and logs (OTLP/HTTP), fake SMTP email capture (with send to a real inbox), Pusher/Laravel Reverb broadcast capture, CSP reports, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes feed filters (machine, environment, user, Monolog channel, tag), event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
+llms_description: "Buggregator overview: self-hosted debugging server via Docker or standalone ~40 MB binary, supports XHProf profiling, Sentry exceptions (with user feedback and cron monitors), OpenTelemetry traces and logs (OTLP/HTTP), fake SMTP email capture (with send to a real inbox), Pusher/Laravel Reverb broadcast capture, CSP reports, your own HTML pages, SMS gateway, HTTP request dumps, Monolog logs, Symfony VarDumper, Spatie Ray, Inspector APM. Includes feed filters (machine, environment, user, Monolog channel, tag), event pinning, screenshots, keyboard shortcuts, IDE integration, multi-project support, webhooks, Prometheus metrics, SSO auth, MCP for AI assistants. Built with Go, Vue 3, SQLite. Free forever, MIT licensed."
 ---
 
 # What is Buggregator?
@@ -136,6 +136,11 @@ the real Reverb or Pusher server.
 ### [CSP Reports](/config/csp) — Content Security Policy
 
 Catch the browser's CSP violation reports and other Reporting API reports while you write your policy.
+
+### [HTML Pages](/config/html) — your own markup
+
+Send your own HTML page, with its styles and scripts, and see it next to your other events. Example: a nightly
+job's report with a link to the full results.
 
 ### [SMS Gateway](/config/sms) — SMS Messages
 

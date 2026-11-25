@@ -80,7 +80,7 @@ curl 'http://127.0.0.1:8000/api/events?type=sentry'
 ```
 
 Types: `sentry`, `smtp`, `monolog`, `var-dump`, `ray`, `inspector`, `profiler`, `http-dump`, `sms`,
-`xdebug-trace`.
+`xdebug-trace`, `html`.
 
 Narrow the list by machine, environment, user, channel, level, release or tag, for example
 `?type=sentry&host=web-1`. All parameters and `GET /api/events/facets`: [Feed Filters](./config/feed-filters.md).

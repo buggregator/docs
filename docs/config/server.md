@@ -80,6 +80,7 @@ modules:
   monolog: true
   smtp: true
   sms: true
+  html: true
   http-dump: true
   profiler: true
 
