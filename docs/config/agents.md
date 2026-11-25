@@ -1,5 +1,5 @@
 ---
-llms_description: "Agents panel, since server [version: to fill]: talk to the AI agents of a harnsy project from any Buggregator page over h2a. Off until explain.url + explain.token (env EXPLAIN_H2A_URL, EXPLAIN_H2A_TOKEN; explain.to / EXPLAIN_H2A_TO, default lead). URL: wss://<gateway>/h2a/v1, or ws://127.0.0.1:7790/h2a/v1 for harnsy on the same machine (ws:// only to this machine). Token: a pass made on the harnsy dashboard (Settings › Your program), h2a_…; one Buggregator per pass, a second one with the same token replaces the first. On the first question the page context goes with it (for an event, the server builds its text: Sentry error = exception, stack with source lines, tags, breadcrumbs, request line); obvious secrets masked first; nothing leaves without a click. Conversations kept in the database. Read-only MCP (mcp.read_only / MCP_READ_ONLY) drops write tools (event_delete, mock writes, xdebug control and eval); add it to the agents in harnsy as an MCP connection; Buggregator never sends the MCP token. API: GET /api/assist (status), /api/assist/threads."
+llms_description: "Agents panel, since server [version: to fill]: talk to the AI agents of a harnsy project from any Buggregator page over h2a. Off until explain.url + explain.token (env EXPLAIN_H2A_URL, EXPLAIN_H2A_TOKEN; explain.to / EXPLAIN_H2A_TO, default lead). URL: wss://<gateway>/h2a/v1, or ws://127.0.0.1:7790/h2a/v1 for harnsy on the same machine (ws:// only to this machine). Token: a pass made on the harnsy dashboard (Settings › Your program), h2a_…; one Buggregator per pass, a second one with the same token replaces the first. On the first question the page context goes with it (for an event, the server builds its text: Sentry error = exception, stack with source lines, tags, breadcrumbs, request line); obvious secrets masked first; nothing leaves without a click. Conversations kept in the database across restarts (event thread deleted with its event; last 50 page threads kept); event text by type (sentry, monolog, http-dump, var-dump, profiler, inspector; others JSON), page text ≤4 KB from the UI. Read-only MCP (mcp.read_only / MCP_READ_ONLY) drops write tools (event_delete, mock writes, xdebug control and eval); add it to the agents in harnsy as an MCP connection; Buggregator never sends the MCP token. API: GET /api/assist (status), /api/assist/threads."
 ---
 
 # Agents Panel
@@ -14,13 +14,19 @@ Available since server `[version: to fill]`. It is off until you connect it.
 
 ## What is sent, and when
 
-Nothing leaves Buggregator until you send a question. With your first question, Buggregator sends what the page shows.
-Example: for a Sentry error, the exception, the stack with its source lines, tags, breadcrumbs and the request line.
+Nothing leaves Buggregator until you send a question. With your first question, Buggregator sends what the page shows:
 
-- Obvious secrets are masked before sending: DSN keys, `Authorization` and cookie headers, `password=…`, API keys
-  and tokens.
+- **On an event:** the event as text. A Sentry error: the exception, the stack with its source lines, tags,
+  breadcrumbs and the request line. A Monolog record, an HTTP dump, a dump, the slowest functions of a profile, an
+  Inspector transaction: their main fields. Any other event: its data as JSON.
+- **On any other page:** a short description of the page (up to 4 KB).
+
+- Obvious secrets are masked before sending: DSN keys and passwords in URLs, `Authorization` and `Cookie` headers,
+  values of keys such as `password`, `token` or `secret`, and well-known token shapes. Example: `DB_PASSWORD=hunter2`
+  goes out as `DB_PASSWORD=[redacted]`.
 - The text goes to your harnsy node, to the agents of the project the pass belongs to.
-- Conversations are kept in Buggregator's database, so you can come back to them.
+- Conversations are kept in Buggregator's database, across restarts. An event's conversation is deleted with the
+  event. Of the conversations about other pages, the last 50 are kept.
 
 ## Set it up
 
@@ -74,7 +80,7 @@ Xdebug controls and `eval`. The agents can still list and read events, profiles,
 
 Then, in harnsy, add `http://127.0.0.1:8001/` with the header `Authorization: Bearer a-long-random-token` to the agents
 as an MCP connection named `buggregator`. Buggregator tells the agents the connection is there; it never sends the
-token.
+token. This works when the agents run where they can reach that address, for example on the same machine.
 
 ## Panel status
 
