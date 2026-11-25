@@ -1,5 +1,5 @@
 ---
-llms_description: "HTML pages, since server [version: to fill]: event type html carries the sender's own markup, shown in a sandboxed iframe (the sender's CSS and JavaScript run; no same-origin: no access to Buggregator cookies, token or API). Send: POST to http://html@host:8000 (project: html:<project>@host) with Content-Type text/html; or POST /html or /html/<project>; or header X-Buggregator-Event: html. JSON {\"title\",\"html\"} only with Content-Type application/json, else the body is stored as markup. Charset from Content-Type converted to UTF-8. Title: JSON title, else the page's <title>, else empty (max 300 chars). Limits: 1 MB; empty markup, body over 1 MB or bad JSON → 400. Payload {title, html, size}; preview {title, size, text (visible text, 300 chars), html when ≤32 KB else truncated:true}. Search ?q= finds title and visible text (not script text). An untyped POST to /html/... is an html event, not an HTTP dump. UI: menu Dumps › HTML pages, page tabs Preview and Source; Ray ray()->html() shows the same way. Off: modules.html: false or leave html out of CLIENT_SUPPORTED_EVENTS. API: GET /api/events?type=html; MCP event_get."
+llms_description: "HTML pages, since server [version: to fill]: event type html carries the sender's own markup, shown in a sandboxed iframe (the sender's CSS and JavaScript run on the event page, not on the feed card, which shows markup and CSS only; no same-origin: no access to Buggregator cookies, token or API; ingestion stays open, so do not send pages that post new html events in a loop). Send: POST to http://html@host:8000 (project: html:<project>@host) with Content-Type text/html; or POST /html or /html/<project>; or header X-Buggregator-Event: html. JSON {\"title\",\"html\"} only with Content-Type application/json, else the body is stored as markup. Charset from Content-Type converted to UTF-8. Title: JSON title, else the page's <title>, else empty (max 300 chars). Limits: 1 MB; empty markup, body over 1 MB or bad JSON → 400. Payload {title, html, size}; preview {title, size, text (visible text, 300 chars), html when ≤32 KB else truncated:true}. Search ?q= finds title and visible text (not script text). An untyped POST to /html/... is an html event, not an HTTP dump. UI: menu Dumps › HTML pages, page tabs Preview and Source; Ray ray()->html() shows the same way. Off: modules.html: false or leave html out of CLIENT_SUPPORTED_EVENTS. API: GET /api/events?type=html; MCP event_get."
 ---
 
 # HTML Pages
@@ -78,6 +78,14 @@ a page that draws a chart with a script shows the chart.
 
 It runs in a sandbox, apart from Buggregator. The page cannot read Buggregator's cookies, your sign-in, or call
 Buggregator's API, and it cannot change the Buggregator page around it.
+
+Scripts run only when you open the event. In the feed, the card shows the markup and CSS without scripts, so a busy
+feed stays fast.
+
+::: warning Do not send events from the page itself
+Sending events to Buggregator stays open, also from a script. A page whose script sends a new HTML event each time it
+opens can fill the feed in a loop. Keep such scripts out of the pages you send.
+:::
 
 Search finds a page by its title and visible text. Text inside scripts and styles is not searched.
 
