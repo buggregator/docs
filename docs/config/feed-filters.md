@@ -54,7 +54,7 @@ Some things to know:
 
 - **VarDumper** has no machine name. Buggregator takes the host of the HTTP request the dump was made in. Dumps from
   the command line have no host.
-- **Emails, SMS, CSP reports and broadcast events** have no filter fields, except the trace id of an email.
+- **Emails, SMS, CSP reports, broadcast events and HTML pages** have no filter fields, except the trace id of an email.
 - Levels match in any case: `level=error` also finds Monolog `ERROR`.
 
 ## Filter through the API

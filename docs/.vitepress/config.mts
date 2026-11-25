@@ -197,6 +197,7 @@ export default defineConfig({
                     {text: 'SMS Gateway', link: '/config/sms'},
                     {text: 'Broadcast Events', link: '/config/broadcast'},
                     {text: 'HTTP Dumps', link: '/config/http-dumps'},
+                    {text: 'HTML Pages', link: '/config/html'},
                     {text: 'HTTP Proxy', link: '/config/http-proxy'},
                     {text: 'Mock Server', link: '/config/mock-server'},
                     {text: 'Mock Templates', link: '/config/mock-templates'},
