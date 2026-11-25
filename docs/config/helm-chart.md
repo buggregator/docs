@@ -1,5 +1,5 @@
 ---
-llms_description: "Helm chart 3.x (3.3.0: server 2.14.0) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+; older: helm get values -o yaml > f, upgrade -f f); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.* (auth.allowedEmails/allowedDomains lists since chart 3.3.0, server 2.14.0; older chart: extraEnv AUTH_ALLOWED_*); auth.adminEmails → AUTH_ADMIN_EMAILS (audit log readers, empty = every signed-in user) since chart 3.3.0, jwtSecret generated and kept (lookup; set it for Argo CD; Flux keeps it). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall: chart 3.0.1+ keeps the PVC (helm.sh/resource-policy: keep; storage.keepOnUninstall=false deletes it; PVC <release>-buggregator-data, buggregator-data for release buggregator; reinstall same name+namespace reuses events); chart 3.0.0 deletes it."
+llms_description: "Helm chart 3.x (3.4.0: server 2.15.0) for Kubernetes: helm install oci://ghcr.io/buggregator/helm-chart/buggregator. One replica only (SQLite, ReadWriteOnce; other replicaCount fails to render), Recreate strategy. PVC 5Gi at /data (DB /data/buggregator.db, attachments /data/storage); storage.enabled=false = in memory. Non-root 65532, read-only root FS, /tmp emptyDir. Upgrade with --reset-then-reuse-values (Helm 3.14+; older: helm get values -o yaml > f, upgrade -f f); --reuse-values keeps old chart defaults. From 2.x: volumePermissions.enabled=true where fsGroup is ignored; Helm 4 first upgrade --server-side=false; clear database.dsn/attachmentStorage.mode/supportedEvents. config: becomes buggregator.yaml (projects, webhooks). Ingress = HTTP only; tcpService.enabled=true adds a LoadBalancer for SMTP 1025, VarDumper 9912, Monolog 9913, Xdebug 9003 (no auth: loadBalancerSourceRanges); HTTP proxy 8080 only with tcpService.proxy=true. ingress-nginx timeouts 3600 for WebSocket. SSO auth.* (auth.allowedEmails/allowedDomains lists since chart 3.3.0, server 2.14.0; older chart: extraEnv AUTH_ALLOWED_*); auth.adminEmails → AUTH_ADMIN_EMAILS (audit log readers, empty = every signed-in user) since chart 3.3.0, jwtSecret generated and kept (lookup; set it for Argo CD; Flux keeps it). Values: retention, ui, sentry.sourceFetch, update, xdebug, xdebugTrace, mcp, metrics. Uninstall: chart 3.0.1+ keeps the PVC (helm.sh/resource-policy: keep; storage.keepOnUninstall=false deletes it; PVC <release>-buggregator-data, buggregator-data for release buggregator; reinstall same name+namespace reuses events); chart 3.0.0 deletes it."
 ---
 
 # Configuration — Helm Chart
@@ -7,7 +7,7 @@ llms_description: "Helm chart 3.x (3.3.0: server 2.14.0) for Kubernetes: helm in
 Deploy Buggregator on Kubernetes with the official Helm chart. The chart runs one Go binary with an embedded SQLite
 database: no other services are needed.
 
-This page describes chart **3.3.0** (server 2.14.0). Coming from chart 2.x? Read
+This page describes chart **3.4.0** (server 2.15.0). Coming from chart 2.x? Read
 [Upgrade from chart 2.x](#upgrade-from-chart-2-x) first.
 
 ## Prerequisites
@@ -30,7 +30,7 @@ kubectl port-forward svc/buggregator 8000:8000
 
 Then go to http://localhost:8000.
 
-A specific chart version: add `--version 3.3.0`. A specific server image: `--set image.tag=2.14.0`. By default the
+A specific chart version: add `--version 3.4.0`. A specific server image: `--set image.tag=2.15.0`. By default the
 chart uses the server version it was released with (its `appVersion`).
 
 ## Data
