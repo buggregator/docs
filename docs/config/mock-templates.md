@@ -447,7 +447,8 @@ Answer:
 {"body":"{\"id\": 42, \"page\": 3}","error":null,"headers":{},"matched":true,"status":200}
 ```
 
-- `matched`: whether this rule would answer this request (method and path).
+- `matched`: whether this rule would answer this request (method, path and [conditions](/config/mock-server#request-conditions)).
+- `failed_condition`: present when a condition fails, e.g. `body card.token equals`.
 - `body`, `headers`: what the mock would send.
 - `error`: `null`, or the template error. With an error, `status` is `500` and `body` is empty:
 
@@ -504,6 +505,10 @@ the helper list, tries a template with `mock_rule_preview`, then saves it with `
 | `mock_rule_from_request` | Creates a rule from a captured request (e.g. one that got `404`) |
 | `mock_import_openapi` | Imports an OpenAPI spec, see [OpenAPI import](/config/mock-server#import-an-openapi-spec) |
 | `mock_group_delete` | Deletes all stored rules of a group |
+
+`mock_rule_create`, `mock_rule_update` and `mock_rule_preview` also take `conditions`
+([Request conditions](/config/mock-server#request-conditions)). On update, a list replaces the rule's conditions and
+`[]` removes them.
 
 The last six tools change rules. Turn them off with `mcp.mock_write: false` (env `MCP_MOCK_WRITE=false`): the agent
 then only reads and previews.
