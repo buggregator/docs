@@ -355,7 +355,8 @@ Sentry.captureFeedback({
 })
 ```
 
-- Feedback tied to an error shows on that error's page, above the tabs: name, email, message, page URL and time.
+- Feedback tied to an error shows on that error's page in the **User feedback** block, under the error title and
+  above the exception: name, email, message, page URL and time.
 - The **Feedback** tab on the Sentry page lists all feedback, also the one sent without an error.
 - Feedback makes no card of its own in the event feed.
 - Screenshots attached to feedback are not stored.
