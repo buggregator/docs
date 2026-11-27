@@ -1,5 +1,5 @@
 ---
-llms_description: "XHProf profiling integration: Call Graph, Flame Graph, Top Functions table, profile comparison. Setup: pecl install xhprof, packages for Laravel (maantje/xhprof-buggregator-laravel), Spiral (spiral/profiler), generic PHP (spiral-packages/profiler). XHPROF_ENABLED=true (Laravel package, off by default), PROFILER_ENDPOINT (default path /api/profiler/store), Symfony bundle enabled: true, custom client via HTTP auth, X-Buggregator-Event header, or /api/profiler/store endpoint."
+llms_description: "XHProf profiling integration: Call Graph (since 2.16.0 a Collapse recursion toolbar toggle, remembered in the browser: one node per function instead of foo, foo@1, foo@2 per XHProf recursion level, label like foo (3x, 2 recursive) = calls of all levels and calls from deeper levels, cost of the outermost call, self-loop for direct recursion, a cycle's call back up drawn beside the nodes; API GET /api/profiler/{uuid}/call-graph?recursion=collapsed|levels, default levels, any other value = levels, response field recursion), Flame Graph, Top Functions table, profile comparison. Setup: pecl install xhprof, packages for Laravel (maantje/xhprof-buggregator-laravel), Spiral (spiral/profiler), generic PHP (spiral-packages/profiler). XHPROF_ENABLED=true (Laravel package, off by default), PROFILER_ENDPOINT (default path /api/profiler/store), Symfony bundle enabled: true, custom client via HTTP auth, X-Buggregator-Event header, or /api/profiler/store endpoint."
 ---
 
 # XHProf — Performance Profiling
@@ -26,6 +26,28 @@ Watch introduction video on [YouTube](https://www.youtube.com/watch?v=2QbgjIVnz7
 Function calls as a tree. Nodes colored from white to dark red — the darker, the more resources consumed.
 
 ![XHProf call graph](/images/xhprof-callgraph.webp)
+
+#### Collapse recursion
+
+Since server v2.16.0. XHProf records each level of a recursive function as its own function: `foo`, `foo@1`,
+`foo@2`, … A deep recursion then fills the graph with a long chain of copies of one function.
+
+Click **Collapse recursion** in the call graph toolbar to show one node per function instead. Example: `foo` that
+calls itself two levels deep becomes one node `foo (3x, 2 recursive)`:
+
+- `3x` counts the calls of all levels; `2 recursive` is how many of them came from deeper levels.
+- The node costs what its outermost call costs. That cost already includes the deeper levels, so nothing is
+  counted twice.
+- A function that calls itself gets an arrow from the node back to itself (a loop).
+- A cycle through other functions (`a` calls `b`, `b` calls `a` again) gets one arrow back up, drawn beside the
+  nodes.
+
+Click the button again to see the levels as XHProf wrote them. The choice is remembered in your browser and applies
+to every profile you open.
+
+The same in the API: `GET /api/profiler/{uuid}/call-graph?recursion=collapsed`. Without it, or with any other value,
+the graph has a node per level (`recursion=levels`). The answer says which one it is in the field `recursion`:
+`"levels"` or `"collapsed"`.
 
 ### Flame Graph
 
