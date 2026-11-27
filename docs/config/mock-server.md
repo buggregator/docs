@@ -1,5 +1,5 @@
 ---
-llms_description: "Mock server (since v2.6.0): requests to http://host:8000/mock/<path> get the response of the first enabled matching rule (method + path -> status, headers, body, delay). Path forms: exact, {param} for one segment, trailing * for the rest. Rules from buggregator.yaml (mocks:) come first and are read-only; rules from the UI or REST API /api/mocks follow by position. Every mock request is captured as an http-dump event with a payload.mock field (matched, rule_id, status, headers, body, near). Unmatched: 404 JSON. Project via X-Buggregator-Project or Basic Auth mock:<project>. Limits: status 100-599, delay up to 30s, body up to 1 MB. Up to 500 stored rules per project. OpenAPI 3.0/3.1 import: POST /api/mocks/import/openapi {spec|url, project, group (default openapi:<info.title>), base_path} -> {group, title, rules, skipped}; one rule per operation (lowest 2xx, spec example as is or a template from the schema); re-import replaces the group; DELETE /api/mocks/groups/{group}; config mocks_openapi: (file, project, group, base_path), read-only; MCP mock_import_openapi, mock_group_delete. Dynamic responses: template: true and seed, see /config/mock-templates."
+llms_description: "Mock server (since v2.6.0): requests to http://host:8000/mock/<path> get the response of the first enabled matching rule (method + path -> status, headers, body, delay). Path forms: exact, {param} for one segment, trailing * for the rest. Rules from buggregator.yaml (mocks:) come first and are read-only; rules from the UI or REST API /api/mocks follow by position. Every mock request is captured as an http-dump event with a payload.mock field (matched, rule_id, status, headers, body, near). Unmatched: 404 JSON. Project via X-Buggregator-Project or Basic Auth mock:<project>. Limits: status 100-599, delay up to 30s, body up to 1 MB. Up to 500 stored rules per project. OpenAPI 3.0/3.1 import: POST /api/mocks/import/openapi {spec|url, project, group (default openapi:<info.title>), base_path} -> {group, title, rules, skipped}; one rule per operation (lowest 2xx, spec example as is or a template from the schema); re-import replaces the group; DELETE /api/mocks/groups/{group}; config mocks_openapi: (file, project, group, base_path), read-only; MCP mock_import_openapi, mock_group_delete. Dynamic responses: template: true and seed, see /config/mock-templates. Request conditions (since 2.16.0): rule field conditions [{in: header|body, name, op: equals (default)|not_equals|exists|not_exists, value}], all must hold besides method/path/project, a failing rule is skipped and the next tried (put specific rules above general ones); header names any case, values exact; body path a.b, items.0.id, items.*.id (any item), $.a.b and a[0] accepted; body value compared by type (string as is, number numerically, big ints exact, true/false, null, object/list as JSON); missing field or non-JSON body: equals/exists fail, not_equals/not_exists hold; max 20 conditions, name 512 B, value 4 KB, body first 1 MB; no regex, no form fields. PUT without conditions keeps them, [] clears; 422 errors.conditions.N. near[].reason conditions with detail (e.g. header Authorization equals, no value). Preview answers failed_condition."
 ---
 
 # Mock Server — Fake API Responses
@@ -55,6 +55,7 @@ A rule matches when all of these fit:
 | **Path** | see the path forms below |
 | **Project** | empty means every project; otherwise it must be the request's project |
 | **Enabled** | a disabled rule never answers |
+| **Conditions** | optional; every condition on request headers and JSON body fields must hold, see [Request conditions](#request-conditions) |
 
 ### Path forms
 
@@ -67,6 +68,87 @@ A rule matches when all of these fit:
 - `*` is allowed only as the whole last segment.
 - A trailing slash is ignored. The query string is ignored.
 
+### Request conditions
+
+Since server v2.16.0. A rule can also check request headers and JSON body fields. One path can then give different
+answers. Example: `POST /payments` answers `200` for a good card and `402` for any other card.
+
+```yaml
+mocks:
+  - name: payment ok
+    method: POST
+    path: /payments
+    conditions:
+      - { in: body, name: card.token, op: equals, value: tok_ok }
+      - { in: header, name: authorization, op: exists }
+    status: 200
+    body: '{"status": "paid"}'
+  - name: payment declined
+    method: POST
+    path: /payments
+    status: 402
+    body: '{"error": "card_declined"}'
+```
+
+```bash
+curl -X POST http://127.0.0.1:8000/mock/payments -H 'Authorization: Bearer x' \
+  -H 'Content-Type: application/json' -d '{"card": {"token": "tok_ok"}}'
+# {"status": "paid"}  (200)
+
+curl -X POST http://127.0.0.1:8000/mock/payments -H 'Authorization: Bearer x' \
+  -H 'Content-Type: application/json' -d '{"card": {"token": "tok_bad"}}'
+# {"error": "card_declined"}  (402)
+```
+
+All conditions of a rule must hold, together with its method, path and project. When one fails, the rule is
+skipped and the next rule is tried. So put the rule with conditions **above** a general rule for the same path.
+In the example above, the order of the two rules matters: swapped, `payment declined` would answer every request.
+
+Each condition has four fields:
+
+| Field | Values |
+|-------|--------|
+| `in` | `header` or `body` |
+| `name` | a header name, or a path to a JSON body field |
+| `op` | `equals` (the default), `not_equals`, `exists`, `not_exists` |
+| `value` | text to compare with; not used by `exists` and `not_exists` |
+
+**Headers.** Header names ignore case: `authorization` checks `Authorization`. The value is compared exactly, case
+included. When a header comes several times, `equals` holds if any of its values is equal.
+
+**Body fields.** The body must be JSON. Write the path with dots:
+
+| Path | Reads |
+|------|-------|
+| `card.token` | `{"card": {"token": "…"}}` |
+| `items.0.id` | the `id` of the first item of the list `items` |
+| `items.*.id` | the `id` of any item: `equals` holds when one of them is equal |
+
+`$.card.token` and `items[0].id` work too. They mean the same as `card.token` and `items.0.id`.
+
+A body field is compared by its type in the request:
+
+| Field in the request | `value` that equals it |
+|----------------------|------------------------|
+| string `"15"` | `15` (the text as is) |
+| number `15` | `15`, `15.0`; large whole numbers are compared exactly |
+| `true` / `false` | `true` / `false` |
+| `null` | `null` |
+| object or list | the same JSON, e.g. `{"a": 1}`; key order does not matter |
+
+**A missing field never equals.** If the header or the field is not in the request (or the body is not JSON),
+`equals` and `exists` fail, and `not_equals` and `not_exists` hold. Example: `card.token` `not_equals` `tok_ok`
+holds for a request with no card at all.
+
+Rules without conditions work as before.
+
+Limits: at most 20 conditions per rule, a `name` up to 512 bytes, a `value` up to 4 KB. The body is read up to
+its first 1 MB. Comparisons are exact text or JSON values only: no patterns and no form fields (`a=1&b=2`).
+
+In the UI, the rule form has a **Conditions** block: **+ Add condition**, then pick **Header** or **Body field**,
+the name, and **equals**, **does not equal**, **is present** or **is missing**. In the rule list, a rule with
+conditions shows a tag like `+2 conditions`.
+
 ### No rule matched
 
 The mock server answers `404` with a JSON error:
@@ -76,8 +158,11 @@ The mock server answers `404` with a JSON error:
 ```
 
 The request is still captured. In the request details you see the rules whose path fits but that missed by one
-condition, and why: `disabled`, `method` or `project`. Example: you made `POST /orders` but the app sent `GET`.
-The details then show that rule with the reason `method`.
+condition, and why: `disabled`, `method`, `project` or `conditions`. Example: you made `POST /orders` but the app
+sent `GET`. The details then show that rule with the reason `method`.
+
+For `conditions`, the details also name the first condition that failed, e.g. `body card.token equals`. The value
+is not shown.
 
 ### Projects
 
@@ -314,6 +399,7 @@ A rule looks like this:
   "delay_ms": 100,
   "template": false,
   "seed": 0,
+  "conditions": [{"in": "header", "name": "Authorization", "op": "exists"}],
   "group": "",
   "enabled": true,
   "position": 0,
@@ -338,7 +424,9 @@ Rules from the config file have `"source": "config"`, `"read_only": true` and id
 | `POST` | `/api/mocks/import/openapi` | `{"spec" or "url", "project", "group", "base_path"}` | `{"group", "title", "rules", "skipped"}`, see [OpenAPI import](#import-an-openapi-spec) |
 | `DELETE` | `/api/mocks/groups/{group}` | — | `{"deleted": n}`: the group's stored rules are gone |
 
-Defaults on create: `method` `ANY`, `status` `200`, `enabled` `true`, `template` `false`, `seed` `0`.
+Defaults on create: `method` `ANY`, `status` `200`, `enabled` `true`, `template` `false`, `seed` `0`,
+`conditions` `[]`. On `PUT`, a body without `conditions` keeps the rule's conditions; `"conditions": []` removes
+them. A bad condition gets `422` with the field `conditions.N` (N counts from 0).
 
 Template rules (`template`, `seed`), `POST /api/mocks/preview` and `GET /api/mocks/helpers`:
 [Response templates](/config/mock-templates).
@@ -358,6 +446,15 @@ curl -X POST http://127.0.0.1:8000/api/mocks \
   -d '{"method": "POST", "path": "/orders", "status": 201, "body": "{\"id\": 7}", "delay_ms": 200}'
 ```
 
+Example — a rule with conditions: answer `401` when the `Authorization` header is not `Bearer good`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/mocks \
+  -H 'Content-Type: application/json' \
+  -d '{"method": "GET", "path": "/me", "status": 401, "body": "{\"error\": \"unauthorized\"}",
+       "conditions": [{"in": "header", "name": "Authorization", "op": "not_equals", "value": "Bearer good"}]}'
+```
+
 ### The captured request
 
 A mock request is a normal `http-dump` event. Its payload has an extra `mock` field with what was sent:
@@ -375,6 +472,7 @@ A mock request is a normal `http-dump` event. Its payload has an extra `mock` fi
 
 - `body` keeps the first 64 KB; `body_truncated` says when it was cut.
 - For an unmatched request, `matched` is `false`, `rule_id` and `rule_name` are `null`, and `near` lists up to
-  5 rules that missed by one condition: `[{"rule_id", "rule_name", "reason"}]`.
+  5 rules that missed by one condition: `[{"rule_id", "rule_name", "reason", "detail"}]`. `detail` is there only
+  for the reason `conditions`: the first condition that failed, e.g. `header Authorization equals`.
 - A [template](/config/mock-templates) that failed adds `template_error` with the error text; `status` is then `500`.
 - Ordinary HTTP dumps have no `mock` field.
