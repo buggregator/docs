@@ -99,7 +99,7 @@ curl 'http://127.0.0.1:8000/api/events?trace=9a015591dbdd4332bede451901fb0040&wi
 parameter works like the other [feed filters](./feed-filters.md).
 
 AI agents read the same through [MCP](./mcp.md): `sentry_traces_list` finds slow traces or traces with N+1
-queries, `sentry_trace_get` returns one trace with its span tree and N+1 groups. Since server [version: to fill].
+queries, `sentry_trace_get` returns one trace with its span tree and N+1 groups. Since server 2.17.0.
 
 ## Limits
 
