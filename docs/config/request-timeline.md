@@ -98,6 +98,9 @@ curl 'http://127.0.0.1:8000/api/events?trace=9a015591dbdd4332bede451901fb0040&wi
 `n_plus_one` is always a list, most repeated query first; it is empty when nothing repeats five times. The `trace`
 parameter works like the other [feed filters](./feed-filters.md).
 
+AI agents read the same through [MCP](./mcp.md): `sentry_traces_list` finds slow traces or traces with N+1
+queries, `sentry_trace_get` returns one trace with its span tree and N+1 groups. Since server [version: to fill].
+
 ## Limits
 
 - Only Monolog logs, mails and HTTP dumps are linked by trace id. Mails and HTTP dumps stored before the upgrade are

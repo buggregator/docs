@@ -314,7 +314,7 @@ The REST API accepts more filters than the page shows:
 | Endpoint | Filters |
 |----------|---------|
 | `GET /api/sentry/exceptions` | `project`, `environment`, `level`, `handled`, `grouped=true`, `from`, `to`, `window` |
-| `GET /api/sentry/traces` | `project`, `environment`, `release`, `from`, `to`, `window` |
+| `GET /api/sentry/traces` | `project`, `environment`, `release`, `name` (the root transaction name contains it, any case), `min_duration` (ms the root transaction took at least; not a whole number → `400`), `source` (`sentry` or `otel`), `service`, `from`, `to`, `window` |
 | `GET /api/sentry/logs` | `project`, `level` (several, comma-separated), `trace_id`, `from`, `to`, `window` |
 | `GET /api/sentry/metrics` | `project`, `name`, `type`, `trace_id`, `search` (part of the name), `from`, `to`, `window` |
 | `GET /api/sentry/counts` | `project`, `from`, `to`, `window` |
